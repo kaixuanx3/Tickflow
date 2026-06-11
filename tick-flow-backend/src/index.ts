@@ -12,10 +12,12 @@ import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { AuthService } from './services/auth-service.js';
+import { LocalSubscriptions } from './services/local-subscriptions.js';
 import { PortfolioService } from './services/portfolio-service.js';
 import { QuoteService } from './services/quote-service.js';
 import { WatchlistService } from './services/watchlist-service.js';
 import type { TickSource } from './services/tick-source.js';
+import { TickWsServer } from './ws/tick-ws-server.js';
 
 function createTickSource(env: Env): TickSource {
   if (env.TICK_SOURCE === 'sim') return new SimulatedTickSource();
@@ -42,9 +44,7 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   : null;
 const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
 
-// No consumers yet — the WS fan-out (week 3) and alert engine (week 4) will
-// subscribe through this same instance.
-export const tickSource = createTickSource(env);
+const tickSource = createTickSource(env);
 
 const app = buildApp({
   authService,
@@ -55,7 +55,15 @@ const app = buildApp({
   finnhub,
 });
 
+const wsServer = new TickWsServer(
+  app.server,
+  authService,
+  new LocalSubscriptions(tickSource),
+  tickSource,
+);
+
 const shutdown = async (): Promise<void> => {
+  wsServer.close();
   await app.close();
   await prisma.$disconnect();
   redis.disconnect();
