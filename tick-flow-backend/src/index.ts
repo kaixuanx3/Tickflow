@@ -8,8 +8,10 @@ import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
+import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { AuthService } from './services/auth-service.js';
 import { QuoteService } from './services/quote-service.js';
+import { WatchlistService } from './services/watchlist-service.js';
 import type { TickSource } from './services/tick-source.js';
 
 function createTickSource(env: Env): TickSource {
@@ -31,12 +33,13 @@ const prisma = new PrismaClient();
 const finnhub = new FinnhubClient(env.FINNHUB_API_KEY);
 const quoteService = new QuoteService(new RedisQuoteCache(redis), finnhub);
 const authService = new AuthService(new PrismaUserRepo(prisma), env.JWT_SECRET);
+const watchlistService = new WatchlistService(new PrismaWatchlistRepo(prisma));
 
 // No consumers yet — the WS fan-out (week 3) and alert engine (week 4) will
 // subscribe through this same instance.
 export const tickSource = createTickSource(env);
 
-const app = buildApp({ authService, quoteService, finnhub });
+const app = buildApp({ authService, quoteService, watchlistService, finnhub });
 
 const shutdown = async (): Promise<void> => {
   await app.close();
