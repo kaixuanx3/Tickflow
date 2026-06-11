@@ -7,6 +7,7 @@ import { loadEnv, type Env } from './config/env.js';
 import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { FinnhubTickSource } from './infrastructure/finnhub-tick-source.js';
 import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
+import { BullMqNotificationEnqueuer } from './infrastructure/notification-queue.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaHoldingRepo } from './repositories/holding-repo.js';
@@ -14,6 +15,7 @@ import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { PrismaAlertRepo } from './repositories/alert-repo.js';
 import { RedisSubscriptionStore } from './repositories/subscription-store.js';
+import { AlertEngine } from './services/alert-engine.js';
 import { AlertService } from './services/alert-service.js';
 import { AuthService } from './services/auth-service.js';
 import { PortfolioService } from './services/portfolio-service.js';
@@ -47,19 +49,8 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   ? new GoogleAuthLibraryVerifier(env.GOOGLE_CLIENT_ID)
   : null;
 const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
-const alertService = new AlertService(new PrismaAlertRepo(prisma));
 
 const tickSource = createTickSource(env);
-
-const app = buildApp({
-  authService,
-  googleVerifier,
-  quoteService,
-  watchlistService,
-  portfolioService,
-  alertService,
-  finnhub,
-});
 
 const subscriptionStore = new RedisSubscriptionStore(redis);
 // A crashed previous run must not leak refcounts. enableOfflineQueue is off,
@@ -78,6 +69,29 @@ try {
   console.warn('[subs] skipping refcount reset at boot:', (err as Error).message);
 }
 const subscriptionManager = new SubscriptionManager(tickSource, quoteService, subscriptionStore);
+
+// BullMQ needs its own connection (blocking commands; no fail-fast tweaks)
+const bullRedis = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
+bullRedis.on('error', (err) => console.error('[bullmq-redis]', err.message));
+const notificationEnqueuer = new BullMqNotificationEnqueuer(bullRedis);
+
+const alertRepo = new PrismaAlertRepo(prisma);
+const alertEngine = new AlertEngine(alertRepo, notificationEnqueuer, subscriptionManager);
+const alertService = new AlertService(alertRepo, (symbol) => {
+  void alertEngine.onSymbolTouched(symbol);
+});
+await alertEngine.start(subscriptionManager);
+
+const app = buildApp({
+  authService,
+  googleVerifier,
+  quoteService,
+  watchlistService,
+  portfolioService,
+  alertService,
+  finnhub,
+});
+
 // the manager is both the subscription policy and the merged tick feed
 // (streamed + polled symbols come out of the same onTick, same shape)
 const wsServer = new TickWsServer(app.server, authService, subscriptionManager, subscriptionManager);
@@ -86,7 +100,9 @@ const shutdown = async (): Promise<void> => {
   wsServer.close();
   subscriptionManager.close();
   await app.close();
+  await notificationEnqueuer.close();
   await prisma.$disconnect();
+  bullRedis.disconnect();
   redis.disconnect();
   process.exit(0);
 };

@@ -1,7 +1,10 @@
 import type { PrismaClient } from '@prisma/client';
+import type { AlertEngineRepo } from '../services/alert-engine.js';
 import type { Alert, AlertInput, AlertPatch, AlertRepo } from '../services/alert-service.js';
 
-export class PrismaAlertRepo implements AlertRepo {
+const LIVE = ['active', 'cooldown'] as const;
+
+export class PrismaAlertRepo implements AlertRepo, AlertEngineRepo {
   constructor(private readonly prisma: PrismaClient) {}
 
   async list(userId: string): Promise<Alert[]> {
@@ -26,5 +29,46 @@ export class PrismaAlertRepo implements AlertRepo {
     if (!alert) return null;
     await this.prisma.alert.delete({ where: { id } });
     return alert;
+  }
+
+  // ── AlertEngineRepo ──────────────────────────────────────────────
+
+  async liveBySymbol(symbol: string): Promise<Alert[]> {
+    return this.prisma.alert.findMany({ where: { symbol, status: { in: [...LIVE] } } });
+  }
+
+  async markTriggered(
+    id: string,
+    expectedTriggerCount: number,
+    toStatus: 'done' | 'cooldown',
+    at: Date,
+  ): Promise<boolean> {
+    // CAS on (status, triggerCount): concurrent evaluations can't double-trigger
+    const { count } = await this.prisma.alert.updateMany({
+      where: { id, status: 'active', triggerCount: expectedTriggerCount },
+      data: { status: toStatus, triggerCount: { increment: 1 }, lastTriggeredAt: at },
+    });
+    return count === 1;
+  }
+
+  async rearm(id: string): Promise<boolean> {
+    const { count } = await this.prisma.alert.updateMany({
+      where: { id, status: 'cooldown' },
+      data: { status: 'active' },
+    });
+    return count === 1;
+  }
+
+  async countLive(symbol: string): Promise<number> {
+    return this.prisma.alert.count({ where: { symbol, status: { in: [...LIVE] } } });
+  }
+
+  async distinctLiveSymbols(): Promise<string[]> {
+    const rows = await this.prisma.alert.findMany({
+      where: { status: { in: [...LIVE] } },
+      distinct: ['symbol'],
+      select: { symbol: true },
+    });
+    return rows.map((r) => r.symbol);
   }
 }

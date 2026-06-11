@@ -100,7 +100,7 @@ ACTIVE ──condition met──► TRIGGERED ──► enqueue notification job
 ```
 
 - Postgres row: `id, user_id, symbol, rule(type, threshold), kind(one_shot|re_arm), status, trigger_count, last_triggered_at`.
-- Idempotency: BullMQ job ID = `alert:{id}:trigger:{trigger_count}` — duplicate evaluation can't double-send.
+- Idempotency: BullMQ job ID = `alert-{id}-trigger-{trigger_count}` (BullMQ forbids `:` in job ids) — duplicate evaluation can't double-send.
 - Status transition + enqueue atomic (transaction/check-and-set).
 - Evaluation runs on every tick (streamed or polled).
 
