@@ -1,13 +1,14 @@
 import { z } from 'zod';
 
-// Only vars needed by the current build stage. DATABASE_URL joins in week 2
-// (Prisma), FMP_API_KEY in week 5 (candles).
+// Only vars needed by the current build stage. FMP_API_KEY joins with candles.
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   TICK_SOURCE: z.enum(['sim', 'finnhub']),
   REDIS_URL: z.string().min(1),
+  DATABASE_URL: z.string().min(1),
   FINNHUB_API_KEY: z.string().min(1),
+  JWT_SECRET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

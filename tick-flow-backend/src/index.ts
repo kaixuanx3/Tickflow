@@ -1,11 +1,14 @@
 // Composition root: the ONLY place env vars select behavior.
 import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
 import { Redis } from 'ioredis';
 import { buildApp } from './app.js';
 import { loadEnv, type Env } from './config/env.js';
 import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
+import { PrismaUserRepo } from './repositories/user-repo.js';
+import { AuthService } from './services/auth-service.js';
 import { QuoteService } from './services/quote-service.js';
 import type { TickSource } from './services/tick-source.js';
 
@@ -24,17 +27,20 @@ const redis = new Redis(env.REDIS_URL, {
 });
 redis.on('error', (err) => console.error('[redis]', err.message));
 
+const prisma = new PrismaClient();
 const finnhub = new FinnhubClient(env.FINNHUB_API_KEY);
 const quoteService = new QuoteService(new RedisQuoteCache(redis), finnhub);
+const authService = new AuthService(new PrismaUserRepo(prisma), env.JWT_SECRET);
 
 // No consumers yet — the WS fan-out (week 3) and alert engine (week 4) will
 // subscribe through this same instance.
 export const tickSource = createTickSource(env);
 
-const app = buildApp({ quoteService, finnhub });
+const app = buildApp({ authService, quoteService, finnhub });
 
 const shutdown = async (): Promise<void> => {
   await app.close();
+  await prisma.$disconnect();
   redis.disconnect();
   process.exit(0);
 };
