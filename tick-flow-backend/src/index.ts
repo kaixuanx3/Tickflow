@@ -5,6 +5,7 @@ import { Redis } from 'ioredis';
 import { buildApp } from './app.js';
 import { loadEnv, type Env } from './config/env.js';
 import { FinnhubClient } from './infrastructure/finnhub-rest.js';
+import { FinnhubTickSource } from './infrastructure/finnhub-tick-source.js';
 import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
@@ -22,7 +23,7 @@ import { TickWsServer } from './ws/tick-ws-server.js';
 
 function createTickSource(env: Env): TickSource {
   if (env.TICK_SOURCE === 'sim') return new SimulatedTickSource();
-  throw new Error('FinnhubTickSource is not implemented yet (week 3) — use TICK_SOURCE=sim');
+  return new FinnhubTickSource(env.FINNHUB_API_KEY);
 }
 
 const env = loadEnv();
