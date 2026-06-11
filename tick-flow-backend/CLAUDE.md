@@ -2,7 +2,7 @@
 
 Node.js + TypeScript backend for Tickflow, a stock tracker built as a system-design learning project. <5 users. Timebox ~6 weeks total. When realtime + caching + alerts work, STOP — no gold-plating.
 
-Sibling repo folder: `tick_flow_frontend` (Flutter client). The app talks ONLY to this backend — never to data vendors directly.
+Monorepo: this folder (`tick-flow-backend`) and the Flutter client (`tick_flow_frontend`) live together in the `Tickflow` repo. The app talks ONLY to this backend — never to data vendors directly.
 
 ## Stack
 
