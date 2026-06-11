@@ -5,6 +5,7 @@ import { Redis } from 'ioredis';
 import { buildApp } from './app.js';
 import { loadEnv, type Env } from './config/env.js';
 import { FinnhubClient } from './infrastructure/finnhub-rest.js';
+import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
@@ -34,12 +35,15 @@ const finnhub = new FinnhubClient(env.FINNHUB_API_KEY);
 const quoteService = new QuoteService(new RedisQuoteCache(redis), finnhub);
 const authService = new AuthService(new PrismaUserRepo(prisma), env.JWT_SECRET);
 const watchlistService = new WatchlistService(new PrismaWatchlistRepo(prisma));
+const googleVerifier = env.GOOGLE_CLIENT_ID
+  ? new GoogleAuthLibraryVerifier(env.GOOGLE_CLIENT_ID)
+  : null;
 
 // No consumers yet — the WS fan-out (week 3) and alert engine (week 4) will
 // subscribe through this same instance.
 export const tickSource = createTickSource(env);
 
-const app = buildApp({ authService, quoteService, watchlistService, finnhub });
+const app = buildApp({ authService, googleVerifier, quoteService, watchlistService, finnhub });
 
 const shutdown = async (): Promise<void> => {
   await app.close();

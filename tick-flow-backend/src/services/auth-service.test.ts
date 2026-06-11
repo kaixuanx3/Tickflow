@@ -92,6 +92,36 @@ describe('AuthService', () => {
     );
   });
 
+  it('loginWithGoogle creates a passwordless user on first sign-in', async () => {
+    const { repo, service } = makeService();
+    const verifier = { verify: async () => ({ email: 'Kai@Example.com' }) };
+
+    const result = await service.loginWithGoogle('google-id-token', verifier);
+
+    expect(result.user.email).toBe('kai@example.com');
+    expect(repo.users[0]?.passwordHash).toBeNull();
+    expect(service.verifyToken(result.token)).toEqual({ userId: result.user.id });
+  });
+
+  it('loginWithGoogle links to an existing email/password account', async () => {
+    const { service } = makeService();
+    const registered = await service.register('kai@example.com', 'password123');
+    const verifier = { verify: async () => ({ email: 'kai@example.com' }) };
+
+    const result = await service.loginWithGoogle('google-id-token', verifier);
+
+    expect(result.user.id).toBe(registered.user.id);
+  });
+
+  it('loginWithGoogle rejects tokens the verifier turns down', async () => {
+    const { service } = makeService();
+    const verifier = { verify: async () => null };
+
+    await expect(service.loginWithGoogle('bad-token', verifier)).rejects.toThrow(
+      InvalidCredentialsError,
+    );
+  });
+
   it('verifyToken rejects garbage and foreign-signed tokens', async () => {
     const { service } = makeService();
     const other = new AuthService(new MemoryUserRepo(), 'different-secret');

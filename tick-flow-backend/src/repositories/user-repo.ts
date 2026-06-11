@@ -11,7 +11,7 @@ export class PrismaUserRepo implements UserRepo {
     });
   }
 
-  async create(email: string, passwordHash: string): Promise<UserRecord> {
+  async create(email: string, passwordHash: string | null): Promise<UserRecord> {
     return this.prisma.user.create({
       data: { email, passwordHash },
       select: { id: true, email: true, passwordHash: true },

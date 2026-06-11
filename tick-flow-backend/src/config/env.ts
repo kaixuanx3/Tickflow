@@ -9,6 +9,8 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   FINNHUB_API_KEY: z.string().min(1),
   JWT_SECRET: z.string().min(1),
+  // optional: /auth/google returns 503 until this is configured
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

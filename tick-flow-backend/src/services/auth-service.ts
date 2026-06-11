@@ -9,7 +9,12 @@ export interface UserRecord {
 
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
-  create(email: string, passwordHash: string): Promise<UserRecord>;
+  create(email: string, passwordHash: string | null): Promise<UserRecord>;
+}
+
+/** Implemented by infrastructure (google-auth-library); null = token rejected. */
+export interface GoogleTokenVerifier {
+  verify(idToken: string): Promise<{ email: string } | null>;
 }
 
 export class EmailTakenError extends Error {
@@ -53,6 +58,18 @@ export class AuthService {
     if (!(await bcrypt.compare(password, user.passwordHash))) {
       throw new InvalidCredentialsError();
     }
+    return this.toResult(user);
+  }
+
+  /** Verified Google ID token → find-or-create user by email → our JWT. */
+  async loginWithGoogle(
+    idToken: string,
+    verifier: GoogleTokenVerifier,
+  ): Promise<AuthResult> {
+    const google = await verifier.verify(idToken);
+    if (!google) throw new InvalidCredentialsError();
+    const email = google.email.trim().toLowerCase();
+    const user = (await this.users.findByEmail(email)) ?? (await this.users.create(email, null));
     return this.toResult(user);
   }
 

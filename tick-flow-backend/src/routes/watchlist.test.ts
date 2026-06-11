@@ -53,6 +53,7 @@ describe('watchlist routes (with auth guard)', () => {
     authService = new AuthService(new MemoryUserRepo(), 'test-secret');
     app = buildApp({
       authService,
+      googleVerifier: null,
       watchlistService: new WatchlistService(new MemoryWatchlistRepo()),
       // quote/symbol routes are not exercised in this test
       quoteService: {} as QuoteService,

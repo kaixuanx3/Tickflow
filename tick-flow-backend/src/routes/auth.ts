@@ -4,6 +4,7 @@ import {
   AuthService,
   EmailTakenError,
   InvalidCredentialsError,
+  type GoogleTokenVerifier,
 } from '../services/auth-service.js';
 
 const credentialsSchema = z.object({
@@ -11,7 +12,13 @@ const credentialsSchema = z.object({
   password: z.string().min(8, 'password must be at least 8 characters'),
 });
 
-export function registerAuthRoutes(app: FastifyInstance, authService: AuthService): void {
+const googleSchema = z.object({ idToken: z.string().min(1) });
+
+export function registerAuthRoutes(
+  app: FastifyInstance,
+  authService: AuthService,
+  googleVerifier: GoogleTokenVerifier | null,
+): void {
   app.post('/auth/register', async (req, reply) => {
     const parsed = credentialsSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -38,6 +45,24 @@ export function registerAuthRoutes(app: FastifyInstance, authService: AuthServic
     } catch (err) {
       if (err instanceof InvalidCredentialsError) {
         return reply.code(401).send({ error: err.message });
+      }
+      throw err;
+    }
+  });
+
+  app.post('/auth/google', async (req, reply) => {
+    if (!googleVerifier) {
+      return reply.code(503).send({ error: 'google sign-in not configured' });
+    }
+    const parsed = googleSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: z.prettifyError(parsed.error) });
+    }
+    try {
+      return await authService.loginWithGoogle(parsed.data.idToken, googleVerifier);
+    } catch (err) {
+      if (err instanceof InvalidCredentialsError) {
+        return reply.code(401).send({ error: 'invalid google token' });
       }
       throw err;
     }
