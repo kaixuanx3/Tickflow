@@ -12,7 +12,9 @@ import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
+import { PrismaAlertRepo } from './repositories/alert-repo.js';
 import { RedisSubscriptionStore } from './repositories/subscription-store.js';
+import { AlertService } from './services/alert-service.js';
 import { AuthService } from './services/auth-service.js';
 import { PortfolioService } from './services/portfolio-service.js';
 import { SubscriptionManager } from './services/subscription-manager.js';
@@ -45,6 +47,7 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   ? new GoogleAuthLibraryVerifier(env.GOOGLE_CLIENT_ID)
   : null;
 const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
+const alertService = new AlertService(new PrismaAlertRepo(prisma));
 
 const tickSource = createTickSource(env);
 
@@ -54,6 +57,7 @@ const app = buildApp({
   quoteService,
   watchlistService,
   portfolioService,
+  alertService,
   finnhub,
 });
 

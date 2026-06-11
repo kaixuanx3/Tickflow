@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildApp } from '../app.js';
 import type { FinnhubClient } from '../infrastructure/finnhub-rest.js';
+import type { AlertService } from '../services/alert-service.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
 import type { PortfolioService } from '../services/portfolio-service.js';
 import type { QuoteService } from '../services/quote-service.js';
@@ -56,9 +57,10 @@ describe('watchlist routes (with auth guard)', () => {
       authService,
       googleVerifier: null,
       watchlistService: new WatchlistService(new MemoryWatchlistRepo()),
-      // quote/symbol/portfolio routes are not exercised in this test
+      // routes other than watchlist are not exercised in this test
       quoteService: {} as QuoteService,
       portfolioService: {} as PortfolioService,
+      alertService: {} as AlertService,
       finnhub: {} as FinnhubClient,
     });
   });

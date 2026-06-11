@@ -14,6 +14,40 @@ model User {
   createdAt    DateTime        @default(now())
   watchlist    WatchlistItem[]
   holdings     Holding[]
+  alerts       Alert[]
+}
+
+enum AlertRuleType {
+  price_above
+  price_below
+}
+
+enum AlertKind {
+  one_shot
+  re_arm
+}
+
+enum AlertStatus {
+  active
+  cooldown
+  done
+}
+
+model Alert {
+  id              String        @id @default(cuid())
+  userId          String
+  symbol          String
+  ruleType        AlertRuleType
+  threshold       Float
+  kind            AlertKind     @default(one_shot)
+  status          AlertStatus   @default(active)
+  triggerCount    Int           @default(0)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([symbol, status]) // evaluation runs per tick on (symbol, active|cooldown)
+  @@index([userId])
 }
 
 enum AssetType {
