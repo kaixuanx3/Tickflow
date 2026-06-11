@@ -3,8 +3,28 @@ import { WebSocket } from 'ws';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SimulatedTickSource } from '../infrastructure/simulated-tick-source.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
-import { LocalSubscriptions } from '../services/local-subscriptions.js';
-import { TickWsServer } from './tick-ws-server.js';
+import type { TickSource } from '../services/tick-source.js';
+import { TickWsServer, type SymbolSubscriptions } from './tick-ws-server.js';
+
+// minimal refcounting subscriptions for hub tests (prod uses SubscriptionManager)
+class LocalSubscriptions implements SymbolSubscriptions {
+  private readonly refs = new Map<string, number>();
+  constructor(private readonly tickSource: TickSource) {}
+  async add(symbol: string): Promise<void> {
+    const refs = (this.refs.get(symbol) ?? 0) + 1;
+    this.refs.set(symbol, refs);
+    if (refs === 1) this.tickSource.subscribe(symbol);
+  }
+  async remove(symbol: string): Promise<void> {
+    const refs = (this.refs.get(symbol) ?? 0) - 1;
+    if (refs > 0) {
+      this.refs.set(symbol, refs);
+      return;
+    }
+    this.refs.delete(symbol);
+    this.tickSource.unsubscribe(symbol);
+  }
+}
 
 class MemoryUserRepo implements UserRepo {
   private users: UserRecord[] = [];
