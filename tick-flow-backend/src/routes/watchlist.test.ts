@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildApp } from '../app.js';
 import type { FinnhubClient } from '../infrastructure/finnhub-rest.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
+import type { PortfolioService } from '../services/portfolio-service.js';
 import type { QuoteService } from '../services/quote-service.js';
 import {
   WatchlistService,
@@ -55,8 +56,9 @@ describe('watchlist routes (with auth guard)', () => {
       authService,
       googleVerifier: null,
       watchlistService: new WatchlistService(new MemoryWatchlistRepo()),
-      // quote/symbol routes are not exercised in this test
+      // quote/symbol/portfolio routes are not exercised in this test
       quoteService: {} as QuoteService,
+      portfolioService: {} as PortfolioService,
       finnhub: {} as FinnhubClient,
     });
   });

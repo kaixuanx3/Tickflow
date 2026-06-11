@@ -1,11 +1,7 @@
 import type { FastifyInstance, preHandlerAsyncHookHandler } from 'fastify';
 import { z } from 'zod';
 import type { WatchlistService } from '../services/watchlist-service.js';
-
-const symbolSchema = z
-  .string()
-  .trim()
-  .regex(/^[a-zA-Z0-9.\-]{1,12}$/, 'invalid symbol');
+import { symbolSchema } from './symbol-schema.js';
 
 const bodySchema = z.object({ symbol: symbolSchema });
 const paramsSchema = z.object({ symbol: symbolSchema });

@@ -8,9 +8,11 @@ import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
+import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { AuthService } from './services/auth-service.js';
+import { PortfolioService } from './services/portfolio-service.js';
 import { QuoteService } from './services/quote-service.js';
 import { WatchlistService } from './services/watchlist-service.js';
 import type { TickSource } from './services/tick-source.js';
@@ -38,12 +40,20 @@ const watchlistService = new WatchlistService(new PrismaWatchlistRepo(prisma));
 const googleVerifier = env.GOOGLE_CLIENT_ID
   ? new GoogleAuthLibraryVerifier(env.GOOGLE_CLIENT_ID)
   : null;
+const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
 
 // No consumers yet — the WS fan-out (week 3) and alert engine (week 4) will
 // subscribe through this same instance.
 export const tickSource = createTickSource(env);
 
-const app = buildApp({ authService, googleVerifier, quoteService, watchlistService, finnhub });
+const app = buildApp({
+  authService,
+  googleVerifier,
+  quoteService,
+  watchlistService,
+  portfolioService,
+  finnhub,
+});
 
 const shutdown = async (): Promise<void> => {
   await app.close();

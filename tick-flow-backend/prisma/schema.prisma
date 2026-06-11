@@ -13,6 +13,27 @@ model User {
   passwordHash String? // null once Google-only sign-in exists
   createdAt    DateTime        @default(now())
   watchlist    WatchlistItem[]
+  holdings     Holding[]
+}
+
+enum AssetType {
+  stock
+  etf
+  crypto
+}
+
+// One row per buy lot — the same symbol can appear multiple times per user.
+model Holding {
+  id        String    @id @default(cuid())
+  userId    String
+  symbol    String
+  qty       Float
+  buyPrice  Float
+  assetType AssetType @default(stock)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model WatchlistItem {
