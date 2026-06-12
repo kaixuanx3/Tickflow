@@ -63,6 +63,7 @@ describe('watchlist routes (with auth guard)', () => {
       portfolioService: {} as PortfolioService,
       alertService: {} as AlertService,
       notificationService: {} as NotificationService,
+      candleService: null,
       finnhub: {} as FinnhubClient,
     });
   });

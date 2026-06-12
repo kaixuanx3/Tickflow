@@ -13,6 +13,8 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   // optional: FCM pushes are logged instead of sent until this is configured
   FIREBASE_SERVICE_ACCOUNT_PATH: z.string().min(1).optional(),
+  // optional: /symbols/:symbol/candles returns 503 until this is configured
+  FMP_API_KEY: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

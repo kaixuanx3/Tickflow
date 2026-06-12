@@ -71,6 +71,7 @@ describe('portfolio routes', () => {
       watchlistService: {} as WatchlistService,
       alertService: {} as AlertService,
       notificationService: {} as NotificationService,
+      candleService: null,
       finnhub: {} as FinnhubClient,
     });
   });

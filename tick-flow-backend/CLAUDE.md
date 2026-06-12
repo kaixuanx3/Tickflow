@@ -18,7 +18,7 @@ Monorepo: this folder (`tick-flow-backend`) and the Flutter client (`tick_flow_f
 | Live streaming ticks (price updates as trades happen) | Finnhub **WebSocket** (free: US stocks, ~50 symbols max) | The realtime feed. This is what `TickSource` wraps. |
 | Quote snapshot (current price, day change) | Finnhub REST `/quote` (60 calls/min) | On-demand + polling fallback |
 | Symbol search / symbol list | Finnhub REST | Markets tab browse/search |
-| Historical candles (charts) | **Financial Modeling Prep** (250 calls/day) | Finnhub candles are paid-tier; FMP covers charts |
+| Historical candles (charts) | **Financial Modeling Prep** (250 calls/day; free tier = EOD daily bars only via `/stable/historical-price-eod/full` — intraday intervals are 402/paid) | Finnhub candles are paid-tier; FMP covers charts. 1D range degrades to a 7-day daily view |
 | Company profile / key stats | Finnhub free endpoints, FMP fallback | Detail view |
 
 Cache candles aggressively (hours, not seconds) — 250 calls/day is tiny. All vendor code lives in `src/infrastructure/` so vendors can be swapped without touching services. Quotes are delayed on free tier — the API response includes a `delayed: true` flag for the app to display.

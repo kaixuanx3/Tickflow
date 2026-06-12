@@ -6,11 +6,13 @@ import { buildApp } from './app.js';
 import { loadEnv, type Env } from './config/env.js';
 import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { FinnhubTickSource } from './infrastructure/finnhub-tick-source.js';
+import { FmpClient } from './infrastructure/fmp-client.js';
 import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
 import { BullMqNotificationEnqueuer } from './infrastructure/notification-queue.js';
 import { startNotificationWorker } from './infrastructure/notification-worker.js';
 import { FcmPushSender, LogPushSender } from './infrastructure/push-sender.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
+import { RedisCandleCache } from './repositories/candle-cache.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
@@ -20,6 +22,7 @@ import { PrismaNotificationRepo, PrismaPushTokenRepo } from './repositories/noti
 import { RedisSubscriptionStore } from './repositories/subscription-store.js';
 import { AlertEngine } from './services/alert-engine.js';
 import { AlertService } from './services/alert-service.js';
+import { CandleService } from './services/candle-service.js';
 import { NotificationDelivery, NotificationService } from './services/notifications.js';
 import { AuthService } from './services/auth-service.js';
 import { PortfolioService } from './services/portfolio-service.js';
@@ -89,9 +92,17 @@ await alertEngine.start(subscriptionManager);
 const notificationRepo = new PrismaNotificationRepo(prisma);
 const pushTokenRepo = new PrismaPushTokenRepo(prisma);
 const notificationService = new NotificationService(notificationRepo, pushTokenRepo);
-const pushSender = env.FIREBASE_SERVICE_ACCOUNT_PATH
-  ? new FcmPushSender(env.FIREBASE_SERVICE_ACCOUNT_PATH)
-  : new LogPushSender();
+// A malformed service-account file should degrade to logging, not kill boot
+let pushSender;
+try {
+  pushSender = env.FIREBASE_SERVICE_ACCOUNT_PATH
+    ? new FcmPushSender(env.FIREBASE_SERVICE_ACCOUNT_PATH)
+    : new LogPushSender();
+} catch (err) {
+  console.warn('[push] FCM init failed, falling back to log sender:', (err as Error).message);
+  pushSender = new LogPushSender();
+}
+console.log(`[push] sender: ${pushSender.constructor.name}`);
 const workerRedis = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 workerRedis.on('error', (err) => console.error('[worker-redis]', err.message));
 const notificationWorker = startNotificationWorker(
@@ -107,6 +118,9 @@ const app = buildApp({
   portfolioService,
   alertService,
   notificationService,
+  candleService: env.FMP_API_KEY
+    ? new CandleService(new RedisCandleCache(redis), new FmpClient(env.FMP_API_KEY))
+    : null,
   finnhub,
 });
 

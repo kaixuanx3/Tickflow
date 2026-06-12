@@ -3,6 +3,7 @@ import type { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { makeAuthGuard } from './routes/auth-guard.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerAlertRoutes } from './routes/alerts.js';
+import { registerCandleRoutes } from './routes/candles.js';
 import { registerNotificationRoutes } from './routes/notifications.js';
 import { registerPortfolioRoutes } from './routes/portfolio.js';
 import { registerQuoteRoutes } from './routes/quotes.js';
@@ -10,6 +11,7 @@ import { registerSymbolRoutes } from './routes/symbols.js';
 import { registerWatchlistRoutes } from './routes/watchlist.js';
 import type { AlertService } from './services/alert-service.js';
 import type { AuthService, GoogleTokenVerifier } from './services/auth-service.js';
+import type { CandleService } from './services/candle-service.js';
 import type { NotificationService } from './services/notifications.js';
 import type { PortfolioService } from './services/portfolio-service.js';
 import type { QuoteService } from './services/quote-service.js';
@@ -23,6 +25,7 @@ export interface AppDeps {
   portfolioService: PortfolioService;
   alertService: AlertService;
   notificationService: NotificationService;
+  candleService: CandleService | null;
   finnhub: FinnhubClient;
 }
 
@@ -39,6 +42,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   registerPortfolioRoutes(app, deps.portfolioService, authGuard);
   registerAlertRoutes(app, deps.alertService, authGuard);
   registerNotificationRoutes(app, deps.notificationService, authGuard);
+  registerCandleRoutes(app, deps.candleService);
 
   return app;
 }
