@@ -18,6 +18,9 @@ vendor API keys in the app. Do not change the backend from this project.
 - Staging runs `TICK_SOURCE=sim` (random-walk ticks), so the live feed works 24/7 — including
   Malaysian daytime when US markets are closed. Staging test account: `kai@tickflow.dev`
   (Kai has the password).
+- Railway (trial plan) runs ONE environment only — this staging. There is no prod deployment
+  and none should be created (3-volume cap + limited credit). `main` deploys nowhere; it is a
+  milestone marker.
 - The backend serves CORS allow-all (required for Flutter web).
 - The API base URL comes from `--dart-define=API_URL=...`, read once in `core/env.dart`
   (WS URL is derived from it: `http→ws`, `https→wss`, path `/ws`). Never hardcode URLs.
@@ -168,6 +171,9 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 - One feature folder per tab; cross-feature imports only via `data/` or `core/`.
 - ViewModels get unit tests (fake repositories). Portfolio/alerts widgets get widget tests if time allows.
 - No business logic in widgets. Conventional commits. Prefer the simpler option — learning project.
+- One feature per commit AND push (Kai's rule — never bundle features). Features land on `develop`;
+  at phase milestones merge `develop`→`main` via PR with a MERGE COMMIT (never squash — squashing
+  collapses Kai's contribution history).
 
 ## Commands
 
