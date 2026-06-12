@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String? // null once Google-only sign-in exists
+  createdAt    DateTime        @default(now())
+  watchlist    WatchlistItem[]
+  holdings     Holding[]
+  alerts       Alert[]
+  notifications Notification[]
+  pushTokens   PushToken[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  // BullMQ job id — upsert key so a retried job can't duplicate the feed entry
+  jobId     String   @unique
+  userId    String
+  alertId   String?
+  symbol    String
+  message   String
+  price     Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model PushToken {
+  token     String   @id
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum AlertRuleType {
+  price_above
+  price_below
+}
+
+enum AlertKind {
+  one_shot
+  re_arm
+}
+
+enum AlertStatus {
+  active
+  cooldown
+  done
+}
+
+model Alert {
+  id              String        @id @default(cuid())
+  userId          String
+  symbol          String
+  ruleType        AlertRuleType
+  threshold       Float
+  kind            AlertKind     @default(one_shot)
+  status          AlertStatus   @default(active)
+  triggerCount    Int           @default(0)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime      @default(now())
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([symbol, status]) // evaluation runs per tick on (symbol, active|cooldown)
+  @@index([userId])
+}
+
+enum AssetType {
+  stock
+  etf
+  crypto
+}
+
+// One row per buy lot — the same symbol can appear multiple times per user.
+model Holding {
+  id        String    @id @default(cuid())
+  userId    String
+  symbol    String
+  qty       Float
+  buyPrice  Float
+  assetType AssetType @default(stock)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  symbol    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+}

@@ -38,6 +38,32 @@ interface FinnhubSearchResponse {
   }>;
 }
 
+interface FinnhubProfileResponse {
+  ticker?: string;
+  name?: string;
+  exchange?: string;
+  currency?: string;
+  country?: string;
+  marketCapitalization?: number;
+  ipo?: string;
+  logo?: string;
+  weburl?: string;
+  finnhubIndustry?: string;
+}
+
+export interface CompanyProfile {
+  symbol: string;
+  name: string;
+  exchange: string | null;
+  currency: string | null;
+  country: string | null;
+  marketCap: number | null;
+  ipo: string | null;
+  logo: string | null;
+  website: string | null;
+  industry: string | null;
+}
+
 export class FinnhubClient implements QuoteFetcher {
   constructor(
     private readonly apiKey: string,
@@ -69,6 +95,36 @@ export class FinnhubClient implements QuoteFetcher {
       description: r.description,
       type: r.type,
     }));
+  }
+
+  /** Full US symbol list (~25k rows) — callers must cache this aggressively. */
+  async listSymbols(exchange = 'US'): Promise<SymbolSearchResult[]> {
+    const data = await this.request<FinnhubSearchResponse['result']>('/stock/symbol', {
+      exchange,
+    });
+    return data.map((r) => ({
+      symbol: r.symbol,
+      displaySymbol: r.displaySymbol,
+      description: r.description,
+      type: r.type,
+    }));
+  }
+
+  async getProfile(symbol: string): Promise<CompanyProfile | null> {
+    const data = await this.request<FinnhubProfileResponse>('/stock/profile2', { symbol });
+    if (!data.ticker && !data.name) return null; // Finnhub sends {} for unknowns
+    return {
+      symbol: data.ticker ?? symbol,
+      name: data.name ?? symbol,
+      exchange: data.exchange ?? null,
+      currency: data.currency ?? null,
+      country: data.country ?? null,
+      marketCap: data.marketCapitalization ?? null,
+      ipo: data.ipo ?? null,
+      logo: data.logo ?? null,
+      website: data.weburl ?? null,
+      industry: data.finnhubIndustry ?? null,
+    };
   }
 
   private async request<T>(path: string, params: Record<string, string>): Promise<T> {
