@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { makeAuthGuard } from './routes/auth-guard.js';
@@ -33,6 +34,8 @@ export interface AppDeps {
 
 export function buildApp(deps: AppDeps): FastifyInstance {
   const app = Fastify({ logger: true });
+  // Browser clients (Flutter web) need CORS; API is token-auth, no cookies, so allow-all is fine.
+  app.register(cors, { origin: true });
   const authGuard = makeAuthGuard(deps.authService);
 
   app.get('/health', async () => ({ status: 'ok' }));
