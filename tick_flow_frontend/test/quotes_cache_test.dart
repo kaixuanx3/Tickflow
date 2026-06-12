@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tick_flow_app/data/api/api_client.dart';
 import 'package:tick_flow_app/data/markets/market_models.dart';
 import 'package:tick_flow_app/data/markets/markets_repository.dart';
-import 'package:tick_flow_app/features/markets/viewmodel/quotes_controller.dart';
+import 'package:tick_flow_app/data/markets/quotes_cache.dart';
+import 'package:tick_flow_app/data/ws/tick_socket_service.dart';
 
 class RecordingMarketsRepository implements MarketsRepository {
   final batches = <List<String>>[];
@@ -104,5 +105,30 @@ void main() {
     notifier.request('AAPL');
     await settle();
     expect(container.read(quotesProvider)['AAPL'], isNotNull);
+  });
+
+  test('applyTick updates price, change, extremes and drops delayed', () async {
+    final notifier = container.read(quotesProvider.notifier);
+    notifier.request('AAPL');
+    await settle();
+
+    notifier.applyTick(const Tick(symbol: 'AAPL', price: 2, ts: 99));
+
+    final q = container.read(quotesProvider)['AAPL']!;
+    expect(q.price, 2);
+    expect(q.change, 1);
+    expect(q.changePercent, 100);
+    expect(q.high, 2); // new session high
+    expect(q.low, 1);
+    expect(q.ts, 99);
+    expect(q.delayed, isFalse);
+    expect(q.stale, isFalse);
+  });
+
+  test('applyTick ignores symbols not in the cache', () {
+    container.read(quotesProvider.notifier).applyTick(
+          const Tick(symbol: 'GHOST', price: 5, ts: 1),
+        );
+    expect(container.read(quotesProvider), isEmpty);
   });
 }

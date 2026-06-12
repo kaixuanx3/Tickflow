@@ -5,7 +5,8 @@ import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/market_models.dart';
-import '../../markets/viewmodel/quotes_controller.dart';
+import '../../../data/markets/quotes_cache.dart';
+import '../../../data/markets/symbol_subscriptions.dart';
 import '../viewmodel/symbol_detail_providers.dart';
 import 'candle_chart.dart';
 
@@ -20,13 +21,25 @@ class SymbolDetailScreen extends ConsumerStatefulWidget {
 
 class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
   CandleRange _range = CandleRange.m1;
+  bool _subscribed = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(quotesProvider.notifier).request(widget.symbol);
+      if (!mounted) return;
+      ref.read(quotesProvider.notifier).request(widget.symbol);
+      ref.read(symbolSubscriptionsProvider.notifier).retain(widget.symbol);
+      _subscribed = true;
     });
+  }
+
+  @override
+  void dispose() {
+    if (_subscribed) {
+      ref.read(symbolSubscriptionsProvider.notifier).release(widget.symbol);
+    }
+    super.dispose();
   }
 
   @override

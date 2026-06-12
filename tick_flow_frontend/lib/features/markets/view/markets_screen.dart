@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
+import '../../../data/markets/quotes_cache.dart';
 import '../viewmodel/markets_list_controller.dart';
-import '../viewmodel/quotes_controller.dart';
 import 'symbol_row.dart';
 
 class MarketsScreen extends ConsumerWidget {
