@@ -13,6 +13,7 @@ import { startNotificationWorker } from './infrastructure/notification-worker.js
 import { FcmPushSender, LogPushSender } from './infrastructure/push-sender.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisCandleCache } from './repositories/candle-cache.js';
+import { RedisJsonCache } from './repositories/json-cache.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
@@ -24,6 +25,7 @@ import { AlertEngine } from './services/alert-engine.js';
 import { AlertService } from './services/alert-service.js';
 import { CandleService } from './services/candle-service.js';
 import { NotificationDelivery, NotificationService } from './services/notifications.js';
+import { SymbolDirectoryService } from './services/symbol-directory.js';
 import { AuthService } from './services/auth-service.js';
 import { PortfolioService } from './services/portfolio-service.js';
 import { SubscriptionManager } from './services/subscription-manager.js';
@@ -121,6 +123,7 @@ const app = buildApp({
   candleService: env.FMP_API_KEY
     ? new CandleService(new RedisCandleCache(redis), new FmpClient(env.FMP_API_KEY))
     : null,
+  symbolDirectory: new SymbolDirectoryService(new RedisJsonCache(redis, 'dir'), finnhub),
   finnhub,
 });
 

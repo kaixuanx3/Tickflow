@@ -7,6 +7,7 @@ import { AuthService, type UserRecord, type UserRepo } from '../services/auth-se
 import type { NotificationService } from '../services/notifications.js';
 import type { PortfolioService } from '../services/portfolio-service.js';
 import type { QuoteService } from '../services/quote-service.js';
+import type { SymbolDirectoryService } from '../services/symbol-directory.js';
 import {
   WatchlistService,
   type WatchlistItem,
@@ -64,6 +65,7 @@ describe('watchlist routes (with auth guard)', () => {
       alertService: {} as AlertService,
       notificationService: {} as NotificationService,
       candleService: null,
+      symbolDirectory: {} as SymbolDirectoryService,
       finnhub: {} as FinnhubClient,
     });
   });

@@ -15,6 +15,7 @@ import type { CandleService } from './services/candle-service.js';
 import type { NotificationService } from './services/notifications.js';
 import type { PortfolioService } from './services/portfolio-service.js';
 import type { QuoteService } from './services/quote-service.js';
+import type { SymbolDirectoryService } from './services/symbol-directory.js';
 import type { WatchlistService } from './services/watchlist-service.js';
 
 export interface AppDeps {
@@ -26,6 +27,7 @@ export interface AppDeps {
   alertService: AlertService;
   notificationService: NotificationService;
   candleService: CandleService | null;
+  symbolDirectory: SymbolDirectoryService;
   finnhub: FinnhubClient;
 }
 
@@ -37,7 +39,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
 
   registerAuthRoutes(app, deps.authService, deps.googleVerifier);
   registerQuoteRoutes(app, deps.quoteService);
-  registerSymbolRoutes(app, deps.finnhub);
+  registerSymbolRoutes(app, deps.finnhub, deps.symbolDirectory);
   registerWatchlistRoutes(app, deps.watchlistService, authGuard);
   registerPortfolioRoutes(app, deps.portfolioService, authGuard);
   registerAlertRoutes(app, deps.alertService, authGuard);

@@ -9,3 +9,4 @@ dist/
 # Firebase service-account keys — match at any depth, NEVER commit
 serviceAccountKey.json
 *firebase-adminsdk*.json
+src/config/serviceAccountKey.json
