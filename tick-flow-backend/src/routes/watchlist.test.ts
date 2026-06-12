@@ -4,6 +4,7 @@ import { buildApp } from '../app.js';
 import type { FinnhubClient } from '../infrastructure/finnhub-rest.js';
 import type { AlertService } from '../services/alert-service.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
+import type { NotificationService } from '../services/notifications.js';
 import type { PortfolioService } from '../services/portfolio-service.js';
 import type { QuoteService } from '../services/quote-service.js';
 import {
@@ -61,6 +62,7 @@ describe('watchlist routes (with auth guard)', () => {
       quoteService: {} as QuoteService,
       portfolioService: {} as PortfolioService,
       alertService: {} as AlertService,
+      notificationService: {} as NotificationService,
       finnhub: {} as FinnhubClient,
     });
   });

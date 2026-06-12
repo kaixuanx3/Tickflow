@@ -3,12 +3,14 @@ import type { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { makeAuthGuard } from './routes/auth-guard.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerAlertRoutes } from './routes/alerts.js';
+import { registerNotificationRoutes } from './routes/notifications.js';
 import { registerPortfolioRoutes } from './routes/portfolio.js';
 import { registerQuoteRoutes } from './routes/quotes.js';
 import { registerSymbolRoutes } from './routes/symbols.js';
 import { registerWatchlistRoutes } from './routes/watchlist.js';
 import type { AlertService } from './services/alert-service.js';
 import type { AuthService, GoogleTokenVerifier } from './services/auth-service.js';
+import type { NotificationService } from './services/notifications.js';
 import type { PortfolioService } from './services/portfolio-service.js';
 import type { QuoteService } from './services/quote-service.js';
 import type { WatchlistService } from './services/watchlist-service.js';
@@ -20,6 +22,7 @@ export interface AppDeps {
   watchlistService: WatchlistService;
   portfolioService: PortfolioService;
   alertService: AlertService;
+  notificationService: NotificationService;
   finnhub: FinnhubClient;
 }
 
@@ -35,6 +38,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   registerWatchlistRoutes(app, deps.watchlistService, authGuard);
   registerPortfolioRoutes(app, deps.portfolioService, authGuard);
   registerAlertRoutes(app, deps.alertService, authGuard);
+  registerNotificationRoutes(app, deps.notificationService, authGuard);
 
   return app;
 }

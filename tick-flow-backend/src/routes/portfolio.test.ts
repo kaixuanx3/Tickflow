@@ -4,6 +4,7 @@ import { buildApp } from '../app.js';
 import type { FinnhubClient } from '../infrastructure/finnhub-rest.js';
 import type { AlertService } from '../services/alert-service.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
+import type { NotificationService } from '../services/notifications.js';
 import {
   PortfolioService,
   type Holding,
@@ -69,6 +70,7 @@ describe('portfolio routes', () => {
       quoteService: {} as QuoteService,
       watchlistService: {} as WatchlistService,
       alertService: {} as AlertService,
+      notificationService: {} as NotificationService,
       finnhub: {} as FinnhubClient,
     });
   });

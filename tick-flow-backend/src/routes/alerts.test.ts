@@ -10,6 +10,7 @@ import {
   type AlertRepo,
 } from '../services/alert-service.js';
 import { AuthService, type UserRecord, type UserRepo } from '../services/auth-service.js';
+import type { NotificationService } from '../services/notifications.js';
 import type { PortfolioService } from '../services/portfolio-service.js';
 import type { QuoteService } from '../services/quote-service.js';
 import type { WatchlistService } from '../services/watchlist-service.js';
@@ -76,6 +77,7 @@ describe('alert routes', () => {
       quoteService: {} as QuoteService,
       watchlistService: {} as WatchlistService,
       portfolioService: {} as PortfolioService,
+      notificationService: {} as NotificationService,
       finnhub: {} as FinnhubClient,
     });
   });

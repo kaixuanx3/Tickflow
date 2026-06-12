@@ -15,6 +15,32 @@ model User {
   watchlist    WatchlistItem[]
   holdings     Holding[]
   alerts       Alert[]
+  notifications Notification[]
+  pushTokens   PushToken[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  // BullMQ job id — upsert key so a retried job can't duplicate the feed entry
+  jobId     String   @unique
+  userId    String
+  alertId   String?
+  symbol    String
+  message   String
+  price     Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model PushToken {
+  token     String   @id
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum AlertRuleType {

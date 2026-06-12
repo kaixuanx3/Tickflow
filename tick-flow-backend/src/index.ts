@@ -8,15 +8,19 @@ import { FinnhubClient } from './infrastructure/finnhub-rest.js';
 import { FinnhubTickSource } from './infrastructure/finnhub-tick-source.js';
 import { GoogleAuthLibraryVerifier } from './infrastructure/google-verifier.js';
 import { BullMqNotificationEnqueuer } from './infrastructure/notification-queue.js';
+import { startNotificationWorker } from './infrastructure/notification-worker.js';
+import { FcmPushSender, LogPushSender } from './infrastructure/push-sender.js';
 import { SimulatedTickSource } from './infrastructure/simulated-tick-source.js';
 import { RedisQuoteCache } from './repositories/quote-cache.js';
 import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { PrismaAlertRepo } from './repositories/alert-repo.js';
+import { PrismaNotificationRepo, PrismaPushTokenRepo } from './repositories/notification-repo.js';
 import { RedisSubscriptionStore } from './repositories/subscription-store.js';
 import { AlertEngine } from './services/alert-engine.js';
 import { AlertService } from './services/alert-service.js';
+import { NotificationDelivery, NotificationService } from './services/notifications.js';
 import { AuthService } from './services/auth-service.js';
 import { PortfolioService } from './services/portfolio-service.js';
 import { SubscriptionManager } from './services/subscription-manager.js';
@@ -82,6 +86,19 @@ const alertService = new AlertService(alertRepo, (symbol) => {
 });
 await alertEngine.start(subscriptionManager);
 
+const notificationRepo = new PrismaNotificationRepo(prisma);
+const pushTokenRepo = new PrismaPushTokenRepo(prisma);
+const notificationService = new NotificationService(notificationRepo, pushTokenRepo);
+const pushSender = env.FIREBASE_SERVICE_ACCOUNT_PATH
+  ? new FcmPushSender(env.FIREBASE_SERVICE_ACCOUNT_PATH)
+  : new LogPushSender();
+const workerRedis = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
+workerRedis.on('error', (err) => console.error('[worker-redis]', err.message));
+const notificationWorker = startNotificationWorker(
+  workerRedis,
+  new NotificationDelivery(notificationRepo, pushTokenRepo, pushSender),
+);
+
 const app = buildApp({
   authService,
   googleVerifier,
@@ -89,6 +106,7 @@ const app = buildApp({
   watchlistService,
   portfolioService,
   alertService,
+  notificationService,
   finnhub,
 });
 
@@ -100,8 +118,10 @@ const shutdown = async (): Promise<void> => {
   wsServer.close();
   subscriptionManager.close();
   await app.close();
+  await notificationWorker.close();
   await notificationEnqueuer.close();
   await prisma.$disconnect();
+  workerRedis.disconnect();
   bullRedis.disconnect();
   redis.disconnect();
   process.exit(0);
