@@ -143,8 +143,8 @@ const shutdown = async (): Promise<void> => {
   redis.disconnect();
   process.exit(0);
 };
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on('SIGINT', () => void shutdown());
+process.on('SIGTERM', () => void shutdown());
 
 try {
   await app.listen({ port: env.PORT, host: '0.0.0.0' });

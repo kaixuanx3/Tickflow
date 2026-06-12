@@ -97,7 +97,7 @@ export class FinnhubTickSource implements TickSource {
   private onMessage(raw: string): void {
     let msg: { type?: string; data?: Array<{ s: string; p: number; t: number }> };
     try {
-      msg = JSON.parse(raw);
+      msg = JSON.parse(raw) as typeof msg;
     } catch {
       return; // not our problem; ignore
     }

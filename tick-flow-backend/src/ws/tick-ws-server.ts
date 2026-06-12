@@ -53,7 +53,8 @@ export class TickWsServer {
     const authTimer = setTimeout(() => ws.close(CLOSE_UNAUTHORIZED, 'auth timeout'), this.authTimeoutMs);
 
     ws.on('message', (raw) => {
-      void this.onMessage(ws, raw.toString(), authTimer);
+      // RawData is Buffer | ArrayBuffer | Buffer[]; ws delivers Buffer by default
+      void this.onMessage(ws, (raw as Buffer).toString('utf8'), authTimer);
     });
     ws.on('close', () => {
       clearTimeout(authTimer);

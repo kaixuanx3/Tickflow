@@ -94,7 +94,7 @@ describe('TickWsServer', () => {
     new Promise((resolve, reject) => {
       const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`);
       const messages: Array<Record<string, unknown>> = [];
-      ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
+      ws.on('message', (raw) => messages.push(JSON.parse((raw as Buffer).toString('utf8'))));
       const closed = new Promise<number>((res) => ws.on('close', (code) => res(code)));
       ws.on('open', () => resolve({ ws, messages, closed }));
       ws.on('error', reject);

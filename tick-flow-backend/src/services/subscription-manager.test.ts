@@ -21,7 +21,7 @@ class FakeTickSource implements TickSource {
 }
 
 const fakeQuotes = {
-  getQuote: vi.fn(async (symbol: string) => ({ price: 123.45, ts: 1_000 })),
+  getQuote: vi.fn(async (_symbol: string) => ({ price: 123.45, ts: 1_000 })),
 };
 
 describe('SubscriptionManager', () => {

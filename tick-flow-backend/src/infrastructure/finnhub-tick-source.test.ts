@@ -7,9 +7,11 @@ class FakeWs implements WsLike {
   sent: string[] = [];
   private handlers = new Map<string, Array<(arg?: unknown) => void>>();
 
-  on(event: string, cb: (arg?: unknown) => void): void {
+  on(event: 'open' | 'close' | 'error', cb: () => void): void;
+  on(event: 'message', cb: (raw: { toString(): string }) => void): void;
+  on(event: string, cb: (raw: { toString(): string }) => void): void {
     const list = this.handlers.get(event) ?? [];
-    list.push(cb);
+    list.push(cb as (arg?: unknown) => void);
     this.handlers.set(event, list);
   }
 

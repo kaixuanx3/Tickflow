@@ -4,4 +4,4 @@ import { z } from 'zod';
 export const symbolSchema = z
   .string()
   .trim()
-  .regex(/^[a-zA-Z0-9.\-]{1,12}$/, 'invalid symbol');
+  .regex(/^[a-zA-Z0-9.-]{1,12}$/, 'invalid symbol');
