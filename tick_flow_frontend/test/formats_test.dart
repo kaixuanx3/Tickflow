@@ -13,6 +13,18 @@ void main() {
     expect(formatPercent(null), '—');
   });
 
+  test('formatSignedMoney always shows the sign', () {
+    expect(formatSignedMoney(5), r'+$5.00');
+    expect(formatSignedMoney(-4.88), r'-$4.88');
+    expect(formatSignedMoney(null), '—');
+  });
+
+  test('formatQty trims trailing zeros', () {
+    expect(formatQty(2), '2');
+    expect(formatQty(0.5), '0.5');
+    expect(formatQty(1234.5678), '1,234.5678');
+  });
+
   test('formatMarketCapMillions treats input as millions', () {
     expect(formatMarketCapMillions(4342022.98), r'$4.34T');
     expect(formatMarketCapMillions(950), r'$950M');
