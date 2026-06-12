@@ -6,12 +6,14 @@ import '../features/auth/view/login_screen.dart';
 import '../features/auth/viewmodel/auth_controller.dart';
 import '../features/favourites/view/favourites_screen.dart';
 import '../features/markets/view/markets_screen.dart';
+import '../features/markets/view/search_screen.dart';
 import '../features/menu/view/menu_screen.dart';
 import '../features/notifications/view/notifications_screen.dart';
 import '../features/portfolio/view/portfolio_screen.dart';
 import 'widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final rootNavigatorKey = GlobalKey<NavigatorState>();
   // Re-run redirect whenever the session changes (sign-in/out, restore done).
   final refresh = ValueNotifier(0);
   ref
@@ -19,6 +21,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     ..listen(authControllerProvider, (_, _) => refresh.value++);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/markets',
     refreshListenable: refresh,
     redirect: (context, state) {
@@ -33,6 +36,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      // Pushed over the tab shell (root navigator), so the bottom bar hides.
+      GoRoute(
+        path: '/search',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const SearchScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
         branches: [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
 import '../viewmodel/markets_list_controller.dart';
@@ -13,7 +14,16 @@ class MarketsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final markets = ref.watch(marketsListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Markets')),
+      appBar: AppBar(
+        title: const Text('Markets'),
+        actions: [
+          IconButton(
+            tooltip: 'Search',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+        ],
+      ),
       body: markets.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorRetry(

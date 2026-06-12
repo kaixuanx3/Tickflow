@@ -42,6 +42,9 @@ class FakeMarketsRepository implements MarketsRepository {
 
   @override
   Future<List<Quote>> fetchQuotes(List<String> symbols) async => const [];
+
+  @override
+  Future<List<SymbolInfo>> search(String query) => throw UnimplementedError();
 }
 
 ProviderContainer makeContainer(FakeMarketsRepository repo) {

@@ -19,6 +19,18 @@ class MarketsRepository {
     }
   }
 
+  Future<List<SymbolInfo>> search(String query) async {
+    try {
+      final res = await _dio
+          .get<Map<String, dynamic>>('/symbols/search', queryParameters: {'q': query});
+      return (res.data!['results'] as List)
+          .map((s) => SymbolInfo.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
   /// Batched; the backend caps at 50 symbols per call. Unknown symbols are
   /// simply absent from the response.
   Future<List<Quote>> fetchQuotes(List<String> symbols) async {
