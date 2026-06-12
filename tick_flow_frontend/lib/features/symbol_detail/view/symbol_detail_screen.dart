@@ -5,9 +5,10 @@ import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/market_models.dart';
+import '../../../core/widgets/star_button.dart';
+import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
-import '../viewmodel/symbol_detail_providers.dart';
 import 'candle_chart.dart';
 
 class SymbolDetailScreen extends ConsumerStatefulWidget {
@@ -51,7 +52,10 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
     final candles = ref.watch(candlesProvider(candlesKey));
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.symbol)),
+      appBar: AppBar(
+        title: Text(widget.symbol),
+        actions: [StarButton(symbol: widget.symbol)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

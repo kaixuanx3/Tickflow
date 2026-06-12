@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/star_button.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
@@ -55,13 +56,17 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: quote == null
-          ? Text(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (quote == null)
+            Text(
               '—',
               style: theme.textTheme.bodyLarge
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             )
-          : Column(
+          else
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -78,6 +83,10 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
                 ),
               ],
             ),
+          const SizedBox(width: 4),
+          StarButton(symbol: widget.info.symbol),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/markets/market_models.dart';
-import '../../../data/markets/markets_repository.dart';
+import 'market_models.dart';
+import 'markets_repository.dart';
 
 final profileProvider = FutureProvider.autoDispose.family<CompanyProfile, String>(
   (ref, symbol) => ref.watch(marketsRepositoryProvider).fetchProfile(symbol),
