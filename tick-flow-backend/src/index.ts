@@ -94,12 +94,16 @@ await alertEngine.start(subscriptionManager);
 const notificationRepo = new PrismaNotificationRepo(prisma);
 const pushTokenRepo = new PrismaPushTokenRepo(prisma);
 const notificationService = new NotificationService(notificationRepo, pushTokenRepo);
-// A malformed service-account file should degrade to logging, not kill boot
+// A malformed service-account credential should degrade to logging, not kill boot
 let pushSender;
 try {
-  pushSender = env.FIREBASE_SERVICE_ACCOUNT_PATH
-    ? new FcmPushSender(env.FIREBASE_SERVICE_ACCOUNT_PATH)
-    : new LogPushSender();
+  if (env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    pushSender = new FcmPushSender(JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON) as object);
+  } else if (env.FIREBASE_SERVICE_ACCOUNT_PATH) {
+    pushSender = new FcmPushSender(env.FIREBASE_SERVICE_ACCOUNT_PATH);
+  } else {
+    pushSender = new LogPushSender();
+  }
 } catch (err) {
   console.warn('[push] FCM init failed, falling back to log sender:', (err as Error).message);
   pushSender = new LogPushSender();

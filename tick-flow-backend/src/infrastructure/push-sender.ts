@@ -10,8 +10,9 @@ const GONE_TOKEN_CODES = new Set([
 export class FcmPushSender implements PushSender {
   private readonly messaging: Messaging;
 
-  constructor(serviceAccountPath: string) {
-    this.messaging = getMessaging(initializeApp({ credential: cert(serviceAccountPath) }));
+  /** Accepts a path to the service-account file, or its parsed JSON content. */
+  constructor(serviceAccount: string | object) {
+    this.messaging = getMessaging(initializeApp({ credential: cert(serviceAccount) }));
   }
 
   async send(

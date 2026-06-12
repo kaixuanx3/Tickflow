@@ -11,8 +11,11 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1),
   // optional: /auth/google returns 503 until this is configured
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
-  // optional: FCM pushes are logged instead of sent until this is configured
+  // optional: FCM pushes are logged instead of sent until one of these is set.
+  // PATH suits local dev; JSON (the whole file as one env var) suits Railway,
+  // where there's no filesystem to point a path at.
   FIREBASE_SERVICE_ACCOUNT_PATH: z.string().min(1).optional(),
+  FIREBASE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),
   // optional: /symbols/:symbol/candles returns 503 until this is configured
   FMP_API_KEY: z.string().min(1).optional(),
 });
