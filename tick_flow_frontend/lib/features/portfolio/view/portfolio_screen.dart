@@ -6,6 +6,7 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/portfolio_controller.dart';
+import 'allocation_card.dart';
 import 'holding_sheet.dart';
 
 class PortfolioScreen extends ConsumerWidget {
@@ -34,6 +35,7 @@ class PortfolioScreen extends ConsumerWidget {
                 child: ListView(
                   children: [
                     _TotalsCard(summary: s),
+                    AllocationCard(summary: s),
                     if (s.incomplete) const _IncompleteBanner(),
                     for (final h in s.holdings) _HoldingRow(holding: h),
                     const SizedBox(height: 80), // FAB clearance
