@@ -28,6 +28,13 @@ class SearchFakeRepository implements MarketsRepository {
 
   @override
   Future<List<Quote>> fetchQuotes(List<String> symbols) => throw UnimplementedError();
+
+  @override
+  Future<CompanyProfile> fetchProfile(String symbol) => throw UnimplementedError();
+
+  @override
+  Future<CandleSeries> fetchCandles(String symbol, CandleRange range) =>
+      throw UnimplementedError();
 }
 
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 400));

@@ -47,6 +47,27 @@ class MarketsRepository {
       throw toApiException(e);
     }
   }
+
+  Future<CompanyProfile> fetchProfile(String symbol) async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>('/symbols/$symbol/profile');
+      return CompanyProfile.fromJson(res.data!);
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
+  Future<CandleSeries> fetchCandles(String symbol, CandleRange range) async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        '/symbols/$symbol/candles',
+        queryParameters: {'range': range.api},
+      );
+      return CandleSeries.fromJson(res.data!);
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
 }
 
 final marketsRepositoryProvider =

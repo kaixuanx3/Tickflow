@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
 import '../viewmodel/symbol_search_controller.dart';
@@ -72,7 +73,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     )
                   : ListView.builder(
                       itemCount: list.length,
-                      itemBuilder: (_, i) => SymbolRow(info: list[i]),
+                      itemBuilder: (context, i) => SymbolRow(
+                        info: list[i],
+                        onTap: () => context.push('/symbol/${list[i].symbol}'),
+                      ),
                     ),
             ),
     );

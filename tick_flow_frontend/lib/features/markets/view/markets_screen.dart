@@ -82,7 +82,11 @@ class _SymbolList extends ConsumerWidget {
               i--;
             }
             if (i < state.symbols.length) {
-              return SymbolRow(info: state.symbols[i]);
+              final info = state.symbols[i];
+              return SymbolRow(
+                info: info,
+                onTap: () => context.push('/symbol/${info.symbol}'),
+              );
             }
             return _LoadMoreFooter(failed: state.loadMoreFailed);
           },

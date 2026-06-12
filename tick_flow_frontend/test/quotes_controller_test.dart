@@ -36,6 +36,13 @@ class RecordingMarketsRepository implements MarketsRepository {
 
   @override
   Future<List<SymbolInfo>> search(String query) => throw UnimplementedError();
+
+  @override
+  Future<CompanyProfile> fetchProfile(String symbol) => throw UnimplementedError();
+
+  @override
+  Future<CandleSeries> fetchCandles(String symbol, CandleRange range) =>
+      throw UnimplementedError();
 }
 
 Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 400));

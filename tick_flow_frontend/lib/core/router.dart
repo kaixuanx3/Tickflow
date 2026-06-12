@@ -10,6 +10,7 @@ import '../features/markets/view/search_screen.dart';
 import '../features/menu/view/menu_screen.dart';
 import '../features/notifications/view/notifications_screen.dart';
 import '../features/portfolio/view/portfolio_screen.dart';
+import '../features/symbol_detail/view/symbol_detail_screen.dart';
 import 'widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -41,6 +42,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/search',
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, _) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/symbol/:symbol',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, state) =>
+            SymbolDetailScreen(symbol: state.pathParameters['symbol']!),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),

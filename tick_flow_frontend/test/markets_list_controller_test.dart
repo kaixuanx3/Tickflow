@@ -45,6 +45,13 @@ class FakeMarketsRepository implements MarketsRepository {
 
   @override
   Future<List<SymbolInfo>> search(String query) => throw UnimplementedError();
+
+  @override
+  Future<CompanyProfile> fetchProfile(String symbol) => throw UnimplementedError();
+
+  @override
+  Future<CandleSeries> fetchCandles(String symbol, CandleRange range) =>
+      throw UnimplementedError();
 }
 
 ProviderContainer makeContainer(FakeMarketsRepository repo) {
