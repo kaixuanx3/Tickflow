@@ -36,7 +36,7 @@ class AppShell extends ConsumerWidget {
           NavigationDestination(
             icon: Icon(Icons.notifications_none),
             selectedIcon: Icon(Icons.notifications),
-            label: 'Notifications',
+            label: 'Alerts',
           ),
           NavigationDestination(icon: Icon(Icons.menu), label: 'Menu'),
         ],
