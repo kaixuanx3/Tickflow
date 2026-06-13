@@ -3,7 +3,7 @@
     "short_name": "Tickflow",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#030509",
+    "background_color": "#000000",
     "theme_color": "#1E40AF",
     "description": "Tickflow — track US stocks in real time: watchlist, portfolio and price alerts.",
     "orientation": "any",
