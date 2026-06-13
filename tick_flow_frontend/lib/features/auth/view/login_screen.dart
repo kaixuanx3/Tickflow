@@ -64,18 +64,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Center(
                       child: Container(
-                        width: 88,
-                        height: 88,
-                        // The mark is a light-to-dark metallic gradient; its
-                        // native dark backdrop keeps it legible in both themes.
+                        width: 96,
+                        height: 96,
+                        clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF030509),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(22),
                           border: Border.all(color: theme.colorScheme.outlineVariant),
                         ),
-                        padding: const EdgeInsets.all(14),
                         child: Image.asset(
-                          'assets/icon/logo_mark.png',
+                          'assets/icon/app_icon.png',
+                          fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => Icon(
                             Icons.candlestick_chart,
                             size: 56,
