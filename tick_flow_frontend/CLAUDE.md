@@ -163,8 +163,8 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 3. ✅ WS tick service + live prices on Markets/Detail; Favourites tab (watchlist + sparklines).
 4. ✅ Portfolio (holdings CRUD + summary + donut).
 5. ✅ Alerts + Notifications feed.
-6. Polish (delayed/stale badges everywhere, empty/error states), deploy web, then optional
-   extras (FCM, Drift) only if time remains.
+6. ✅ Polish (delayed/stale badges, empty/error states, REST 401 → login) + web deploy
+   readiness (Firebase Hosting). Optional extras (FCM, Drift) remain, only if time allows.
 
 ## Conventions
 
@@ -182,4 +182,5 @@ flutter run -d chrome --dart-define=API_URL=https://tickflow-staging.up.railway.
 flutter run -d chrome --dart-define=API_URL=http://localhost:3000                    # against local backend
 flutter analyze && flutter test
 flutter build web --release --dart-define=API_URL=<url>
+firebase deploy --only hosting   # after build; config in firebase.json, project tickflow-dev
 ```

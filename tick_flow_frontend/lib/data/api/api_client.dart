@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/env.dart';
+import '../auth/session_events.dart';
 import '../auth/token_storage.dart';
 
 /// Backend errors are always `{error: string}` with a proper status code.
@@ -38,6 +39,16 @@ final dioProvider = Provider<Dio>((ref) {
         final token = await storage.readToken();
         if (token != null) options.headers['Authorization'] = 'Bearer $token';
         handler.next(options);
+      },
+      onError: (e, handler) {
+        // A 401 on a request that carried a token means the JWT was rejected
+        // (expired/invalid) — drop the session so the router lands on login.
+        // Login/register carry no token, so failed attempts aren't caught here.
+        if (e.response?.statusCode == 401 &&
+            e.requestOptions.headers.containsKey('Authorization')) {
+          ref.read(sessionExpiredProvider.notifier).expired();
+        }
+        handler.next(e);
       },
     ),
   );
