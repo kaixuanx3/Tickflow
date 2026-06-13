@@ -38,8 +38,8 @@ flutter test
 
 ## Deploy (Flutter web → Firebase Hosting)
 
-Hosting config lives in `firebase.json`; the default project is `tickflow-dev`
-(`.firebaserc`). One-time: `npm i -g firebase-tools` and `firebase login`.
+Live at **https://tickflow-dev.web.app**. Hosting config lives in `firebase.json`; the default
+project is `tickflow-dev` (`.firebaserc`). One-time: `npm i -g firebase-tools` and `firebase login`.
 
 ```bash
 flutter build web --release --dart-define=API_URL=https://tickflow-staging.up.railway.app

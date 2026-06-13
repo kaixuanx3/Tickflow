@@ -1,6 +1,7 @@
 # Tickflow
 
-Realtime US stock tracker built as a system-design learning project. Monorepo:
+Realtime US stock tracker built as a system-design learning project.
+**Live demo:** https://tickflow-dev.web.app (against staging — simulated ticks; sign in with `kai@tickflow.dev` or register). Monorepo:
 
 | Folder | What |
 |---|---|
@@ -63,4 +64,4 @@ The API base URL is passed at build time via `--dart-define=API_URL=...` (the We
 - `develop` → **staging** on Railway (always on, `TICK_SOURCE=sim` so the live feed works 24/7). This is the only running environment on the current plan; `main` is a milestone/release branch and does **not** auto-deploy anywhere.
 - GitHub Actions runs lint + typecheck + tests + build on every PR and push.
 - **Backend deploy:** Railway, service root `tick-flow-backend/`.
-- **Frontend deploy:** `flutter build web --release --dart-define=API_URL=<url>` then `firebase deploy --only hosting` (config in [`tick_flow_frontend/firebase.json`](tick_flow_frontend/firebase.json)).
+- **Frontend deploy:** `flutter build web --release --dart-define=API_URL=<url>` then `firebase deploy --only hosting` (config in [`tick_flow_frontend/firebase.json`](tick_flow_frontend/firebase.json)) — live at https://tickflow-dev.web.app.
