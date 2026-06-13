@@ -30,6 +30,11 @@ class AuthController extends AsyncNotifier<AuthUser?> {
     await ref.read(authRepositoryProvider).signOut();
     state = const AsyncData(null);
   }
+
+  Future<void> deleteAccount() async {
+    await ref.read(authRepositoryProvider).deleteAccount();
+    state = const AsyncData(null);
+  }
 }
 
 final authControllerProvider =
