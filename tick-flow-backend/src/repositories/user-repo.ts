@@ -17,4 +17,10 @@ export class PrismaUserRepo implements UserRepo {
       select: { id: true, email: true, passwordHash: true },
     });
   }
+
+  async delete(userId: string): Promise<void> {
+    // deleteMany so a stale token (user already gone) is a no-op, not a throw.
+    // Related rows are removed by the DB's ON DELETE CASCADE foreign keys.
+    await this.prisma.user.deleteMany({ where: { id: userId } });
+  }
 }

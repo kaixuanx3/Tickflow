@@ -41,7 +41,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
 
   app.get('/health', async () => ({ status: 'ok' }));
 
-  registerAuthRoutes(app, deps.authService, deps.googleVerifier);
+  registerAuthRoutes(app, deps.authService, deps.googleVerifier, authGuard);
   registerQuoteRoutes(app, deps.quoteService);
   registerSymbolRoutes(app, deps.finnhub, deps.symbolDirectory);
   registerWatchlistRoutes(app, deps.watchlistService, authGuard);

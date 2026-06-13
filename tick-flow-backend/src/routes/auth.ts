@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, preHandlerAsyncHookHandler } from 'fastify';
 import { z } from 'zod';
 import {
   AuthService,
@@ -18,6 +18,7 @@ export function registerAuthRoutes(
   app: FastifyInstance,
   authService: AuthService,
   googleVerifier: GoogleTokenVerifier | null,
+  authGuard: preHandlerAsyncHookHandler,
 ): void {
   app.post('/auth/register', async (req, reply) => {
     const parsed = credentialsSchema.safeParse(req.body);
@@ -66,5 +67,11 @@ export function registerAuthRoutes(
       }
       throw err;
     }
+  });
+
+  // Delete the authenticated account and all its data (cascade). Idempotent.
+  app.delete('/auth/me', { preHandler: authGuard }, async (req, reply) => {
+    await authService.deleteAccount(req.userId);
+    return reply.code(204).send();
   });
 }

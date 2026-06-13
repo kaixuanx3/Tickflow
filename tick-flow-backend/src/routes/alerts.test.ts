@@ -26,6 +26,9 @@ class MemoryUserRepo implements UserRepo {
     this.users.push(user);
     return user;
   }
+  async delete(userId: string): Promise<void> {
+    this.users = this.users.filter((u) => u.id !== userId);
+  }
 }
 
 export class MemoryAlertRepo implements AlertRepo {
