@@ -57,19 +57,19 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
 
 # App icon generation: `dart run flutter_launcher_icons`.
-# Source is an opaque dark (#030509) square, so iOS/adaptive need no alpha handling.
+# Source is an opaque pure-black (#000000) square, so iOS/adaptive need no alpha handling.
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
   android: true
-  adaptive_icon_background: "#030509"
+  adaptive_icon_background: "#000000"
   adaptive_icon_foreground: "assets/icon/app_icon.png"
   ios: true
   remove_alpha_ios: true
-  background_color_ios: "#030509"
+  background_color_ios: "#000000"
   web:
     generate: true
     image_path: "assets/icon/app_icon.png"
-    background_color: "#030509"
+    background_color: "#000000"
     theme_color: "#1E40AF"
 
 # For information on the generic Dart part of this file, see the
