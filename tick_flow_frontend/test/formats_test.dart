@@ -30,4 +30,13 @@ void main() {
     expect(formatMarketCapMillions(950), r'$950M');
     expect(formatMarketCapMillions(null), '—');
   });
+
+  test('formatRelative buckets durations', () {
+    final now = DateTime(2026, 6, 12, 12);
+    expect(formatRelative(now.subtract(const Duration(seconds: 5)), now: now), 'just now');
+    expect(formatRelative(now.subtract(const Duration(minutes: 3)), now: now), '3m ago');
+    expect(formatRelative(now.subtract(const Duration(hours: 2)), now: now), '2h ago');
+    expect(formatRelative(now.subtract(const Duration(days: 3)), now: now), '3d ago');
+    expect(formatRelative(now.subtract(const Duration(days: 30)), now: now), '13 May');
+  });
 }

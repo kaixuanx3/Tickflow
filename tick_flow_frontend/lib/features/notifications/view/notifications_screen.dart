@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/formats.dart';
-import '../../../core/widgets/coming_soon.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/alerts/alert_models.dart';
 import '../../../data/api/api_client.dart';
+import '../../../data/notifications/notification_models.dart';
 import '../viewmodel/alerts_controller.dart';
+import '../viewmodel/notifications_feed_controller.dart';
 import 'alert_sheet.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -29,14 +31,7 @@ class NotificationsScreen extends StatelessWidget {
           child: const Icon(Icons.add_alert),
         ),
         body: const TabBarView(
-          children: [
-            _AlertsTab(),
-            ComingSoon(
-              icon: Icons.notifications_none,
-              title: 'Triggered',
-              message: 'The triggered-alert feed lands in the next push.',
-            ),
-          ],
+          children: [_AlertsTab(), _TriggeredTab()],
         ),
       ),
     );
@@ -144,6 +139,81 @@ class _AlertRow extends ConsumerWidget {
               },
               child: const Text('Re-arm'),
             ),
+    );
+  }
+}
+
+class _TriggeredTab extends ConsumerWidget {
+  const _TriggeredTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final feed = ref.watch(notificationsFeedProvider);
+
+    return feed.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => ErrorRetry(
+        message: '$e',
+        onRetry: () => ref.invalidate(notificationsFeedProvider),
+      ),
+      data: (items) {
+        if (items.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.notifications_none,
+                      size: 48, color: theme.colorScheme.onSurfaceVariant),
+                  const SizedBox(height: 12),
+                  Text('Nothing triggered yet', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(
+                    'When one of your alerts fires, it shows up here.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(notificationsFeedProvider.future),
+          child: ListView.builder(
+            padding: const EdgeInsets.only(bottom: 80), // FAB clearance
+            itemCount: items.length,
+            itemBuilder: (_, i) => _NotificationRow(item: items[i]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _NotificationRow extends StatelessWidget {
+  const _NotificationRow({required this.item});
+
+  final TriggeredNotification item;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      onTap: () => context.push('/symbol/${item.symbol}'),
+      leading: CircleAvatar(
+        backgroundColor: theme.colorScheme.secondaryContainer,
+        child: Icon(
+          Icons.notifications_active,
+          size: 20,
+          color: theme.colorScheme.onSecondaryContainer,
+        ),
+      ),
+      title: Text(item.message),
+      subtitle: Text(formatRelative(item.createdAt)),
     );
   }
 }

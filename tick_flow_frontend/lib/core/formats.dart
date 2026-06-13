@@ -23,3 +23,15 @@ final _compactMoney = NumberFormat.compactCurrency(symbol: r'$');
 /// The backend relays Finnhub market caps, which are in MILLIONS of USD.
 String formatMarketCapMillions(num? millions) =>
     millions == null ? '—' : _compactMoney.format(millions * 1e6);
+
+final _dayMonth = DateFormat('d MMM');
+
+/// Compact "time ago" for feeds. [now] is injectable for tests.
+String formatRelative(DateTime time, {DateTime? now}) {
+  final diff = (now ?? DateTime.now()).difference(time);
+  if (diff.isNegative || diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  return _dayMonth.format(time);
+}
