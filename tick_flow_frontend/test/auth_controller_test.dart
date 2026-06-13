@@ -27,6 +27,9 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async => stored = null;
+
+  @override
+  Future<void> deleteAccount() async => stored = null;
 }
 
 ProviderContainer makeContainer(FakeAuthRepository repo) {
@@ -74,6 +77,15 @@ void main() {
     );
     await container.read(authControllerProvider.future);
     await container.read(authControllerProvider.notifier).signOut();
+    expect(container.read(authControllerProvider).value, isNull);
+  });
+
+  test('deleteAccount clears the session', () async {
+    final container = makeContainer(
+      FakeAuthRepository(stored: const AuthUser(id: '1', email: 'kai@tickflow.dev')),
+    );
+    await container.read(authControllerProvider.future);
+    await container.read(authControllerProvider.notifier).deleteAccount();
     expect(container.read(authControllerProvider).value, isNull);
   });
 

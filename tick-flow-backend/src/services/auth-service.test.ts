@@ -20,6 +20,10 @@ class MemoryUserRepo implements UserRepo {
     this.users.push(user);
     return user;
   }
+
+  async delete(userId: string): Promise<void> {
+    this.users = this.users.filter((u) => u.id !== userId);
+  }
 }
 
 const makeService = () => {
@@ -120,6 +124,23 @@ describe('AuthService', () => {
     await expect(service.loginWithGoogle('bad-token', verifier)).rejects.toThrow(
       InvalidCredentialsError,
     );
+  });
+
+  it('deleteAccount removes the user so the credentials no longer work', async () => {
+    const { repo, service } = makeService();
+    const registered = await service.register('kai@example.com', 'password123');
+
+    await service.deleteAccount(registered.user.id);
+
+    expect(repo.users).toHaveLength(0);
+    await expect(service.login('kai@example.com', 'password123')).rejects.toThrow(
+      InvalidCredentialsError,
+    );
+  });
+
+  it('deleteAccount is idempotent for an unknown id', async () => {
+    const { service } = makeService();
+    await expect(service.deleteAccount('does-not-exist')).resolves.toBeUndefined();
   });
 
   it('verifyToken rejects garbage and foreign-signed tokens', async () => {

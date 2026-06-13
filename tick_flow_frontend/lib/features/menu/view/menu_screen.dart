@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme_mode.dart';
+import '../../../data/api/api_client.dart';
 import '../../auth/viewmodel/auth_controller.dart';
 
 class MenuScreen extends ConsumerWidget {
@@ -70,12 +71,57 @@ class MenuScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
-            leading: Icon(Icons.logout, color: theme.colorScheme.error),
-            title: Text('Sign out', style: TextStyle(color: theme.colorScheme.error)),
+            leading: const Icon(Icons.logout),
+            title: const Text('Sign out'),
             onTap: () => ref.read(authControllerProvider.notifier).signOut(),
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.delete_forever, color: theme.colorScheme.error),
+            title: Text('Delete account', style: TextStyle(color: theme.colorScheme.error)),
+            subtitle: const Text('Permanently removes your account and all its data'),
+            onTap: () => _confirmDelete(context, ref),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: const Text(
+          'This permanently deletes your account, watchlist, portfolio, alerts '
+          'and notifications. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      // On success the session clears and the router redirects to login.
+      await ref.read(authControllerProvider.notifier).deleteAccount();
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e is ApiException ? e.message : 'Could not delete account'),
+        ),
+      );
+    }
   }
 }

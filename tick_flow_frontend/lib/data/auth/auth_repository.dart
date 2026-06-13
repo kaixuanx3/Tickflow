@@ -25,6 +25,17 @@ class AuthRepository {
 
   Future<void> signOut() => _storage.clear();
 
+  /// Deletes the account server-side (cascades all data), then clears the
+  /// local session. On failure the token is kept so the user stays signed in.
+  Future<void> deleteAccount() async {
+    try {
+      await _dio.delete<void>('/auth/me');
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+    await _storage.clear();
+  }
+
   Future<AuthUser> _authenticate(String path, String email, String password) async {
     try {
       final res = await _dio.post<Map<String, dynamic>>(

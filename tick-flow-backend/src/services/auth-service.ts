@@ -10,6 +10,8 @@ export interface UserRecord {
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
   create(email: string, passwordHash: string | null): Promise<UserRecord>;
+  /** Idempotent; related rows cascade via the schema's onDelete: Cascade. */
+  delete(userId: string): Promise<void>;
 }
 
 /** Implemented by infrastructure (google-auth-library); null = token rejected. */
@@ -71,6 +73,11 @@ export class AuthService {
     const email = google.email.trim().toLowerCase();
     const user = (await this.users.findByEmail(email)) ?? (await this.users.create(email, null));
     return this.toResult(user);
+  }
+
+  /** Deletes the account and all its data (cascade). Idempotent. */
+  async deleteAccount(userId: string): Promise<void> {
+    await this.users.delete(userId);
   }
 
   /** Same JWT for REST and the WS auth message. */

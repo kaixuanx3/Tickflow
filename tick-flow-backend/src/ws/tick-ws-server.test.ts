@@ -36,6 +36,9 @@ class MemoryUserRepo implements UserRepo {
     this.users.push(user);
     return user;
   }
+  async delete(userId: string): Promise<void> {
+    this.users = this.users.filter((u) => u.id !== userId);
+  }
 }
 
 const waitFor = <T>(check: () => T | undefined, timeoutMs = 2000): Promise<T> =>
