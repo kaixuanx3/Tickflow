@@ -13,9 +13,30 @@ void main() {
     expect(formatPercent(null), '—');
   });
 
+  test('formatSignedMoney always shows the sign', () {
+    expect(formatSignedMoney(5), r'+$5.00');
+    expect(formatSignedMoney(-4.88), r'-$4.88');
+    expect(formatSignedMoney(null), '—');
+  });
+
+  test('formatQty trims trailing zeros', () {
+    expect(formatQty(2), '2');
+    expect(formatQty(0.5), '0.5');
+    expect(formatQty(1234.5678), '1,234.5678');
+  });
+
   test('formatMarketCapMillions treats input as millions', () {
     expect(formatMarketCapMillions(4342022.98), r'$4.34T');
     expect(formatMarketCapMillions(950), r'$950M');
     expect(formatMarketCapMillions(null), '—');
+  });
+
+  test('formatRelative buckets durations', () {
+    final now = DateTime(2026, 6, 12, 12);
+    expect(formatRelative(now.subtract(const Duration(seconds: 5)), now: now), 'just now');
+    expect(formatRelative(now.subtract(const Duration(minutes: 3)), now: now), '3m ago');
+    expect(formatRelative(now.subtract(const Duration(hours: 2)), now: now), '2h ago');
+    expect(formatRelative(now.subtract(const Duration(days: 3)), now: now), '3d ago');
+    expect(formatRelative(now.subtract(const Duration(days: 30)), now: now), '13 May');
   });
 }

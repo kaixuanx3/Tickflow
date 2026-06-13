@@ -160,9 +160,9 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 
 1. ✅ Foundation: deps, env, theme, router, auth (login/register + token storage), 5-tab shell.
 2. ✅ Markets: symbol list + search + visible-row quotes; Symbol Detail (profile + candles chart).
-3. WS tick service + live prices on Markets/Detail; Favourites tab (watchlist + sparklines).
-4. Portfolio (holdings CRUD + summary + donut).
-5. Alerts + Notifications feed.
+3. ✅ WS tick service + live prices on Markets/Detail; Favourites tab (watchlist + sparklines).
+4. ✅ Portfolio (holdings CRUD + summary + donut).
+5. ✅ Alerts + Notifications feed.
 6. Polish (delayed/stale badges everywhere, empty/error states), deploy web, then optional
    extras (FCM, Drift) only if time remains.
 

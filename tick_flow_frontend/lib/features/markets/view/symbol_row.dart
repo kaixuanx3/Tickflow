@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/star_button.dart';
 import '../../../data/markets/market_models.dart';
-import '../viewmodel/quotes_controller.dart';
+import '../../../data/markets/quotes_cache.dart';
+import '../../../data/markets/symbol_subscriptions.dart';
 
 /// List row for a symbol; requests its quote (debounced + batched) when it
 /// first becomes visible. Reused by the markets list and search results.
@@ -19,12 +21,25 @@ class SymbolRow extends ConsumerStatefulWidget {
 }
 
 class _SymbolRowState extends ConsumerState<SymbolRow> {
+  bool _subscribed = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(quotesProvider.notifier).request(widget.info.symbol);
+      if (!mounted) return;
+      ref.read(quotesProvider.notifier).request(widget.info.symbol);
+      ref.read(symbolSubscriptionsProvider.notifier).retain(widget.info.symbol);
+      _subscribed = true;
     });
+  }
+
+  @override
+  void dispose() {
+    if (_subscribed) {
+      ref.read(symbolSubscriptionsProvider.notifier).release(widget.info.symbol);
+    }
+    super.dispose();
   }
 
   @override
@@ -41,13 +56,17 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: quote == null
-          ? Text(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (quote == null)
+            Text(
               '—',
               style: theme.textTheme.bodyLarge
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             )
-          : Column(
+          else
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -64,6 +83,10 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
                 ),
               ],
             ),
+          const SizedBox(width: 4),
+          StarButton(symbol: widget.info.symbol),
+        ],
+      ),
     );
   }
 }
