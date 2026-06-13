@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tick_flow_app/data/api/api_client.dart';
 import 'package:tick_flow_app/data/auth/auth_repository.dart';
 import 'package:tick_flow_app/data/auth/auth_user.dart';
+import 'package:tick_flow_app/data/auth/session_events.dart';
 import 'package:tick_flow_app/features/auth/viewmodel/auth_controller.dart';
 
 class FakeAuthRepository implements AuthRepository {
@@ -73,6 +74,20 @@ void main() {
     );
     await container.read(authControllerProvider.future);
     await container.read(authControllerProvider.notifier).signOut();
+    expect(container.read(authControllerProvider).value, isNull);
+  });
+
+  test('a session-expired event signs the user out', () async {
+    final container = makeContainer(
+      FakeAuthRepository(stored: const AuthUser(id: '1', email: 'kai@tickflow.dev')),
+    );
+    await container.read(authControllerProvider.future);
+    expect(container.read(authControllerProvider).value, isNotNull);
+
+    // Transport layers (REST 401 / WS 4401) fire this when the JWT is rejected.
+    container.read(sessionExpiredProvider.notifier).expired();
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+
     expect(container.read(authControllerProvider).value, isNull);
   });
 }
