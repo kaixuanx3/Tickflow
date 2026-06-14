@@ -69,7 +69,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: theme.colorScheme.outlineVariant),
                         ),
                         child: Image.asset(
                           'assets/icon/app_icon.png',
