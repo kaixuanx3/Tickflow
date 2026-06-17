@@ -8,6 +8,7 @@ export interface Holding {
   qty: number;
   buyPrice: number;
   assetType: AssetType;
+  position: number;
   createdAt: Date;
 }
 
@@ -24,6 +25,8 @@ export interface HoldingRepo {
   update(userId: string, id: string, patch: HoldingPatch): Promise<Holding | null>;
   /** false when the holding doesn't exist or belongs to another user */
   remove(userId: string, id: string): Promise<boolean>;
+  /** Persists the user's manual order; ids not owned by the user are ignored. */
+  reorder(userId: string, orderedIds: string[]): Promise<void>;
 }
 
 export interface QuotesPort {
@@ -50,6 +53,10 @@ export class PortfolioService {
 
   remove(userId: string, id: string): Promise<boolean> {
     return this.repo.remove(userId, id);
+  }
+
+  reorder(userId: string, orderedIds: string[]): Promise<void> {
+    return this.repo.reorder(userId, orderedIds);
   }
 
   /** Unpriced symbols (quote unavailable) appear with null values; see portfolio-math. */

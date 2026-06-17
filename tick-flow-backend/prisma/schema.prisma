@@ -90,6 +90,7 @@ model Holding {
   qty       Float
   buyPrice  Float
   assetType AssetType @default(stock)
+  position  Int       @default(0) // user's manual display order; new lots go to the bottom
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 

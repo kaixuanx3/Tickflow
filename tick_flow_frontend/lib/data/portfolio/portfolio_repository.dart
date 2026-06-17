@@ -60,6 +60,15 @@ class PortfolioRepository {
       throw toApiException(e);
     }
   }
+
+  /// Persists the user's manual holding order (full ordered id list).
+  Future<void> reorder(List<String> orderedIds) async {
+    try {
+      await _dio.put<void>('/portfolio/holdings/reorder', data: {'order': orderedIds});
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
 }
 
 final portfolioRepositoryProvider =

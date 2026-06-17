@@ -36,10 +36,13 @@ class MemoryHoldingRepo implements HoldingRepo {
   holdings: Array<Holding & { userId: string }> = [];
   private nextId = 1;
   async list(userId: string): Promise<Holding[]> {
-    return this.holdings.filter((h) => h.userId === userId);
+    return this.holdings
+      .filter((h) => h.userId === userId)
+      .sort((a, b) => a.position - b.position);
   }
   async create(userId: string, data: HoldingInput): Promise<Holding> {
-    const holding = { id: `h${this.nextId++}`, userId, createdAt: new Date(), ...data };
+    const position = this.holdings.filter((h) => h.userId === userId).length;
+    const holding = { id: `h${this.nextId++}`, userId, position, createdAt: new Date(), ...data };
     this.holdings.push(holding);
     return holding;
   }
@@ -53,6 +56,12 @@ class MemoryHoldingRepo implements HoldingRepo {
     const before = this.holdings.length;
     this.holdings = this.holdings.filter((h) => !(h.id === id && h.userId === userId));
     return this.holdings.length < before;
+  }
+  async reorder(userId: string, orderedIds: string[]): Promise<void> {
+    orderedIds.forEach((id, index) => {
+      const holding = this.holdings.find((h) => h.id === id && h.userId === userId);
+      if (holding) holding.position = index;
+    });
   }
 }
 
@@ -94,6 +103,7 @@ describe('portfolio routes', () => {
     for (const [method, url] of [
       ['GET', '/portfolio/holdings'],
       ['POST', '/portfolio/holdings'],
+      ['PUT', '/portfolio/holdings/reorder'],
       ['PUT', '/portfolio/holdings/h1'],
       ['DELETE', '/portfolio/holdings/h1'],
       ['GET', '/portfolio/summary'],
@@ -209,5 +219,56 @@ describe('portfolio routes', () => {
       payload: {},
     });
     expect(emptyPatch.statusCode).toBe(400);
+  });
+
+  it('appends new holdings to the bottom and persists a reorder', async () => {
+    const auth = await authHeader();
+    const ids: string[] = [];
+    for (const symbol of ['AAA', 'BBB', 'CCC']) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/portfolio/holdings',
+        headers: auth,
+        payload: { symbol, qty: 1, buyPrice: 1 },
+      });
+      ids.push(res.json().holding.id);
+    }
+
+    const symbols = async (): Promise<string[]> => {
+      const res = await app.inject({ method: 'GET', url: '/portfolio/holdings', headers: auth });
+      return res.json().holdings.map((h: { symbol: string }) => h.symbol);
+    };
+
+    // created in order → listed in order (newest at the bottom)
+    expect(await symbols()).toEqual(['AAA', 'BBB', 'CCC']);
+
+    const reorder = await app.inject({
+      method: 'PUT',
+      url: '/portfolio/holdings/reorder',
+      headers: auth,
+      payload: { order: [ids[2], ids[0], ids[1]] }, // CCC to the front
+    });
+    expect(reorder.statusCode).toBe(204);
+    expect(await symbols()).toEqual(['CCC', 'AAA', 'BBB']);
+  });
+
+  it('reorder validates the body and ignores unknown ids', async () => {
+    const auth = await authHeader();
+
+    const bad = await app.inject({
+      method: 'PUT',
+      url: '/portfolio/holdings/reorder',
+      headers: auth,
+      payload: { order: 'nope' },
+    });
+    expect(bad.statusCode).toBe(400);
+
+    const unknownId = await app.inject({
+      method: 'PUT',
+      url: '/portfolio/holdings/reorder',
+      headers: auth,
+      payload: { order: ['not-a-real-id'] },
+    });
+    expect(unknownId.statusCode).toBe(204);
   });
 });

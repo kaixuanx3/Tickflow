@@ -46,76 +46,96 @@ class _AllocationCardState extends State<AllocationCard> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+            // Big centred donut with the largest slice called out in the hole.
             SizedBox(
-              height: 168,
-              child: Row(
+              height: 210,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  SizedBox(
-                    width: 150,
-                    child: PieChart(
-                      PieChartData(
-                        centerSpaceRadius: 46,
-                        sectionsSpace: 2,
-                        sections: [
-                          for (var i = 0; i < slices.length; i++)
-                            PieChartSectionData(
-                              value: slices[i].value,
-                              color: colors[i % colors.length],
-                              radius: 26,
-                              showTitle: false,
-                            ),
-                        ],
-                      ),
+                  PieChart(
+                    PieChartData(
+                      centerSpaceRadius: 72,
+                      sectionsSpace: 2,
+                      sections: [
+                        for (var i = 0; i < slices.length; i++)
+                          PieChartSectionData(
+                            value: slices[i].value,
+                            color: colors[i % colors.length],
+                            radius: 30,
+                            showTitle: false,
+                          ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          for (var i = 0; i < slices.length; i++)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 3),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      color: colors[i % colors.length],
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      slices[i].label,
-                                      style: theme.textTheme.bodySmall,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${slices[i].percent.toStringAsFixed(1)}%',
-                                    style: tabularDigits(theme.textTheme.bodySmall!)
-                                        .copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
+                  SizedBox(
+                    width: 132,
+                    child: Text(
+                      'Top Holdings',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 20),
+            // Legend in two columns, paired two slices per row.
+            for (var i = 0; i < slices.length; i += 2)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _legendItem(theme, slices[i], colors[i % colors.length]),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: i + 1 < slices.length
+                          ? _legendItem(theme, slices[i + 1],
+                              colors[(i + 1) % colors.length])
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  /// One legend entry: colour dot, label, right-aligned percent.
+  Widget _legendItem(ThemeData theme, DonutSlice slice, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            slice.label,
+            style: theme.textTheme.bodySmall,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '${slice.percent.toStringAsFixed(1)}%',
+          style: tabularDigits(theme.textTheme.bodySmall!)
+              .copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+      ],
     );
   }
 }

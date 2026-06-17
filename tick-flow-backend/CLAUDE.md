@@ -118,6 +118,7 @@ GET  /symbols/:symbol/candles?range=1D|1W|1M|1Y       (FMP-backed, heavily cache
 GET  /symbols/:symbol/profile
 GET/POST/DELETE /watchlist                            (favourites)
 GET/POST/PUT/DELETE /portfolio/holdings               (symbol, qty, buyPrice, assetType)
+PUT  /portfolio/holdings/reorder                      ({order:[id,…]} — manual sort via Holding.position, new lots to bottom)
 GET  /portfolio/summary                               (valuation, gain/loss, allocation)
 GET/POST/PUT/DELETE /alerts
 GET  /notifications                                   (triggered-alert feed)
