@@ -11,8 +11,6 @@ import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
 
-/// A "market overview" card: index label, live price, change pill and a
-/// month sparkline. Backed by a real US ETF that proxies the index.
 Widget _chartUnavailable(ThemeData theme) => Center(
       child: Text(
         'Chart unavailable',
@@ -20,6 +18,9 @@ Widget _chartUnavailable(ThemeData theme) => Center(
       ),
     );
 
+/// A "market overview" card for the horizontal carousel: index label, live
+/// price, change pill and a month sparkline. Backed by a US ETF proxy. Sized
+/// by its parent (a fixed-height carousel cell), so the chart fills the rest.
 class OverviewCard extends ConsumerStatefulWidget {
   const OverviewCard({super.key, required this.symbol, required this.label});
 
@@ -61,7 +62,7 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
         ref.watch(candlesProvider((symbol: widget.symbol, range: CandleRange.m1)));
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => context.push('/symbol/${widget.symbol}'),
@@ -75,6 +76,8 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
                   Expanded(
                     child: Text(
                       widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
@@ -90,11 +93,16 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
                 style: tabularDigits(theme.textTheme.headlineSmall!)
                     .copyWith(fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 48,
+              const SizedBox(height: 8),
+              Expanded(
                 child: candles.when(
-                  loading: () => const SizedBox(),
+                  loading: () => const Center(
+                    child: SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
                   error: (_, _) => _chartUnavailable(theme),
                   data: (series) {
                     final closes = series.candles.map((c) => c.c).toList();

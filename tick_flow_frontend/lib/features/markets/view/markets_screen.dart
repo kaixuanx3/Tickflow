@@ -80,11 +80,21 @@ class _MarketsBody extends ConsumerWidget {
               ),
             ),
             SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  for (final o in _overview)
-                    OverviewCard(symbol: o.symbol, label: o.label),
-                ],
+              child: SizedBox(
+                height: 152,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _overview.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) {
+                    final o = _overview[i];
+                    return SizedBox(
+                      width: MediaQuery.sizeOf(context).width * 0.78,
+                      child: OverviewCard(symbol: o.symbol, label: o.label),
+                    );
+                  },
+                ),
               ),
             ),
             SliverToBoxAdapter(
