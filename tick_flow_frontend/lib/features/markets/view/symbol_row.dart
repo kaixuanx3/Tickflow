@@ -3,13 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/star_button.dart';
+import '../../../core/widgets/symbol_avatar.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
 
-/// List row for a symbol; requests its quote (debounced + batched) when it
-/// first becomes visible. Reused by the markets list and search results.
+/// Card-style list row: avatar, symbol + name, price, change pill, star.
+/// Requests its quote (debounced + batched) and subscribes to live ticks
+/// while visible. Reused by the markets list and search results.
 class SymbolRow extends ConsumerStatefulWidget {
   const SymbolRow({super.key, required this.info, this.onTap});
 
@@ -45,47 +48,58 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final market = theme.extension<MarketColors>()!;
     final quote = ref.watch(quotesProvider.select((m) => m[widget.info.symbol]));
 
-    return ListTile(
-      onTap: widget.onTap,
-      title: Text(widget.info.displaySymbol, style: theme.textTheme.titleSmall),
-      subtitle: Text(
-        widget.info.description,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (quote == null)
-            Text(
-              '—',
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            )
-          else
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  formatMoney(quote.price),
-                  style: tabularDigits(theme.textTheme.bodyLarge!)
-                      .copyWith(fontWeight: FontWeight.w600),
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: widget.onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+          child: Row(
+            children: [
+              SymbolAvatar(symbol: widget.info.displaySymbol),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.info.displaySymbol,
+                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    if (widget.info.description.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.info.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ],
                 ),
-                Text(
-                  formatPercent(quote.changePercent),
-                  style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
-                    color: quote.changePercent >= 0 ? market.gain : market.loss,
+              ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    quote == null ? '—' : formatMoney(quote.price),
+                    style: tabularDigits(theme.textTheme.bodyLarge!)
+                        .copyWith(fontWeight: FontWeight.w600),
                   ),
-                ),
-              ],
-            ),
-          const SizedBox(width: 4),
-          StarButton(symbol: widget.info.symbol),
-        ],
+                  const SizedBox(height: 3),
+                  ChangePill(percent: quote?.changePercent, compact: true),
+                ],
+              ),
+              StarButton(symbol: widget.info.symbol),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../viewmodel/markets_list_controller.dart';
+import 'overview_card.dart';
 import 'symbol_row.dart';
+
+// US ETFs that proxy the major indices (real indices aren't on the free tier).
+const _overview = [
+  (symbol: 'SPY', label: 'S&P 500'),
+  (symbol: 'QQQ', label: 'Nasdaq 100'),
+  (symbol: 'DIA', label: 'Dow Jones'),
+];
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
@@ -30,31 +39,29 @@ class MarketsScreen extends ConsumerWidget {
           message: '$e',
           onRetry: () => ref.invalidate(marketsListProvider),
         ),
-        data: (state) => _SymbolList(state: state),
+        data: (state) => _MarketsBody(state: state),
       ),
     );
   }
 }
 
-class _SymbolList extends ConsumerWidget {
-  const _SymbolList({required this.state});
+class _MarketsBody extends ConsumerWidget {
+  const _MarketsBody({required this.state});
 
   final MarketsListState state;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final delayed = ref.watch(quotesProvider.select((m) => m.values.any((q) => q.delayed)));
-    final caption = [
-      if (delayed) 'Quotes delayed (free data tier)',
-      if (state.stale) 'showing cached data',
+    final hints = [
+      if (delayed) 'Delayed',
+      if (state.stale) 'Cached',
     ].join(' · ');
-    final hasHeader = caption.isNotEmpty;
     final hasFooter = state.hasMore || state.loadMoreFailed;
 
     return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification.metrics.extentAfter < 400) {
+      onNotification: (n) {
+        if (n.metrics.extentAfter < 400) {
           ref.read(marketsListProvider.notifier).loadMore();
         }
         return false;
@@ -64,33 +71,74 @@ class _SymbolList extends ConsumerWidget {
           ref.read(quotesProvider.notifier).clear();
           return ref.refresh(marketsListProvider.future);
         },
-        child: ListView.builder(
-          itemCount: (hasHeader ? 1 : 0) + state.symbols.length + (hasFooter ? 1 : 0),
-          itemBuilder: (context, index) {
-            var i = index;
-            if (hasHeader) {
-              if (i == 0) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text(
-                    caption,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                  ),
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: 'Market Overview',
+                trailing: 'Live · ${DateFormat('MMM d').format(DateTime.now())}',
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  for (final o in _overview)
+                    OverviewCard(symbol: o.symbol, label: o.label),
+                ],
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: _SectionHeader(
+                title: 'All stocks',
+                trailing: hints.isEmpty ? null : hints,
+              ),
+            ),
+            SliverList.builder(
+              itemCount: state.symbols.length,
+              itemBuilder: (context, i) {
+                final info = state.symbols[i];
+                return SymbolRow(
+                  info: info,
+                  onTap: () => context.push('/symbol/${info.symbol}'),
                 );
-              }
-              i--;
-            }
-            if (i < state.symbols.length) {
-              final info = state.symbols[i];
-              return SymbolRow(
-                info: info,
-                onTap: () => context.push('/symbol/${info.symbol}'),
-              );
-            }
-            return _LoadMoreFooter(failed: state.loadMoreFailed);
-          },
+              },
+            ),
+            if (hasFooter)
+              SliverToBoxAdapter(child: _LoadMoreFooter(failed: state.loadMoreFailed)),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.trailing});
+
+  final String title;
+  final String? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          if (trailing != null)
+            Text(
+              trailing!,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+        ],
       ),
     );
   }
@@ -110,7 +158,7 @@ class _LoadMoreFooter extends ConsumerWidget {
             ? TextButton(
                 onPressed: () =>
                     ref.read(marketsListProvider.notifier).loadMore(retry: true),
-                child: const Text('Couldn\'t load more — tap to retry'),
+                child: const Text("Couldn't load more — tap to retry"),
               )
             : const SizedBox(
                 width: 24,
