@@ -13,6 +13,13 @@ import '../../../data/markets/symbol_subscriptions.dart';
 
 /// A "market overview" card: index label, live price, change pill and a
 /// month sparkline. Backed by a real US ETF that proxies the index.
+Widget _chartUnavailable(ThemeData theme) => Center(
+      child: Text(
+        'Chart unavailable',
+        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      ),
+    );
+
 class OverviewCard extends ConsumerStatefulWidget {
   const OverviewCard({super.key, required this.symbol, required this.label});
 
@@ -52,8 +59,6 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
     final candles =
         ref.watch(candlesProvider((symbol: widget.symbol, range: CandleRange.m1)));
-    final closes = candles.value?.candles.map((c) => c.c).toList() ?? const <double>[];
-    final lineColor = (quote?.changePercent ?? 0) >= 0 ? market.gain : market.loss;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -88,9 +93,16 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
               const SizedBox(height: 10),
               SizedBox(
                 height: 48,
-                child: closes.length < 2
-                    ? const SizedBox()
-                    : Sparkline(values: closes, color: lineColor),
+                child: candles.when(
+                  loading: () => const SizedBox(),
+                  error: (_, _) => _chartUnavailable(theme),
+                  data: (series) {
+                    final closes = series.candles.map((c) => c.c).toList();
+                    if (closes.length < 2) return _chartUnavailable(theme);
+                    final color = closes.last >= closes.first ? market.gain : market.loss;
+                    return Sparkline(values: closes, color: color);
+                  },
+                ),
               ),
             ],
           ),
