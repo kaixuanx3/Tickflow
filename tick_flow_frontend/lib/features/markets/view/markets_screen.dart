@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/quotes_cache.dart';
@@ -73,15 +72,12 @@ class _MarketsBody extends ConsumerWidget {
         },
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: _SectionHeader(
-                title: 'Market Overview',
-                trailing: 'Live · ${DateFormat('MMM d').format(DateTime.now())}',
-              ),
+            const SliverToBoxAdapter(
+              child: _SectionHeader(title: 'Market Overview'),
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 152,
+                height: 184,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -90,7 +86,7 @@ class _MarketsBody extends ConsumerWidget {
                   itemBuilder: (context, i) {
                     final o = _overview[i];
                     return SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.78,
+                      width: MediaQuery.sizeOf(context).width * 0.88,
                       child: OverviewCard(symbol: o.symbol, label: o.label),
                     );
                   },
