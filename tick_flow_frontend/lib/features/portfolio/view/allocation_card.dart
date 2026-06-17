@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/allocation.dart';
@@ -16,6 +17,7 @@ class AllocationCard extends StatefulWidget {
 
 class _AllocationCardState extends State<AllocationCard> {
   AllocationMode _mode = AllocationMode.holding;
+  int _touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +44,10 @@ class _AllocationCardState extends State<AllocationCard> {
                   selected: {_mode},
                   showSelectedIcon: false,
                   style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                  onSelectionChanged: (s) => setState(() => _mode = s.first),
+                  onSelectionChanged: (s) => setState(() {
+                    _mode = s.first;
+                    _touchedIndex = -1; // slices change with the mode
+                  }),
                 ),
               ],
             ),
@@ -57,28 +62,29 @@ class _AllocationCardState extends State<AllocationCard> {
                     PieChartData(
                       centerSpaceRadius: 72,
                       sectionsSpace: 2,
+                      pieTouchData: PieTouchData(
+                        touchCallback: (event, response) {
+                          if (event is! FlTapUpEvent) return;
+                          setState(() {
+                            final i = response?.touchedSection
+                                    ?.touchedSectionIndex ??
+                                -1;
+                            _touchedIndex = (i == _touchedIndex) ? -1 : i;
+                          });
+                        },
+                      ),
                       sections: [
                         for (var i = 0; i < slices.length; i++)
                           PieChartSectionData(
                             value: slices[i].value,
                             color: colors[i % colors.length],
-                            radius: 30,
+                            radius: i == _touchedIndex ? 38 : 30,
                             showTitle: false,
                           ),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: 132,
-                    child: Text(
-                      'Top Holdings',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  SizedBox(width: 132, child: _centerContent(theme, slices)),
                 ],
               ),
             ),
@@ -134,6 +140,56 @@ class _AllocationCardState extends State<AllocationCard> {
           '${slice.percent.toStringAsFixed(1)}%',
           style: tabularDigits(theme.textTheme.bodySmall!)
               .copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+
+  /// Donut hole: the tapped slice's details, or a hint to tap when nothing
+  /// is selected.
+  Widget _centerContent(ThemeData theme, List<DonutSlice> slices) {
+    if (_touchedIndex < 0 || _touchedIndex >= slices.length) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.touch_app_outlined,
+              size: 20, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(height: 4),
+          Text(
+            'Tap a slice',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
+      );
+    }
+    final slice = slices[_touchedIndex];
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          slice.label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style:
+              theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '${slice.percent.toStringAsFixed(1)}%',
+          style: tabularDigits(theme.textTheme.headlineSmall!)
+              .copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          formatMoney(slice.value),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
       ],
     );
