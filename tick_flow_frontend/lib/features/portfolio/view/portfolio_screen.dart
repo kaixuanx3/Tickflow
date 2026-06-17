@@ -4,16 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../viewmodel/holding_order.dart';
 import '../viewmodel/portfolio_controller.dart';
 import 'allocation_card.dart';
 import 'holding_sheet.dart';
 
-class PortfolioScreen extends ConsumerWidget {
+class PortfolioScreen extends ConsumerStatefulWidget {
   const PortfolioScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PortfolioScreen> createState() => _PortfolioScreenState();
+}
+
+class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
+  bool _editing = false;
+
+  @override
+  Widget build(BuildContext context) {
     final summary = ref.watch(portfolioProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Portfolio')),
@@ -28,20 +37,50 @@ class PortfolioScreen extends ConsumerWidget {
           message: '$e',
           onRetry: () => ref.invalidate(portfolioProvider),
         ),
-        data: (s) => s.holdings.isEmpty
-            ? const _EmptyPortfolio()
-            : RefreshIndicator(
-                onRefresh: () => ref.refresh(portfolioProvider.future),
-                child: ListView(
-                  children: [
-                    _TotalsCard(summary: s),
-                    AllocationCard(summary: s),
-                    if (s.incomplete) const _IncompleteBanner(),
-                    for (final h in s.holdings) _HoldingRow(holding: h),
-                    const SizedBox(height: 80), // FAB clearance
-                  ],
+        data: (s) {
+          if (s.holdings.isEmpty) return const _EmptyPortfolio();
+          final holdings =
+              orderedHoldings(s.holdings, ref.watch(holdingOrderProvider));
+          final canReorder = holdings.length >= 2;
+          final editing = _editing && canReorder;
+          return RefreshIndicator(
+            onRefresh: () => ref.refresh(portfolioProvider.future),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(child: _TotalsCard(summary: s)),
+                SliverToBoxAdapter(child: AllocationCard(summary: s)),
+                if (s.incomplete)
+                  const SliverToBoxAdapter(child: _IncompleteBanner()),
+                if (canReorder)
+                  SliverToBoxAdapter(
+                    child: _ReorderHeader(
+                      editing: editing,
+                      onToggle: () => setState(() => _editing = !_editing),
+                    ),
+                  ),
+                SliverReorderableList(
+                  itemCount: holdings.length,
+                  onReorder: (oldIndex, newIndex) {
+                    final ids = holdings.map((h) => h.id).toList();
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    ids.insert(newIndex, ids.removeAt(oldIndex));
+                    ref.read(holdingOrderProvider.notifier).save(ids);
+                  },
+                  itemBuilder: (context, i) => _ReorderableHolding(
+                    key: ValueKey(holdings[i].id),
+                    holding: holdings[i],
+                    index: i,
+                    editing: editing,
+                    showDivider: i > 0,
+                  ),
                 ),
-              ),
+                const SliverToBoxAdapter(
+                    child: SizedBox(height: 80)), // FAB clearance
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -186,65 +225,273 @@ class _IncompleteBanner extends StatelessWidget {
   }
 }
 
-class _HoldingRow extends ConsumerWidget {
-  const _HoldingRow({required this.holding});
+/// Small right-aligned Edit / Done toggle above the holdings list. Edit mode
+/// reveals drag handles so reordering is discoverable (long-press also works).
+class _ReorderHeader extends StatelessWidget {
+  const _ReorderHeader({required this.editing, required this.onToggle});
+
+  final bool editing;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 8, 0),
+      child: Row(
+        children: [
+          if (editing)
+            Text(
+              'Drag to reorder',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          const Spacer(),
+          TextButton(
+            onPressed: onToggle,
+            child: Text(editing ? 'Done' : 'Edit'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One reorderable holding: a top divider (except the first) plus the row, the
+/// whole thing long-press-draggable. A normal tap still opens the edit sheet.
+class _ReorderableHolding extends StatelessWidget {
+  const _ReorderableHolding({
+    super.key,
+    required this.holding,
+    required this.index,
+    required this.editing,
+    required this.showDivider,
+  });
 
   final HoldingValuation holding;
+  final int index;
+  final bool editing;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ReorderableDelayedDragStartListener(
+      index: index,
+      child: Column(
+        children: [
+          if (showDivider)
+            Divider(
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+              color: theme.colorScheme.outlineVariant,
+            ),
+          _HoldingRow(holding: holding, index: index, editing: editing),
+        ],
+      ),
+    );
+  }
+}
+
+class _HoldingRow extends ConsumerWidget {
+  const _HoldingRow({
+    required this.holding,
+    required this.index,
+    required this.editing,
+  });
+
+  final HoldingValuation holding;
+  final int index;
+  final bool editing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final market = theme.extension<MarketColors>()!;
     final h = holding;
-    final gainColor = (h.gainLoss ?? 0) >= 0 ? market.gain : market.loss;
 
-    return ListTile(
+    final profile = ref.watch(profileProvider(h.symbol)).value;
+    // CompanyProfile.name falls back to the symbol, so only show a real name.
+    final name =
+        (profile != null && profile.name != h.symbol) ? profile.name : null;
+    final unit = h.assetType == AssetType.crypto ? 'Units' : 'Shares';
+
+    final priced = h.gainLoss != null;
+    final gainColor = priced
+        ? (h.gainLoss! >= 0 ? market.gain : market.loss)
+        : theme.colorScheme.onSurfaceVariant;
+
+    return InkWell(
       onTap: () => showHoldingSheet(context, existing: h),
-      title: Row(
-        children: [
-          Text(h.symbol, style: theme.textTheme.titleSmall),
-          if (h.assetType != AssetType.stock) ...[
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                h.assetType.label.toUpperCase(),
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          children: [
+            _HoldingLogo(
+              symbol: h.symbol,
+              logo: profile?.logo,
+              isEtf: h.assetType == AssetType.etf,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    h.symbol,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (name != null) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      name,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 1),
+                  Text(
+                    '${formatQty(h.qty)} $unit, Avg. ${formatMoney(h.buyPrice)}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatPercent(h.gainLossPercent),
+                  style: tabularDigits(theme.textTheme.titleSmall!)
+                      .copyWith(color: gainColor, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 2),
+                Text.rich(
+                  TextSpan(
+                    text: 'Current ',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    children: [
+                      TextSpan(
+                        text: formatMoney(h.price),
+                        style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
+                          color: theme.colorScheme.onSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  formatSignedMoney(h.gainLoss),
+                  style: tabularDigits(theme.textTheme.bodySmall!)
+                      .copyWith(color: gainColor, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            if (editing) ...[
+              const SizedBox(width: 4),
+              ReorderableDragStartListener(
+                index: index,
+                child: Icon(
+                  Icons.drag_handle,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
-      subtitle: Text(
-        '${formatQty(h.qty)} × ${formatMoney(h.buyPrice)} · cost ${formatMoney(h.costBasis)}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            formatMoney(h.marketValue),
-            style: tabularDigits(theme.textTheme.bodyLarge!)
-                .copyWith(fontWeight: FontWeight.w600),
-          ),
-          Text(
-            h.gainLoss == null
-                ? '—'
-                : '${formatSignedMoney(h.gainLoss)} (${formatPercent(h.gainLossPercent)})',
-            style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
-              color: h.gainLoss == null
-                  ? theme.colorScheme.onSurfaceVariant
-                  : gainColor,
+    );
+  }
+}
+
+/// Circular company/fund logo with a letter-avatar fallback. ETFs get a small
+/// "ETF" badge pinned to the bottom edge.
+class _HoldingLogo extends StatelessWidget {
+  const _HoldingLogo({
+    required this.symbol,
+    required this.logo,
+    required this.isEtf,
+  });
+
+  final String symbol;
+  final String? logo;
+  final bool isEtf;
+
+  static const double _size = 44;
+
+  @override
+  Widget build(BuildContext context) {
+    final letter = symbol.isEmpty ? '?' : symbol.characters.first.toUpperCase();
+    final fallback = CircleAvatar(radius: _size / 2, child: Text(letter));
+
+    final Widget avatar = (logo == null || logo!.isEmpty)
+        ? fallback
+        : Container(
+            width: _size,
+            height: _size,
+            clipBehavior: Clip.antiAlias,
+            // White backing keeps transparent/white logos visible on dark.
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
             ),
-          ),
-        ],
+            child: Image.network(
+              logo!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => fallback,
+              loadingBuilder: (_, child, progress) =>
+                  progress == null ? child : fallback,
+            ),
+          );
+
+    if (!isEtf) return avatar;
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        avatar,
+        const Positioned(bottom: -5, child: _EtfBadge()),
+      ],
+    );
+  }
+}
+
+class _EtfBadge extends StatelessWidget {
+  const _EtfBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: BorderRadius.circular(5),
+        // Surface-coloured ring separates the badge from the logo and row.
+        border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+      ),
+      child: Text(
+        'ETF',
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 9,
+          height: 1,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
