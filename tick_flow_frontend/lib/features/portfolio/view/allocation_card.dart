@@ -91,22 +91,19 @@ class _AllocationCardState extends State<AllocationCard> {
             const SizedBox(height: 20),
             // Legend in two columns, paired two slices per row.
             for (var i = 0; i < slices.length; i += 2)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _legendItem(theme, slices[i], colors[i % colors.length]),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: i + 1 < slices.length
-                          ? _legendItem(theme, slices[i + 1],
-                              colors[(i + 1) % colors.length])
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _legendItem(theme, i, slices[i], colors[i % colors.length]),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: i + 1 < slices.length
+                        ? _legendItem(theme, i + 1, slices[i + 1],
+                            colors[(i + 1) % colors.length])
+                        : const SizedBox.shrink(),
+                  ),
+                ],
               ),
           ],
         ),
@@ -114,34 +111,49 @@ class _AllocationCardState extends State<AllocationCard> {
     );
   }
 
-  /// One legend entry: colour dot, label, right-aligned percent.
-  Widget _legendItem(ThemeData theme, DonutSlice slice, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
+  /// One legend entry — tappable to select its slice (same as tapping the
+  /// donut). Colour dot, label, right-aligned percent; bold when selected.
+  Widget _legendItem(ThemeData theme, int index, DonutSlice slice, Color color) {
+    final selected = index == _touchedIndex;
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => setState(() => _touchedIndex = selected ? -1 : index),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                slice.label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${slice.percent.toStringAsFixed(1)}%',
+              style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
+                color: selected
+                    ? theme.colorScheme.onSurface
+                    : theme.colorScheme.onSurfaceVariant,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            slice.label,
-            style: theme.textTheme.bodySmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '${slice.percent.toStringAsFixed(1)}%',
-          style: tabularDigits(theme.textTheme.bodySmall!)
-              .copyWith(color: theme.colorScheme.onSurfaceVariant),
-        ),
-      ],
+      ),
     );
   }
 
