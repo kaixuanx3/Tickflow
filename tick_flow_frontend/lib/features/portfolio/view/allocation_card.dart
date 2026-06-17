@@ -90,12 +90,12 @@ class _AllocationCardState extends State<AllocationCard> {
                   SizedBox(
                     width: 132,
                     child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
+                      duration: const Duration(milliseconds: 260),
                       switchInCurve: Curves.easeOut,
                       transitionBuilder: (child, animation) => FadeTransition(
                         opacity: animation,
                         child: ScaleTransition(
-                          scale: Tween<double>(begin: 0.92, end: 1.0)
+                          scale: Tween<double>(begin: 0.6, end: 1.0)
                               .animate(animation),
                           child: child,
                         ),
