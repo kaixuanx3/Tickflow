@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/portfolio_controller.dart';
@@ -328,7 +329,6 @@ class _HoldingRow extends ConsumerWidget {
           children: [
             _HoldingLogo(
               symbol: h.symbol,
-              logo: profile?.logo,
               isEtf: h.assetType == AssetType.etf,
             ),
             const SizedBox(width: 12),
@@ -415,46 +415,17 @@ class _HoldingRow extends ConsumerWidget {
   }
 }
 
-/// Circular company/fund logo with a letter-avatar fallback. ETFs get a small
-/// "ETF" badge pinned to the bottom edge.
+/// Circular company/fund logo (shared [SymbolLogo]); ETFs get a small "ETF"
+/// badge pinned to the bottom edge.
 class _HoldingLogo extends StatelessWidget {
-  const _HoldingLogo({
-    required this.symbol,
-    required this.logo,
-    required this.isEtf,
-  });
+  const _HoldingLogo({required this.symbol, required this.isEtf});
 
   final String symbol;
-  final String? logo;
   final bool isEtf;
-
-  static const double _size = 44;
 
   @override
   Widget build(BuildContext context) {
-    final letter = symbol.isEmpty ? '?' : symbol.characters.first.toUpperCase();
-    final fallback = CircleAvatar(radius: _size / 2, child: Text(letter));
-
-    final Widget avatar = (logo == null || logo!.isEmpty)
-        ? fallback
-        : Container(
-            width: _size,
-            height: _size,
-            clipBehavior: Clip.antiAlias,
-            // White backing keeps transparent/white logos visible on dark.
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-            child: Image.network(
-              logo!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => fallback,
-              loadingBuilder: (_, child, progress) =>
-                  progress == null ? child : fallback,
-            ),
-          );
-
+    final avatar = SymbolLogo(symbol: symbol, size: 44);
     if (!isEtf) return avatar;
     return Stack(
       clipBehavior: Clip.none,

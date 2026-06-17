@@ -5,7 +5,7 @@ import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/star_button.dart';
-import '../../../core/widgets/symbol_avatar.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
@@ -59,7 +59,7 @@ class _SymbolRowState extends ConsumerState<SymbolRow> {
           padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
           child: Row(
             children: [
-              SymbolAvatar(symbol: widget.info.displaySymbol),
+              SymbolLogo(symbol: widget.info.symbol),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
