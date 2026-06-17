@@ -6,7 +6,7 @@ Timebox: the remaining share of a ~6-week project — always prefer the simplest
 
 Monorepo sibling: `tick-flow-backend/` — complete, deployed, documented in its own CLAUDE.md.
 The app talks ONLY to this backend (REST + WS). Never call Finnhub/FMP directly, never embed
-vendor API keys in the app. Do not change the backend from this project.
+vendor API keys in the app.
 
 ## Environments
 
