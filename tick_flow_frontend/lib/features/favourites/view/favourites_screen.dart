@@ -1,11 +1,13 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../core/widgets/sparkline.dart';
+import '../../../core/widgets/symbol_avatar.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/market_providers.dart';
@@ -57,6 +59,7 @@ class FavouritesScreen extends ConsumerWidget {
           return RefreshIndicator(
             onRefresh: () => ref.refresh(watchlistProvider.future),
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4),
               itemCount: sorted.length,
               itemBuilder: (_, i) => _FavouriteRow(symbol: sorted[i]),
             ),
@@ -98,78 +101,88 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
     super.dispose();
   }
 
+  Future<void> _remove() async {
+    try {
+      await ref.read(watchlistProvider.notifier).toggle(widget.symbol);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is ApiException ? e.message : 'Could not remove ${widget.symbol}',
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final market = theme.extension<MarketColors>()!;
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
 
     return Dismissible(
       key: ValueKey(widget.symbol),
       direction: DismissDirection.endToStart,
-      background: Container(
-        color: theme.colorScheme.errorContainer,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: Icon(Icons.delete_outline, color: theme.colorScheme.onErrorContainer),
+      onDismissed: (_) => _remove(),
+      // Rounded red reveal aligned to the card's margin/shape.
+      background: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.errorContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          child: Icon(Icons.delete_outline, color: theme.colorScheme.onErrorContainer),
+        ),
       ),
-      onDismissed: (_) async {
-        try {
-          await ref.read(watchlistProvider.notifier).toggle(widget.symbol);
-        } catch (e) {
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                e is ApiException ? e.message : 'Could not remove ${widget.symbol}',
-              ),
-            ),
-          );
-        }
-      },
-      child: ListTile(
-        onTap: () => context.push('/symbol/${widget.symbol}'),
-        title: Text(widget.symbol, style: theme.textTheme.titleSmall),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Sparkline(symbol: widget.symbol),
-            const SizedBox(width: 16),
-            if (quote == null)
-              Text(
-                '—',
-                style: theme.textTheme.bodyLarge
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              )
-            else
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    formatMoney(quote.price),
-                    style: tabularDigits(theme.textTheme.bodyLarge!)
-                        .copyWith(fontWeight: FontWeight.w600),
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/symbol/${widget.symbol}'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Row(
+              children: [
+                SymbolAvatar(symbol: widget.symbol),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.symbol,
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                   ),
-                  Text(
-                    formatPercent(quote.changePercent),
-                    style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
-                      color: quote.changePercent >= 0 ? market.gain : market.loss,
+                ),
+                _RowSparkline(symbol: widget.symbol),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      quote == null ? '—' : formatMoney(quote.price),
+                      style: tabularDigits(theme.textTheme.bodyLarge!)
+                          .copyWith(fontWeight: FontWeight.w600),
                     ),
-                  ),
-                ],
-              ),
-          ],
+                    const SizedBox(height: 3),
+                    ChangePill(percent: quote?.changePercent, compact: true),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// Last-month daily closes; colored by overall trend. Quietly absent while
-/// loading or on error — the row stays usable without it.
-class _Sparkline extends ConsumerWidget {
-  const _Sparkline({required this.symbol});
+/// Last-month daily closes, coloured by overall trend. Reserves space so the
+/// price column stays aligned even when there's no chart data.
+class _RowSparkline extends ConsumerWidget {
+  const _RowSparkline({required this.symbol});
 
   final String symbol;
 
@@ -178,38 +191,12 @@ class _Sparkline extends ConsumerWidget {
     final market = Theme.of(context).extension<MarketColors>()!;
     final candles =
         ref.watch(candlesProvider((symbol: symbol, range: CandleRange.m1)));
-
+    final closes = candles.value?.candles.map((c) => c.c).toList() ?? const <double>[];
+    if (closes.length < 2) return const SizedBox(width: 72, height: 32);
+    final color = closes.last >= closes.first ? market.gain : market.loss;
     return SizedBox(
-      width: 84,
-      height: 30,
-      child: candles.when(
-        loading: () => const SizedBox.shrink(),
-        error: (_, _) => const SizedBox.shrink(),
-        data: (series) {
-          final closes = series.candles.map((c) => c.c).toList();
-          if (closes.length < 2) return const SizedBox.shrink();
-          final color = closes.last >= closes.first ? market.gain : market.loss;
-          return LineChart(
-            LineChartData(
-              gridData: const FlGridData(show: false),
-              titlesData: const FlTitlesData(show: false),
-              borderData: FlBorderData(show: false),
-              lineTouchData: const LineTouchData(enabled: false),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: [
-                    for (var i = 0; i < closes.length; i++)
-                      FlSpot(i.toDouble(), closes[i]),
-                  ],
-                  color: color,
-                  barWidth: 1.5,
-                  dotData: const FlDotData(show: false),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+      width: 72,
+      child: Sparkline(values: closes, color: color, height: 32),
     );
   }
 }

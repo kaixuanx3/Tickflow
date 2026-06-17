@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,11 +61,17 @@ class MarketsRepository {
 
   Future<CandleSeries> fetchCandles(String symbol, CandleRange range) async {
     try {
-      final res = await _dio.get<Map<String, dynamic>>(
-        '/symbols/$symbol/candles',
-        queryParameters: {'range': range.api},
-      );
+      // Hard cap: FMP can hang for some symbols (free tier) — fail fast so the
+      // UI shows "chart unavailable" instead of spinning for minutes.
+      final res = await _dio
+          .get<Map<String, dynamic>>(
+            '/symbols/$symbol/candles',
+            queryParameters: {'range': range.api},
+          )
+          .timeout(const Duration(seconds: 20));
       return CandleSeries.fromJson(res.data!);
+    } on TimeoutException {
+      throw const ApiException(null, 'Chart request timed out');
     } on DioException catch (e) {
       throw toApiException(e);
     }
