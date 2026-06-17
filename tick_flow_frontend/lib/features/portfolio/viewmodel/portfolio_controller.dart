@@ -41,6 +41,36 @@ class PortfolioController extends AsyncNotifier<PortfolioSummary> {
     await _reload();
   }
 
+  /// Manual reorder: optimistically reorder the in-memory holdings (so the list
+  /// doesn't flicker), then persist. On failure, fall back to the server order.
+  Future<void> reorder(List<String> orderedIds) async {
+    final current = state.value;
+    if (current == null) return;
+    final byId = {for (final h in current.holdings) h.id: h};
+    final reordered = [
+      for (final id in orderedIds)
+        if (byId[id] != null) byId[id]!,
+    ];
+    final included = orderedIds.toSet();
+    for (final h in current.holdings) {
+      if (!included.contains(h.id)) reordered.add(h);
+    }
+    state = AsyncData(PortfolioSummary(
+      holdings: reordered,
+      totalValue: current.totalValue,
+      totalCost: current.totalCost,
+      totalGainLoss: current.totalGainLoss,
+      totalGainLossPercent: current.totalGainLossPercent,
+      allocation: current.allocation,
+      incomplete: current.incomplete,
+    ));
+    try {
+      await ref.read(portfolioRepositoryProvider).reorder(orderedIds);
+    } catch (_) {
+      await _reload();
+    }
+  }
+
   Future<void> _reload() async {
     ref.invalidateSelf();
     await future;

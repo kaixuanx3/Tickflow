@@ -21,6 +21,8 @@ const patchBody = z
 
 const idParams = z.object({ id: z.string().min(1) });
 
+const reorderBody = z.object({ order: z.array(z.string().min(1)) });
+
 export function registerPortfolioRoutes(
   app: FastifyInstance,
   portfolio: PortfolioService,
@@ -37,6 +39,16 @@ export function registerPortfolioRoutes(
     }
     const holding = await portfolio.add(req.userId, parsed.data);
     return reply.code(201).send({ holding });
+  });
+
+  // Static path registered before ':id' so 'reorder' isn't captured as an id.
+  app.put('/portfolio/holdings/reorder', { preHandler: authGuard }, async (req, reply) => {
+    const parsed = reorderBody.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: z.prettifyError(parsed.error) });
+    }
+    await portfolio.reorder(req.userId, parsed.data.order);
+    return reply.code(204).send();
   });
 
   app.put('/portfolio/holdings/:id', { preHandler: authGuard }, async (req, reply) => {

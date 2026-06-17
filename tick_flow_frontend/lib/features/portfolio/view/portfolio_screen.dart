@@ -6,7 +6,6 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
-import '../viewmodel/holding_order.dart';
 import '../viewmodel/portfolio_controller.dart';
 import 'allocation_card.dart';
 import 'holding_sheet.dart';
@@ -39,8 +38,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
         ),
         data: (s) {
           if (s.holdings.isEmpty) return const _EmptyPortfolio();
-          final holdings =
-              orderedHoldings(s.holdings, ref.watch(holdingOrderProvider));
+          final holdings = s.holdings; // backend returns them in saved order
           final canReorder = holdings.length >= 2;
           final editing = _editing && canReorder;
           return RefreshIndicator(
@@ -65,7 +63,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
                     final ids = holdings.map((h) => h.id).toList();
                     if (newIndex > oldIndex) newIndex -= 1;
                     ids.insert(newIndex, ids.removeAt(oldIndex));
-                    ref.read(holdingOrderProvider.notifier).save(ids);
+                    ref.read(portfolioProvider.notifier).reorder(ids);
                   },
                   itemBuilder: (context, i) => _ReorderableHolding(
                     key: ValueKey(holdings[i].id),

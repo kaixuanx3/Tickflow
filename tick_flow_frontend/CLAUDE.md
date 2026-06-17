@@ -45,6 +45,7 @@ Public (market data):
 Authed (Bearer):
 - `GET/POST /watchlist` (`{symbol}`), `DELETE /watchlist/:symbol` — add/remove idempotent
 - `GET/POST /portfolio/holdings` (`{symbol, qty, buyPrice, assetType?: stock|etf|crypto}`), `PUT/DELETE /portfolio/holdings/:id`
+- `PUT /portfolio/holdings/reorder` (`{order:[id,…]}`) → 204 — saves the user's manual order (server-side `position`). New holdings sort to the bottom; `/summary` & `/holdings` return rows in this order.
 - `GET /portfolio/summary` → holdings each with `{costBasis, price, marketValue, gainLoss, gainLossPercent}` (nulls when unpriced) + `{totalValue, totalCost, totalGainLoss, totalGainLossPercent, allocation:[{symbol,value,percent}], incomplete}`
 - `GET/POST /alerts` (`{symbol, ruleType: price_above|price_below, threshold, kind?: one_shot|re_arm}`), `PUT /alerts/:id` (`{threshold?, kind?, status?: 'active'}` re-arm only), `DELETE /alerts/:id`
 - `GET /notifications` → `{notifications:[{id,symbol,message,price,createdAt}]}` (triggered alerts, newest first)
