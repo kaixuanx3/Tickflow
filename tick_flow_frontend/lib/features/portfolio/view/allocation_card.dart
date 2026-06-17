@@ -77,14 +77,32 @@ class _AllocationCardState extends State<AllocationCard> {
                         for (var i = 0; i < slices.length; i++)
                           PieChartSectionData(
                             value: slices[i].value,
-                            color: colors[i % colors.length],
+                            // dim the others once a slice is selected
+                            color: (_touchedIndex >= 0 && i != _touchedIndex)
+                                ? colors[i % colors.length].withValues(alpha: 0.35)
+                                : colors[i % colors.length],
                             radius: i == _touchedIndex ? 38 : 30,
                             showTitle: false,
                           ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 132, child: _centerContent(theme, slices)),
+                  SizedBox(
+                    width: 132,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 220),
+                      switchInCurve: Curves.easeOut,
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(begin: 0.92, end: 1.0)
+                              .animate(animation),
+                          child: child,
+                        ),
+                      ),
+                      child: _centerContent(theme, slices),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -162,6 +180,7 @@ class _AllocationCardState extends State<AllocationCard> {
   Widget _centerContent(ThemeData theme, List<DonutSlice> slices) {
     if (_touchedIndex < 0 || _touchedIndex >= slices.length) {
       return Column(
+        key: const ValueKey('hint'),
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.touch_app_outlined,
@@ -178,6 +197,7 @@ class _AllocationCardState extends State<AllocationCard> {
     }
     final slice = slices[_touchedIndex];
     return Column(
+      key: ValueKey(_touchedIndex),
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
