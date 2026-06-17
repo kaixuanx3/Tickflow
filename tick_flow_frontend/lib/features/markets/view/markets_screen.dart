@@ -75,24 +75,7 @@ class _MarketsBody extends ConsumerWidget {
             const SliverToBoxAdapter(
               child: _SectionHeader(title: 'Market Overview'),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 184,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _overview.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, i) {
-                    final o = _overview[i];
-                    return SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.88,
-                      child: OverviewCard(symbol: o.symbol, label: o.label),
-                    );
-                  },
-                ),
-              ),
-            ),
+            const SliverToBoxAdapter(child: _OverviewCarousel()),
             SliverToBoxAdapter(
               child: _SectionHeader(
                 title: 'All stocks',
@@ -114,6 +97,43 @@ class _MarketsBody extends ConsumerWidget {
             const SliverToBoxAdapter(child: SizedBox(height: 12)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Snap (page-by-page) carousel of the market-overview cards. Holds its own
+/// controller so a quote update repaint doesn't reset the scroll position.
+class _OverviewCarousel extends StatefulWidget {
+  const _OverviewCarousel();
+
+  @override
+  State<_OverviewCarousel> createState() => _OverviewCarouselState();
+}
+
+class _OverviewCarouselState extends State<_OverviewCarousel> {
+  final _controller = PageController(viewportFraction: 0.95);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 220,
+      child: PageView.builder(
+        controller: _controller,
+        itemCount: _overview.length,
+        itemBuilder: (context, i) {
+          final o = _overview[i];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: OverviewCard(symbol: o.symbol, label: o.label),
+          );
+        },
       ),
     );
   }
