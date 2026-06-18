@@ -65,6 +65,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
               portfolioDayChange(holdings, ref.watch(quotesProvider));
           final canReorder = holdings.length >= 2;
           final editing = _editing && canReorder;
+          final theme = Theme.of(context);
           return RefreshIndicator(
             onRefresh: () => ref.refresh(portfolioProvider.future),
             child: CustomScrollView(
@@ -74,27 +75,43 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
                     child: _TotalsCard(summary: s, dayChange: dayChange)),
                 if (s.incomplete)
                   const SliverToBoxAdapter(child: _IncompleteBanner()),
-                if (canReorder)
-                  SliverToBoxAdapter(
-                    child: _ReorderHeader(
-                      editing: editing,
-                      onToggle: () => setState(() => _editing = !_editing),
-                    ),
-                  ),
-                SliverReorderableList(
-                  itemCount: holdings.length,
-                  onReorder: (oldIndex, newIndex) {
-                    final ids = holdings.map((h) => h.id).toList();
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    ids.insert(newIndex, ids.removeAt(oldIndex));
-                    ref.read(portfolioProvider.notifier).reorder(ids);
-                  },
-                  itemBuilder: (context, i) => _ReorderableHolding(
-                    key: ValueKey(holdings[i].id),
-                    holding: holdings[i],
-                    index: i,
+                SliverToBoxAdapter(
+                  child: _HoldingsHeader(
                     editing: editing,
-                    showDivider: i > 0,
+                    canReorder: canReorder,
+                    onToggle: () => setState(() => _editing = !_editing),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  sliver: DecoratedSliver(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: theme.colorScheme.outlineVariant),
+                    ),
+                    sliver: SliverMainAxisGroup(
+                      slivers: [
+                        const SliverToBoxAdapter(child: SizedBox(height: 6)),
+                        SliverReorderableList(
+                          itemCount: holdings.length,
+                          onReorder: (oldIndex, newIndex) {
+                            final ids = holdings.map((h) => h.id).toList();
+                            if (newIndex > oldIndex) newIndex -= 1;
+                            ids.insert(newIndex, ids.removeAt(oldIndex));
+                            ref.read(portfolioProvider.notifier).reorder(ids);
+                          },
+                          itemBuilder: (context, i) => _ReorderableHolding(
+                            key: ValueKey(holdings[i].id),
+                            holding: holdings[i],
+                            index: i,
+                            editing: editing,
+                            showDivider: i > 0,
+                          ),
+                        ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 6)),
+                      ],
+                    ),
                   ),
                 ),
                 const SliverToBoxAdapter(
@@ -299,32 +316,43 @@ class _IncompleteBanner extends StatelessWidget {
   }
 }
 
-/// Small right-aligned Edit / Done toggle above the holdings list. Edit mode
-/// reveals drag handles so reordering is discoverable (long-press also works).
-class _ReorderHeader extends StatelessWidget {
-  const _ReorderHeader({required this.editing, required this.onToggle});
+/// "Holdings" section header with the Edit / Done reorder toggle. Edit mode
+/// reveals per-row drag handles (long-press also works in either mode).
+class _HoldingsHeader extends StatelessWidget {
+  const _HoldingsHeader({
+    required this.editing,
+    required this.canReorder,
+    required this.onToggle,
+  });
 
   final bool editing;
+  final bool canReorder;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 8, 0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
       child: Row(
         children: [
+          Text(
+            'Holdings',
+            style:
+                theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const Spacer(),
           if (editing)
             Text(
               'Drag to reorder',
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
-          const Spacer(),
-          TextButton(
-            onPressed: onToggle,
-            child: Text(editing ? 'Done' : 'Edit'),
-          ),
+          if (canReorder)
+            TextButton(
+              onPressed: onToggle,
+              child: Text(editing ? 'Done' : 'Edit'),
+            ),
         ],
       ),
     );
