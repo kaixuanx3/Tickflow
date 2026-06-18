@@ -37,9 +37,10 @@ class AnalyticsScreen extends ConsumerWidget {
             : ListView(
                 children: [
                   const SizedBox(height: 12),
+                  _TopMoversCard(holdings: s.holdings),
+                  const SizedBox(height: 4),
                   _ValueChart(holdings: s.holdings),
                   const SizedBox(height: 12),
-                  _TopMoversCard(holdings: s.holdings),
                   AllocationCard(summary: s),
                   const SizedBox(height: 16),
                 ],
@@ -223,7 +224,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
   }
 }
 
-/// Best and worst performer by total gain/loss %.
+/// Best and worst performer by total gain/loss %, side by side.
 class _TopMoversCard extends StatelessWidget {
   const _TopMoversCard({required this.holdings});
 
@@ -244,11 +245,20 @@ class _TopMoversCard extends StatelessWidget {
           children: [
             Text('Top movers', style: theme.textTheme.labelLarge),
             const SizedBox(height: 16),
-            _MoverRow(holding: movers.best, label: 'Best'),
-            if (!single) ...[
-              const SizedBox(height: 16),
-              _MoverRow(holding: movers.worst, label: 'Worst'),
-            ],
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _MoverCell(holding: movers.best, label: 'Best')),
+                  if (!single) ...[
+                    const VerticalDivider(width: 24),
+                    Expanded(
+                      child: _MoverCell(holding: movers.worst, label: 'Worst'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -256,8 +266,8 @@ class _TopMoversCard extends StatelessWidget {
   }
 }
 
-class _MoverRow extends StatelessWidget {
-  const _MoverRow({required this.holding, required this.label});
+class _MoverCell extends StatelessWidget {
+  const _MoverCell({required this.holding, required this.label});
 
   final HoldingValuation holding;
   final String label;
@@ -268,42 +278,40 @@ class _MoverRow extends StatelessWidget {
     final market = theme.extension<MarketColors>()!;
     final h = holding;
     final color = (h.gainLoss ?? 0) >= 0 ? market.gain : market.loss;
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SymbolLogo(symbol: h.symbol, size: 40),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
+        Text(
+          label,
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            SymbolLogo(symbol: h.symbol, size: 32),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
                 h.symbol,
                 style: theme.textTheme.titleSmall
                     ?.copyWith(fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 1),
-              Text(
-                label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              formatPercent(h.gainLossPercent),
-              style: tabularDigits(theme.textTheme.bodyLarge!)
-                  .copyWith(color: color, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              formatSignedMoney(h.gainLoss),
-              style: tabularDigits(theme.textTheme.bodySmall!).copyWith(color: color),
             ),
           ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          formatPercent(h.gainLossPercent),
+          style: tabularDigits(theme.textTheme.titleMedium!)
+              .copyWith(color: color, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          formatSignedMoney(h.gainLoss),
+          style: tabularDigits(theme.textTheme.bodySmall!).copyWith(color: color),
         ),
       ],
     );
