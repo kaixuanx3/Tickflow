@@ -4,11 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_providers.dart';
+import '../../../data/markets/quotes_cache.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/portfolio_controller.dart';
+import '../viewmodel/portfolio_day_change.dart';
 import 'holding_sheet.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
@@ -20,6 +23,23 @@ class PortfolioScreen extends ConsumerStatefulWidget {
 
 class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
   bool _editing = false;
+  final _quotesRequested = <String>{};
+
+  /// Lazily pull a quote per holding so the card can show today's change.
+  void _ensureQuotes(List<HoldingValuation> holdings) {
+    final missing = <String>[];
+    for (final h in holdings) {
+      if (_quotesRequested.add(h.symbol)) missing.add(h.symbol);
+    }
+    if (missing.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final notifier = ref.read(quotesProvider.notifier);
+      for (final s in missing) {
+        notifier.request(s);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +60,9 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
         data: (s) {
           if (s.holdings.isEmpty) return const _EmptyPortfolio();
           final holdings = s.holdings; // backend returns them in saved order
+          _ensureQuotes(holdings);
+          final dayChange =
+              portfolioDayChange(holdings, ref.watch(quotesProvider));
           final canReorder = holdings.length >= 2;
           final editing = _editing && canReorder;
           return RefreshIndicator(
@@ -47,7 +70,8 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(child: _TotalsCard(summary: s)),
+                SliverToBoxAdapter(
+                    child: _TotalsCard(summary: s, dayChange: dayChange)),
                 if (s.incomplete)
                   const SliverToBoxAdapter(child: _IncompleteBanner()),
                 if (canReorder)
@@ -122,9 +146,10 @@ class _EmptyPortfolio extends StatelessWidget {
 }
 
 class _TotalsCard extends StatelessWidget {
-  const _TotalsCard({required this.summary});
+  const _TotalsCard({required this.summary, this.dayChange});
 
   final PortfolioSummary summary;
+  final DayChange? dayChange;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +202,31 @@ class _TotalsCard extends StatelessWidget {
               style: tabularDigits(theme.textTheme.headlineMedium!)
                   .copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 12),
+            if (dayChange != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    formatSignedMoney(dayChange!.amount),
+                    style: tabularDigits(theme.textTheme.bodyLarge!).copyWith(
+                      color: dayChange!.amount >= 0 ? market.gain : market.loss,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ChangePill(percent: dayChange!.percent, compact: true),
+                  const SizedBox(width: 8),
+                  Text(
+                    'today',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -202,7 +251,7 @@ class _TotalsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Gain / loss',
+                        'Total gain / loss',
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
