@@ -4,13 +4,16 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/portfolio_controller.dart';
 import '../viewmodel/portfolio_value_series.dart';
+import '../viewmodel/top_movers.dart';
 import 'allocation_card.dart';
 
 /// Pushed from the Portfolio tab's "Analytics" link. Holds the portfolio's
@@ -36,6 +39,7 @@ class AnalyticsScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _ValueChart(holdings: s.holdings),
                   const SizedBox(height: 12),
+                  _TopMoversCard(holdings: s.holdings),
                   AllocationCard(summary: s),
                   const SizedBox(height: 16),
                 ],
@@ -215,6 +219,93 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Best and worst performer by total gain/loss %.
+class _TopMoversCard extends StatelessWidget {
+  const _TopMoversCard({required this.holdings});
+
+  final List<HoldingValuation> holdings;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final movers = topMovers(holdings);
+    if (movers == null) return const SizedBox.shrink();
+    final single = movers.best.id == movers.worst.id;
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Top movers', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 16),
+            _MoverRow(holding: movers.best, label: 'Best'),
+            if (!single) ...[
+              const SizedBox(height: 16),
+              _MoverRow(holding: movers.worst, label: 'Worst'),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MoverRow extends StatelessWidget {
+  const _MoverRow({required this.holding, required this.label});
+
+  final HoldingValuation holding;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final market = theme.extension<MarketColors>()!;
+    final h = holding;
+    final color = (h.gainLoss ?? 0) >= 0 ? market.gain : market.loss;
+    return Row(
+      children: [
+        SymbolLogo(symbol: h.symbol, size: 40),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                h.symbol,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              formatPercent(h.gainLossPercent),
+              style: tabularDigits(theme.textTheme.bodyLarge!)
+                  .copyWith(color: color, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              formatSignedMoney(h.gainLoss),
+              style: tabularDigits(theme.textTheme.bodySmall!).copyWith(color: color),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
