@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
@@ -8,7 +9,6 @@ import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 import '../viewmodel/portfolio_controller.dart';
-import 'allocation_card.dart';
 import 'holding_sheet.dart';
 
 class PortfolioScreen extends ConsumerStatefulWidget {
@@ -48,7 +48,6 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(child: _TotalsCard(summary: s)),
-                SliverToBoxAdapter(child: AllocationCard(summary: s)),
                 if (s.incomplete)
                   const SliverToBoxAdapter(child: _IncompleteBanner()),
                 if (canReorder)
@@ -140,10 +139,37 @@ class _TotalsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Total value',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total value',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+                InkWell(
+                  onTap: () => context.push('/analytics'),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Analytics',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Icon(Icons.chevron_right,
+                            size: 18, color: theme.colorScheme.primary),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
