@@ -42,6 +42,8 @@ class AnalyticsScreen extends ConsumerWidget {
                   _ValueChart(holdings: s.holdings),
                   const SizedBox(height: 12),
                   AllocationCard(summary: s),
+                  const SizedBox(height: 12),
+                  _QuickStatsCard(summary: s),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -316,6 +318,83 @@ class _MoverCell extends StatelessWidget {
       ],
     );
   }
+}
+
+/// At-a-glance portfolio stats: holdings count, largest position, asset mix.
+class _QuickStatsCard extends StatelessWidget {
+  const _QuickStatsCard({required this.summary});
+
+  final PortfolioSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final holdings = summary.holdings;
+    if (holdings.isEmpty) return const SizedBox.shrink();
+
+    final largest = summary.allocation.isEmpty ? null : summary.allocation.first;
+
+    final counts = <AssetType, int>{};
+    for (final h in holdings) {
+      counts[h.assetType] = (counts[h.assetType] ?? 0) + 1;
+    }
+    final mix = [
+      for (final t in AssetType.values)
+        if ((counts[t] ?? 0) > 0) '${counts[t]} ${_typeLabel(t, counts[t]!)}',
+    ].join(' · ');
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Quick stats', style: theme.textTheme.labelLarge),
+            const SizedBox(height: 8),
+            _statRow(theme, 'Holdings', '${holdings.length}'),
+            _statRow(
+              theme,
+              'Largest position',
+              largest == null
+                  ? '—'
+                  : '${largest.symbol} · ${largest.percent.toStringAsFixed(1)}%',
+            ),
+            _statRow(theme, 'Asset mix', mix),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _typeLabel(AssetType t, int n) {
+    if (n == 1 || t == AssetType.crypto) return t.label;
+    return '${t.label}s';
+  }
+
+  Widget _statRow(ThemeData theme, String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: tabularDigits(theme.textTheme.bodyMedium!)
+                    .copyWith(fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _EmptyAnalytics extends StatelessWidget {
