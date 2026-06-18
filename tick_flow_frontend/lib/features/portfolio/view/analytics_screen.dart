@@ -33,8 +33,9 @@ class AnalyticsScreen extends ConsumerWidget {
             ? const _EmptyAnalytics()
             : ListView(
                 children: [
-                  const SizedBox(height: 8),
-                  _ValueChartCard(holdings: s.holdings),
+                  const SizedBox(height: 12),
+                  _ValueChart(holdings: s.holdings),
+                  const SizedBox(height: 12),
                   AllocationCard(summary: s),
                   const SizedBox(height: 16),
                 ],
@@ -44,19 +45,34 @@ class AnalyticsScreen extends ConsumerWidget {
   }
 }
 
+/// Chart range tabs. 1D ≈ a week of daily bars and ALL caps at one year on the
+/// free data tier, so both reuse existing candle ranges.
+enum _ChartRange {
+  d1('1D', CandleRange.d1),
+  w1('1W', CandleRange.w1),
+  m1('1M', CandleRange.m1),
+  y1('1Y', CandleRange.y1),
+  all('ALL', CandleRange.y1);
+
+  const _ChartRange(this.label, this.candle);
+  final String label;
+  final CandleRange candle;
+}
+
 /// Estimated portfolio value over time, reconstructed client-side from each
-/// holding's daily closes (no backend support for portfolio history).
-class _ValueChartCard extends ConsumerStatefulWidget {
-  const _ValueChartCard({required this.holdings});
+/// holding's daily closes (no backend support for portfolio history). Rendered
+/// edge-to-edge (not in a card) so the chart reads big.
+class _ValueChart extends ConsumerStatefulWidget {
+  const _ValueChart({required this.holdings});
 
   final List<HoldingValuation> holdings;
 
   @override
-  ConsumerState<_ValueChartCard> createState() => _ValueChartCardState();
+  ConsumerState<_ValueChart> createState() => _ValueChartState();
 }
 
-class _ValueChartCardState extends ConsumerState<_ValueChartCard> {
-  CandleRange _range = CandleRange.m1;
+class _ValueChartState extends ConsumerState<_ValueChart> {
+  _ChartRange _range = _ChartRange.m1;
 
   void _showInfo() {
     showDialog<void>(
@@ -88,7 +104,7 @@ class _ValueChartCardState extends ConsumerState<_ValueChartCard> {
     var loading = false;
     for (final h in widget.holdings) {
       final async =
-          ref.watch(candlesProvider((symbol: h.symbol, range: _range)));
+          ref.watch(candlesProvider((symbol: h.symbol, range: _range.candle)));
       if (async.isLoading) loading = true;
       final candles = async.value?.candles;
       if (candles != null && candles.isNotEmpty) {
@@ -112,55 +128,58 @@ class _ValueChartCardState extends ConsumerState<_ValueChartCard> {
       );
     }
 
-    return Card(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text('Portfolio value', style: theme.textTheme.labelLarge),
-                ),
-                InkWell(
-                  onTap: _showInfo,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(Icons.info_outline,
-                        size: 18, color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(height: 180, child: chart),
-            const SizedBox(height: 8),
-            Text(
-              'Estimated from daily closes',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<CandleRange>(
-                segments: const [
-                  ButtonSegment(value: CandleRange.w1, label: Text('1W')),
-                  ButtonSegment(value: CandleRange.m1, label: Text('1M')),
-                  ButtonSegment(value: CandleRange.y1, label: Text('1Y')),
-                ],
-                selected: {_range},
-                showSelectedIcon: false,
-                style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                onSelectionChanged: (s) => setState(() => _range = s.first),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row holds the title + the ⓘ (no card needed).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text('Portfolio value', style: theme.textTheme.labelLarge),
               ),
-            ),
-          ],
+              InkWell(
+                onTap: _showInfo,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.info_outline,
+                      size: 18, color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 8),
+        SizedBox(height: 240, child: chart), // full-width, edge-to-edge
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Estimated from daily closes',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<_ChartRange>(
+              segments: [
+                for (final r in _ChartRange.values)
+                  ButtonSegment(value: r, label: Text(r.label)),
+              ],
+              selected: {_range},
+              showSelectedIcon: false,
+              style: const ButtonStyle(visualDensity: VisualDensity.compact),
+              onSelectionChanged: (s) => setState(() => _range = s.first),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -192,7 +211,7 @@ class _ValueChartCardState extends ConsumerState<_ValueChartCard> {
             barWidth: 2,
             dotData: const FlDotData(show: false),
             belowBarData:
-                BarAreaData(show: true, color: color.withValues(alpha: 0.12)),
+                BarAreaData(show: true, color: color.withValues(alpha: 0.14)),
           ),
         ],
       ),
