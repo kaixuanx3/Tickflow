@@ -119,10 +119,13 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
       }
     }
     final values = reconstructValueSeries(widget.holdings, candlesBySymbol);
+    final rangeChange = (values.length >= 2 && values.first != 0)
+        ? (values.last - values.first) / values.first * 100
+        : null;
 
     final Widget chart;
     if (values.length >= 2) {
-      chart = _line(values, market);
+      chart = _line(values, market, theme);
     } else if (loading) {
       chart = const Center(child: CircularProgressIndicator());
     } else {
@@ -158,6 +161,17 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
             ],
           ),
         ),
+        if (rangeChange != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+            child: Text(
+              formatPercent(rangeChange),
+              style: tabularDigits(theme.textTheme.titleLarge!).copyWith(
+                color: rangeChange >= 0 ? market.gain : market.loss,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         const SizedBox(height: 8),
         SizedBox(height: 240, child: chart), // full-width, edge-to-edge
         const SizedBox(height: 8),
@@ -190,7 +204,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
     );
   }
 
-  Widget _line(List<double> values, MarketColors market) {
+  Widget _line(List<double> values, MarketColors market, ThemeData theme) {
     final color = values.last >= values.first ? market.gain : market.loss;
     var minY = values.first;
     var maxY = values.first;
@@ -199,6 +213,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
       maxY = math.max(maxY, v);
     }
     final pad = (maxY - minY) * 0.08 + 1; // headroom; +1 guards a flat line
+    final lastX = (values.length - 1).toDouble();
     return LineChart(
       LineChartData(
         minY: minY - pad,
@@ -207,6 +222,17 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
         titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
         lineTouchData: const LineTouchData(enabled: false),
+        // Faint dashed baseline at the range's starting value.
+        extraLinesData: ExtraLinesData(
+          horizontalLines: [
+            HorizontalLine(
+              y: values.first,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.15),
+              strokeWidth: 1,
+              dashArray: const [4, 4],
+            ),
+          ],
+        ),
         lineBarsData: [
           LineChartBarData(
             spots: [
@@ -216,7 +242,17 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
             isCurved: false,
             color: color,
             barWidth: 2,
-            dotData: const FlDotData(show: false),
+            // A single dot anchoring the latest point.
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, bar) => spot.x == lastX,
+              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                radius: 4,
+                color: color,
+                strokeColor: theme.colorScheme.surface,
+                strokeWidth: 2,
+              ),
+            ),
             belowBarData:
                 BarAreaData(show: true, color: color.withValues(alpha: 0.14)),
           ),
