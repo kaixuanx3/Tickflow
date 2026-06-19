@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/market_models.dart';
+import '../../../data/markets/quotes_cache.dart';
 import '../viewmodel/markets_movers.dart';
 import 'overview_card.dart';
 import 'symbol_row.dart';
@@ -28,6 +29,15 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   @override
   Widget build(BuildContext context) {
     final movers = ref.watch(moversProvider);
+    // The movers snapshot already holds every universe quote — push them into
+    // the shared quote cache so switching tabs shows prices instantly instead
+    // of each row firing its own /quotes request.
+    ref.listen(moversProvider, (_, next) {
+      final quotes = next.value;
+      if (quotes != null) {
+        ref.read(quotesProvider.notifier).prime(quotes.values);
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: const Text('Markets')),
       body: RefreshIndicator(
