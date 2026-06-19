@@ -34,8 +34,15 @@ import { WatchlistService } from './services/watchlist-service.js';
 import type { TickSource } from './services/tick-source.js';
 import { TickWsServer } from './ws/tick-ws-server.js';
 
-function createTickSource(env: Env): TickSource {
-  if (env.TICK_SOURCE === 'sim') return new SimulatedTickSource();
+function createTickSource(env: Env, quotes: QuoteService): TickSource {
+  if (env.TICK_SOURCE === 'sim') {
+    // Anchor each symbol's random walk to its real price so the simulated
+    // change% reads realistically instead of ~−80% (a flat ~$100 sim walk
+    // against the stock's real prevClose). Falls back to basePrice on a miss.
+    return new SimulatedTickSource({
+      seedPrice: async (symbol) => (await quotes.getQuote(symbol))?.price ?? null,
+    });
+  }
   return new FinnhubTickSource(env.FINNHUB_API_KEY);
 }
 
@@ -59,7 +66,7 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   : null;
 const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
 
-const tickSource = createTickSource(env);
+const tickSource = createTickSource(env, quoteService);
 
 const subscriptionStore = new RedisSubscriptionStore(redis);
 // A crashed previous run must not leak refcounts. enableOfflineQueue is off,
