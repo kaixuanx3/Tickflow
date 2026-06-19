@@ -36,9 +36,9 @@ class AnalyticsScreen extends ConsumerWidget {
             ? const _EmptyAnalytics()
             : ListView(
                 children: [
-                  const SizedBox(height: 12),
-                  _TopMoversCard(holdings: s.holdings),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 16),
+                  _TopMovers(holdings: s.holdings),
+                  const Divider(height: 32, indent: 16, endIndent: 16),
                   _ValueChart(holdings: s.holdings),
                   const SizedBox(height: 12),
                   AllocationCard(summary: s),
@@ -226,9 +226,10 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
   }
 }
 
-/// Best and worst performer by total gain/loss %, side by side.
-class _TopMoversCard extends StatelessWidget {
-  const _TopMoversCard({required this.holdings});
+/// Best and worst performer by total gain/loss %, side by side — cardless so
+/// it reads big. Left = best (green), right = worst (red).
+class _TopMovers extends StatelessWidget {
+  const _TopMovers({required this.holdings});
 
   final List<HoldingValuation> holdings;
 
@@ -238,41 +239,35 @@ class _TopMoversCard extends StatelessWidget {
     final movers = topMovers(holdings);
     if (movers == null) return const SizedBox.shrink();
     final single = movers.best.id == movers.worst.id;
-    return Card(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Top movers', style: theme.textTheme.labelLarge),
-            const SizedBox(height: 16),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: _MoverCell(holding: movers.best, label: 'Best')),
-                  if (!single) ...[
-                    const VerticalDivider(width: 24),
-                    Expanded(
-                      child: _MoverCell(holding: movers.worst, label: 'Worst'),
-                    ),
-                  ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Top movers', style: theme.textTheme.labelLarge),
+          const SizedBox(height: 14),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _MoverCell(holding: movers.best)),
+                if (!single) ...[
+                  const VerticalDivider(width: 28),
+                  Expanded(child: _MoverCell(holding: movers.worst)),
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _MoverCell extends StatelessWidget {
-  const _MoverCell({required this.holding, required this.label});
+  const _MoverCell({required this.holding});
 
   final HoldingValuation holding;
-  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -283,20 +278,14 @@ class _MoverCell extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
         Row(
           children: [
-            SymbolLogo(symbol: h.symbol, size: 32),
-            const SizedBox(width: 8),
+            SymbolLogo(symbol: h.symbol, size: 36),
+            const SizedBox(width: 10),
             Flexible(
               child: Text(
                 h.symbol,
-                style: theme.textTheme.titleSmall
+                style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -304,16 +293,16 @@ class _MoverCell extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Text(
           formatPercent(h.gainLossPercent),
-          style: tabularDigits(theme.textTheme.titleMedium!)
+          style: tabularDigits(theme.textTheme.titleLarge!)
               .copyWith(color: color, fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 1),
+        const SizedBox(height: 2),
         Text(
           formatSignedMoney(h.gainLoss),
-          style: tabularDigits(theme.textTheme.bodySmall!).copyWith(color: color),
+          style: tabularDigits(theme.textTheme.bodyMedium!).copyWith(color: color),
         ),
       ],
     );
