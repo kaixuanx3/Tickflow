@@ -7,7 +7,7 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../core/widgets/sparkline.dart';
-import '../../../core/widgets/symbol_avatar.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/market_providers.dart';
@@ -147,7 +147,7 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Row(
               children: [
-                SymbolAvatar(symbol: widget.symbol),
+                SymbolLogo(symbol: widget.symbol),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

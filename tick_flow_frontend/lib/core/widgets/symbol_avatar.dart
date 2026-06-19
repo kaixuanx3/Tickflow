@@ -22,10 +22,11 @@ Color _colorFor(String symbol) {
 
 /// Rounded-square avatar with the symbol's first letter, tinted per symbol.
 class SymbolAvatar extends StatelessWidget {
-  const SymbolAvatar({super.key, required this.symbol, this.size = 40});
+  const SymbolAvatar({super.key, required this.symbol, this.size = 40, this.circle = false});
 
   final String symbol;
   final double size;
+  final bool circle;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +37,8 @@ class SymbolAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(size * 0.28),
+        shape: circle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circle ? null : BorderRadius.circular(size * 0.28),
       ),
       alignment: Alignment.center,
       child: Text(

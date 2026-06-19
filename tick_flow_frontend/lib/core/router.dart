@@ -9,6 +9,7 @@ import '../features/markets/view/markets_screen.dart';
 import '../features/markets/view/search_screen.dart';
 import '../features/menu/view/menu_screen.dart';
 import '../features/notifications/view/notifications_screen.dart';
+import '../features/portfolio/view/analytics_screen.dart';
 import '../features/portfolio/view/portfolio_screen.dart';
 import '../features/symbol_detail/view/symbol_detail_screen.dart';
 import 'widgets/app_shell.dart';
@@ -48,6 +49,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, state) =>
             SymbolDetailScreen(symbol: state.pathParameters['symbol']!),
+      ),
+      GoRoute(
+        path: '/analytics',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const AnalyticsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
