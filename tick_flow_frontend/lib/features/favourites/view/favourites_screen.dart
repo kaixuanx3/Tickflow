@@ -120,6 +120,9 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
+    // Company name (from the profile already fetched for the logo), shown under
+    // the symbol just like the Markets rows.
+    final name = ref.watch(profileProvider(widget.symbol)).value?.name ?? '';
 
     return Dismissible(
       key: ValueKey(widget.symbol),
@@ -149,14 +152,29 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
               children: [
                 SymbolLogo(symbol: widget.symbol),
                 const SizedBox(width: 12),
-                Text(
-                  widget.symbol,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                // Sparkline centred in the slack between the symbol and price.
                 Expanded(
-                  child: Center(child: _RowSparkline(symbol: widget.symbol)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.symbol,
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      if (name.isNotEmpty && name != widget.symbol) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
+                _RowSparkline(symbol: widget.symbol),
                 const SizedBox(width: 12),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
