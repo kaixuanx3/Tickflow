@@ -149,13 +149,14 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
               children: [
                 SymbolLogo(symbol: widget.symbol),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    widget.symbol,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                  ),
+                Text(
+                  widget.symbol,
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
-                _RowSparkline(symbol: widget.symbol),
+                // Sparkline centred in the slack between the symbol and price.
+                Expanded(
+                  child: Center(child: _RowSparkline(symbol: widget.symbol)),
+                ),
                 const SizedBox(width: 12),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
