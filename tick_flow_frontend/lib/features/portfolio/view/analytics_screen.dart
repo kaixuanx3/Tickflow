@@ -245,7 +245,6 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
       maxY = math.max(maxY, v);
     }
     final pad = (maxY - minY) * 0.08 + 1; // headroom; +1 guards a flat line
-    final lastX = (values.length - 1).toDouble();
     return LineChart(
       LineChartData(
         minY: minY - pad,
@@ -310,17 +309,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
             isCurved: false,
             color: color,
             barWidth: 2,
-            // A single dot anchoring the latest point.
-            dotData: FlDotData(
-              show: true,
-              checkToShowDot: (spot, bar) => spot.x == lastX,
-              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                radius: 4,
-                color: color,
-                strokeColor: theme.colorScheme.surface,
-                strokeWidth: 2,
-              ),
-            ),
+            dotData: const FlDotData(show: false), // only the scrub dot shows
             belowBarData:
                 BarAreaData(show: true, color: color.withValues(alpha: 0.14)),
           ),
