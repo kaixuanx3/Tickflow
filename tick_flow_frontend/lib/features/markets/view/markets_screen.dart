@@ -35,8 +35,9 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
         child: CustomScrollView(
           slivers: [
             const SliverToBoxAdapter(child: _SearchBar()),
-            const SliverToBoxAdapter(child: SizedBox(height: 4)),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
             const SliverToBoxAdapter(child: _OverviewCarousel()),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             SliverToBoxAdapter(
               child: _MoverTabs(
                 selected: _tab,
@@ -195,7 +196,7 @@ class _OverviewCarousel extends StatefulWidget {
 }
 
 class _OverviewCarouselState extends State<_OverviewCarousel> {
-  final _controller = PageController(viewportFraction: 0.95);
+  final _controller = PageController(viewportFraction: 0.46);
 
   @override
   void dispose() {
@@ -206,14 +207,15 @@ class _OverviewCarouselState extends State<_OverviewCarousel> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 220,
+      height: 132,
       child: PageView.builder(
         controller: _controller,
+        padEnds: false,
         itemCount: _overview.length,
         itemBuilder: (context, i) {
           final o = _overview[i];
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: EdgeInsets.fromLTRB(i == 0 ? 16 : 5, 0, 5, 0),
             child: OverviewCard(symbol: o.symbol, label: o.label),
           );
         },
