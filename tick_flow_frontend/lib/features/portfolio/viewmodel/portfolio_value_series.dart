@@ -3,12 +3,15 @@ import 'dart:collection';
 import '../../../data/markets/market_models.dart';
 import '../../../data/portfolio/portfolio_models.dart';
 
+/// A reconstructed point: epoch-ms timestamp [t] and portfolio [value].
+typedef ValuePoint = ({int t, double value});
+
 /// Reconstructs the portfolio's value over time from each holding's daily
 /// closes: value(t) = Σ qty × close_i(t), forward-filling a holding's last
 /// known close on dates it has no candle (and back-filling its earliest close
 /// for dates before its data starts). Holdings without candles are skipped;
-/// returns the chronological value series (empty when nothing has candles).
-List<double> reconstructValueSeries(
+/// returns the chronological series (empty when nothing has candles).
+List<ValuePoint> reconstructValueSeries(
   List<HoldingValuation> holdings,
   Map<String, List<Candle>> candlesBySymbol,
 ) {
@@ -26,7 +29,10 @@ List<double> reconstructValueSeries(
   if (lots.isEmpty) return const [];
   return [
     for (final t in timeline)
-      lots.fold(0.0, (sum, lot) => sum + lot.qty * _closeAt(lot.candles, t)),
+      (
+        t: t,
+        value: lots.fold(0.0, (sum, lot) => sum + lot.qty * _closeAt(lot.candles, t)),
+      ),
   ];
 }
 

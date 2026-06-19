@@ -26,8 +26,10 @@ void main() {
       'AAA': [candle(1, 10), candle(2, 20)],
       'BBB': [candle(1, 100)], // no t=2 → forward-fill 100
     };
+    final series = reconstructValueSeries(holdings, candles);
+    expect(series.map((p) => p.t).toList(), [1, 2]);
     // t=1: 2*10 + 3*100 = 320 ; t=2: 2*20 + 3*100 = 340
-    expect(reconstructValueSeries(holdings, candles), [320, 340]);
+    expect(series.map((p) => p.value).toList(), [320, 340]);
   });
 
   test('skips holdings without candles; empty when none have data', () {
@@ -38,6 +40,6 @@ void main() {
         'A': [candle(1, 5), candle(2, 7)],
       },
     );
-    expect(mixed, [5, 7]); // 'NO' has no candles → skipped
+    expect(mixed.map((p) => p.value).toList(), [5, 7]); // 'NO' skipped
   });
 }

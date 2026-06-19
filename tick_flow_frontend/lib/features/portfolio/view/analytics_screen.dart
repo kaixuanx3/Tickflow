@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
@@ -80,6 +81,7 @@ class _ValueChart extends ConsumerStatefulWidget {
 
 class _ValueChartState extends ConsumerState<_ValueChart> {
   _ChartRange _range = _ChartRange.m1;
+  int? _scrubIndex; // point under the finger while scrubbing, else null
 
   void _showInfo() {
     showDialog<void>(
@@ -118,9 +120,22 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
         candlesBySymbol[h.symbol] = candles;
       }
     }
-    final values = reconstructValueSeries(widget.holdings, candlesBySymbol);
+    final points = reconstructValueSeries(widget.holdings, candlesBySymbol);
+    final values = [for (final p in points) p.value];
     final rangeChange = (values.length >= 2 && values.first != 0)
         ? (values.last - values.first) / values.first * 100
+        : null;
+
+    // While scrubbing, the header shows the change-from-start and the date at
+    // the touched point instead of the whole-range change.
+    final scrub = (_scrubIndex != null && _scrubIndex! < points.length)
+        ? points[_scrubIndex!]
+        : null;
+    final displayChange = scrub != null && points.first.value != 0
+        ? (scrub.value - points.first.value) / points.first.value * 100
+        : rangeChange;
+    final displayDate = scrub != null
+        ? DateFormat.yMMMd().format(DateTime.fromMillisecondsSinceEpoch(scrub.t))
         : null;
 
     final Widget chart;
@@ -161,15 +176,29 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
             ],
           ),
         ),
-        if (rangeChange != null)
+        if (displayChange != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-            child: Text(
-              formatPercent(rangeChange),
-              style: tabularDigits(theme.textTheme.titleLarge!).copyWith(
-                color: rangeChange >= 0 ? market.gain : market.loss,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  formatPercent(displayChange),
+                  style: tabularDigits(theme.textTheme.titleLarge!).copyWith(
+                    color: displayChange >= 0 ? market.gain : market.loss,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (displayDate != null) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    displayDate,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ],
             ),
           ),
         const SizedBox(height: 8),
@@ -196,7 +225,10 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
               selected: {_range},
               showSelectedIcon: false,
               style: const ButtonStyle(visualDensity: VisualDensity.compact),
-              onSelectionChanged: (s) => setState(() => _range = s.first),
+              onSelectionChanged: (s) => setState(() {
+                _range = s.first;
+                _scrubIndex = null;
+              }),
             ),
           ),
         ),
@@ -221,7 +253,43 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
         gridData: const FlGridData(show: false),
         titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
-        lineTouchData: const LineTouchData(enabled: false),
+        // Drag-to-scrub: track the touched point; the header reads it.
+        lineTouchData: LineTouchData(
+          touchCallback: (event, response) {
+            final spots = response?.lineBarSpots;
+            if (!event.isInterestedForInteractions ||
+                spots == null ||
+                spots.isEmpty) {
+              if (_scrubIndex != null) setState(() => _scrubIndex = null);
+              return;
+            }
+            final idx = spots.first.spotIndex;
+            if (idx != _scrubIndex) setState(() => _scrubIndex = idx);
+          },
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (spots) => spots.map((_) => null).toList(),
+          ),
+          getTouchedSpotIndicator: (bar, spotIndexes) => [
+            for (final _ in spotIndexes)
+              TouchedSpotIndicatorData(
+                FlLine(
+                  color: color.withValues(alpha: 0.6),
+                  strokeWidth: 1,
+                  dashArray: const [4, 4],
+                ),
+                FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, b, index) =>
+                      FlDotCirclePainter(
+                    radius: 5,
+                    color: color,
+                    strokeColor: theme.colorScheme.surface,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+          ],
+        ),
         // Faint dashed baseline at the range's starting value.
         extraLinesData: ExtraLinesData(
           horizontalLines: [
