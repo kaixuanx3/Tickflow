@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
-import '../../../data/markets/quotes_cache.dart';
-import '../viewmodel/markets_list_controller.dart';
+import '../../../data/markets/market_models.dart';
+import '../viewmodel/markets_movers.dart';
 import 'overview_card.dart';
 import 'symbol_row.dart';
 
@@ -15,86 +15,169 @@ const _overview = [
   (symbol: 'DIA', label: 'Dow Jones'),
 ];
 
-class MarketsScreen extends ConsumerWidget {
+class MarketsScreen extends ConsumerStatefulWidget {
   const MarketsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final markets = ref.watch(marketsListProvider);
+  ConsumerState<MarketsScreen> createState() => _MarketsScreenState();
+}
+
+class _MarketsScreenState extends ConsumerState<MarketsScreen> {
+  MoverTab _tab = MoverTab.gainers;
+
+  @override
+  Widget build(BuildContext context) {
+    final movers = ref.watch(moversProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Markets'),
-        actions: [
-          IconButton(
-            tooltip: 'Search',
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push('/search'),
-          ),
-        ],
-      ),
-      body: markets.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorRetry(
-          message: '$e',
-          onRetry: () => ref.invalidate(marketsListProvider),
+      appBar: AppBar(title: const Text('Markets')),
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(moversProvider.future),
+        child: CustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(child: _SearchBar()),
+            const SliverToBoxAdapter(child: SizedBox(height: 4)),
+            const SliverToBoxAdapter(child: _OverviewCarousel()),
+            SliverToBoxAdapter(
+              child: _MoverTabs(
+                selected: _tab,
+                onChanged: (t) => setState(() => _tab = t),
+              ),
+            ),
+            movers.when(
+              loading: () => const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+              error: (e, _) => SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ErrorRetry(
+                    message: '$e',
+                    onRetry: () => ref.invalidate(moversProvider),
+                  ),
+                ),
+              ),
+              data: (quotes) {
+                final ranked = rankMovers(quotes, _tab);
+                if (ranked.isEmpty) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: Text('No data right now')),
+                    ),
+                  );
+                }
+                return SliverList.builder(
+                  itemCount: ranked.length,
+                  itemBuilder: (context, i) {
+                    final symbol = ranked[i].symbol;
+                    return SymbolRow(
+                      info: SymbolInfo(
+                        symbol: symbol,
+                        displaySymbol: symbol,
+                        description: '',
+                        type: '',
+                      ),
+                      onTap: () => context.push('/symbol/$symbol'),
+                    );
+                  },
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          ],
         ),
-        data: (state) => _MarketsBody(state: state),
       ),
     );
   }
 }
 
-class _MarketsBody extends ConsumerWidget {
-  const _MarketsBody({required this.state});
-
-  final MarketsListState state;
+/// Tappable search field that opens the full search screen.
+class _SearchBar extends StatelessWidget {
+  const _SearchBar();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final delayed = ref.watch(quotesProvider.select((m) => m.values.any((q) => q.delayed)));
-    final hints = [
-      if (delayed) 'Delayed',
-      if (state.stale) 'Cached',
-    ].join(' · ');
-    final hasFooter = state.hasMore || state.loadMoreFailed;
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push('/search'),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 12),
+                Text(
+                  'Search US stocks',
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (n) {
-        if (n.metrics.extentAfter < 400) {
-          ref.read(marketsListProvider.notifier).loadMore();
-        }
-        return false;
-      },
-      child: RefreshIndicator(
-        onRefresh: () {
-          ref.read(quotesProvider.notifier).clear();
-          return ref.refresh(marketsListProvider.future);
-        },
-        child: CustomScrollView(
-          slivers: [
-            const SliverToBoxAdapter(
-              child: _SectionHeader(title: 'Market Overview'),
-            ),
-            const SliverToBoxAdapter(child: _OverviewCarousel()),
-            SliverToBoxAdapter(
-              child: _SectionHeader(
-                title: 'All stocks',
-                trailing: hints.isEmpty ? null : hints,
+/// Segmented control for Top gainers / Top losers / Most active.
+class _MoverTabs extends StatelessWidget {
+  const _MoverTabs({required this.selected, required this.onChanged});
+
+  final MoverTab selected;
+  final ValueChanged<MoverTab> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            for (final t in MoverTab.values)
+              Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => onChanged(t),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    alignment: Alignment.center,
+                    decoration: t == selected
+                        ? BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                          )
+                        : null,
+                    child: Text(
+                      t.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: t == selected
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight:
+                            t == selected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            SliverList.builder(
-              itemCount: state.symbols.length,
-              itemBuilder: (context, i) {
-                final info = state.symbols[i];
-                return SymbolRow(
-                  info: info,
-                  onTap: () => context.push('/symbol/${info.symbol}'),
-                );
-              },
-            ),
-            if (hasFooter)
-              SliverToBoxAdapter(child: _LoadMoreFooter(failed: state.loadMoreFailed)),
-            const SliverToBoxAdapter(child: SizedBox(height: 12)),
           ],
         ),
       ),
@@ -134,63 +217,6 @@ class _OverviewCarouselState extends State<_OverviewCarousel> {
             child: OverviewCard(symbol: o.symbol, label: o.label),
           );
         },
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.trailing});
-
-  final String title;
-  final String? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-          if (trailing != null)
-            Text(
-              trailing!,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoadMoreFooter extends ConsumerWidget {
-  const _LoadMoreFooter({required this.failed});
-
-  final bool failed;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Center(
-        child: failed
-            ? TextButton(
-                onPressed: () =>
-                    ref.read(marketsListProvider.notifier).loadMore(retry: true),
-                child: const Text("Couldn't load more — tap to retry"),
-              )
-            : const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
       ),
     );
   }
