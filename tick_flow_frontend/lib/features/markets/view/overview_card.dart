@@ -79,7 +79,7 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
                 quote == null ? '—' : formatMoney(quote.price),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: tabularDigits(theme.textTheme.titleLarge!)
+                style: tabularDigits(theme.textTheme.headlineSmall!)
                     .copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 1),

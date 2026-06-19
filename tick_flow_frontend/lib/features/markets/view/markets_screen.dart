@@ -35,9 +35,9 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
         child: CustomScrollView(
           slivers: [
             const SliverToBoxAdapter(child: _SearchBar()),
-            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
             const SliverToBoxAdapter(child: _OverviewCarousel()),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
             SliverToBoxAdapter(
               child: _MoverTabs(
                 selected: _tab,
@@ -206,19 +206,24 @@ class _OverviewCarouselState extends State<_OverviewCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 132,
-      child: PageView.builder(
-        controller: _controller,
-        padEnds: false,
-        itemCount: _overview.length,
-        itemBuilder: (context, i) {
-          final o = _overview[i];
-          return Padding(
-            padding: EdgeInsets.fromLTRB(i == 0 ? 16 : 5, 0, 5, 0),
-            child: OverviewCard(symbol: o.symbol, label: o.label),
-          );
-        },
+    // Left inset (8) + each card's symmetric padding (8) puts the first card's
+    // edge at the 16px screen gutter, while every card keeps equal width.
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: SizedBox(
+        height: 146,
+        child: PageView.builder(
+          controller: _controller,
+          padEnds: false,
+          itemCount: _overview.length,
+          itemBuilder: (context, i) {
+            final o = _overview[i];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: OverviewCard(symbol: o.symbol, label: o.label),
+            );
+          },
+        ),
       ),
     );
   }
