@@ -142,4 +142,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get authToggleToRegister => '还没有账户？注册';
+
+  @override
+  String get commonRetry => '重试';
+
+  @override
+  String get marketsTitle => '市场';
+
+  @override
+  String get marketsSearchHint => '搜索美股';
+
+  @override
+  String get marketsTabGainers => '涨幅榜';
+
+  @override
+  String get marketsTabLosers => '跌幅榜';
+
+  @override
+  String get marketsTabActive => '最活跃';
+
+  @override
+  String get marketsNoData => '暂无数据';
 }

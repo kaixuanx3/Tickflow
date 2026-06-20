@@ -44,5 +44,12 @@
   "authCreateAccount": "注册账户",
   "authSignIn": "登录",
   "authToggleToSignIn": "已有账户？登录",
-  "authToggleToRegister": "还没有账户？注册"
+  "authToggleToRegister": "还没有账户？注册",
+  "commonRetry": "重试",
+  "marketsTitle": "市场",
+  "marketsSearchHint": "搜索美股",
+  "marketsTabGainers": "涨幅榜",
+  "marketsTabLosers": "跌幅榜",
+  "marketsTabActive": "最活跃",
+  "marketsNoData": "暂无数据"
 }

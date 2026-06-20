@@ -44,5 +44,12 @@
   "authCreateAccount": "Create account",
   "authSignIn": "Sign in",
   "authToggleToSignIn": "Have an account? Sign in",
-  "authToggleToRegister": "New here? Create an account"
+  "authToggleToRegister": "New here? Create an account",
+  "commonRetry": "Retry",
+  "marketsTitle": "Markets",
+  "marketsSearchHint": "Search US stocks",
+  "marketsTabGainers": "Top gainers",
+  "marketsTabLosers": "Top losers",
+  "marketsTabActive": "Most active",
+  "marketsNoData": "No data right now"
 }

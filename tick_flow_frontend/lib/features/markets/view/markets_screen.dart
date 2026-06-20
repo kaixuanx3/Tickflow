@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/widgets/error_retry.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/quotes_cache.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/markets_movers.dart';
 import 'overview_card.dart';
 import 'symbol_row.dart';
@@ -28,6 +29,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final movers = ref.watch(moversProvider);
     // The movers snapshot already holds every universe quote — push them into
     // the shared quote cache so switching tabs shows prices instantly instead
@@ -39,7 +41,7 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
       }
     });
     return Scaffold(
-      appBar: AppBar(title: const Text('Markets')),
+      appBar: AppBar(title: Text(l10n.marketsTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(moversProvider.future),
         child: CustomScrollView(
@@ -73,10 +75,10 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
               data: (quotes) {
                 final ranked = rankMovers(quotes, _tab);
                 if (ranked.isEmpty) {
-                  return const SliverToBoxAdapter(
+                  return SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Center(child: Text('No data right now')),
+                      padding: const EdgeInsets.all(24),
+                      child: Center(child: Text(l10n.marketsNoData)),
                     ),
                   );
                 }
@@ -105,6 +107,12 @@ class _MarketsScreenState extends ConsumerState<MarketsScreen> {
   }
 }
 
+String _moverTabLabel(AppLocalizations l10n, MoverTab tab) => switch (tab) {
+      MoverTab.gainers => l10n.marketsTabGainers,
+      MoverTab.losers => l10n.marketsTabLosers,
+      MoverTab.active => l10n.marketsTabActive,
+    };
+
 /// Tappable search field that opens the full search screen.
 class _SearchBar extends StatelessWidget {
   const _SearchBar();
@@ -127,7 +135,7 @@ class _SearchBar extends StatelessWidget {
                 Icon(Icons.search, size: 20, color: theme.colorScheme.onSurfaceVariant),
                 const SizedBox(width: 12),
                 Text(
-                  'Search US stocks',
+                  AppLocalizations.of(context).marketsSearchHint,
                   style: theme.textTheme.bodyLarge
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -175,7 +183,7 @@ class _MoverTabs extends StatelessWidget {
                           )
                         : null,
                     child: Text(
-                      t.label,
+                      _moverTabLabel(AppLocalizations.of(context), t),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(

@@ -367,6 +367,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New here? Create an account'**
   String get authToggleToRegister;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
+
+  /// No description provided for @marketsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get marketsTitle;
+
+  /// No description provided for @marketsSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search US stocks'**
+  String get marketsSearchHint;
+
+  /// No description provided for @marketsTabGainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Top gainers'**
+  String get marketsTabGainers;
+
+  /// No description provided for @marketsTabLosers.
+  ///
+  /// In en, this message translates to:
+  /// **'Top losers'**
+  String get marketsTabLosers;
+
+  /// No description provided for @marketsTabActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Most active'**
+  String get marketsTabActive;
+
+  /// No description provided for @marketsNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data right now'**
+  String get marketsNoData;
 }
 
 class _AppLocalizationsDelegate

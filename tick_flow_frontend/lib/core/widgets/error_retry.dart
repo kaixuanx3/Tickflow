@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+
 class ErrorRetry extends StatelessWidget {
   const ErrorRetry({super.key, required this.message, required this.onRetry});
 
@@ -19,7 +21,10 @@ class ErrorRetry extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 16),
-            FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
+            FilledButton.tonal(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context).commonRetry),
+            ),
           ],
         ),
       ),

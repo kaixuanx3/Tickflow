@@ -144,4 +144,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authToggleToRegister => 'New here? Create an account';
+
+  @override
+  String get commonRetry => 'Retry';
+
+  @override
+  String get marketsTitle => 'Markets';
+
+  @override
+  String get marketsSearchHint => 'Search US stocks';
+
+  @override
+  String get marketsTabGainers => 'Top gainers';
+
+  @override
+  String get marketsTabLosers => 'Top losers';
+
+  @override
+  String get marketsTabActive => 'Most active';
+
+  @override
+  String get marketsNoData => 'No data right now';
 }
