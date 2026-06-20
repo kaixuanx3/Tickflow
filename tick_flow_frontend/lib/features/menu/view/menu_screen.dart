@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/biometric_lock.dart';
 import '../../../core/theme_mode.dart';
 import '../../../data/api/api_client.dart';
 import '../../auth/viewmodel/auth_controller.dart';
@@ -13,6 +14,8 @@ class MenuScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final email = ref.watch(authControllerProvider).value?.email ?? '';
     final mode = ref.watch(themeModeProvider);
+    final bioAvailable = ref.watch(biometricAvailableProvider).value ?? false;
+    final bioEnabled = ref.watch(biometricEnabledProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Menu')),
@@ -31,6 +34,22 @@ class MenuScreen extends ConsumerWidget {
               ),
             ],
           ),
+          if (bioAvailable) ...[
+            const _SectionHeader('Security'),
+            _MenuCard(
+              children: [
+                _MenuRow(
+                  icon: Icons.fingerprint,
+                  title: 'Biometric unlock',
+                  onTap: () => _toggleBiometric(context, ref, !bioEnabled),
+                  trailing: Switch(
+                    value: bioEnabled,
+                    onChanged: (v) => _toggleBiometric(context, ref, v),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const _SectionHeader('About'),
           _MenuCard(
             children: [
@@ -90,6 +109,19 @@ String _initials(String email) {
   final letters = local.replaceAll(RegExp('[^A-Za-z]'), '');
   if (letters.isEmpty) return email.isEmpty ? '?' : email[0].toUpperCase();
   return letters.substring(0, letters.length >= 2 ? 2 : 1).toUpperCase();
+}
+
+Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool value) async {
+  if (value) {
+    final ok = await ref.read(biometricEnabledProvider.notifier).enable();
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not enable biometric unlock')),
+      );
+    }
+  } else {
+    await ref.read(biometricEnabledProvider.notifier).disable();
+  }
 }
 
 void _showAbout(BuildContext context) => showAboutDialog(
@@ -274,12 +306,16 @@ class _MenuRow extends StatelessWidget {
     required this.title,
     this.value,
     this.onTap,
+    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final String? value;
   final VoidCallback? onTap;
+
+  /// Replaces the trailing chevron (e.g. a Switch for a toggle row).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +350,9 @@ class _MenuRow extends StatelessWidget {
               ),
               const SizedBox(width: 6),
             ],
-            if (onTap != null)
+            if (trailing != null)
+              trailing!
+            else if (onTap != null)
               Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
           ],
         ),
