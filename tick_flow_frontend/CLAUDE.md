@@ -75,6 +75,9 @@ Authed (Bearer):
 - **go_router** (auth redirect + `StatefulShellRoute` tabs) · **dio** (REST) · **web_socket_channel** (ticks)
 - **fl_chart** ≥1.2 — CandlestickChart (detail), LineChart (sparklines), PieChart (allocation donut)
 - **flutter_secure_storage** (JWT) · **shared_preferences** (theme, small prefs) · **intl** (money/date) · **google_fonts**
+- **local_auth** — optional biometric app-lock (Menu → Security). Mobile only (needs
+  `FlutterFragmentActivity` + `minSdk 23` on Android, `NSFaceIDUsageDescription` on iOS);
+  auto-hidden on web.
 - Deferred, NOT in v1: **Drift** offline cache (needs sqlite3 WASM setup on web — add only after
   all tabs work online) · **firebase_messaging** (web push unreliable, Notifications tab is the
   reliable path; Firebase project: tickflow-dev)
@@ -135,6 +138,9 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
   (`DELETE /auth/me`, behind a confirm dialog). No password change — the backend has no
   endpoint for that, so don't build that UI.
 - Appearance: System / Light / Dark (persisted in shared_preferences).
+- Security (mobile only, hidden on web): **Biometric unlock** toggle — when on, a Face ID /
+  fingerprint lock (`local_auth`, gated in `core/biometric_lock.dart`) covers the app on cold
+  launch and after ~30s backgrounded.
 - About: app version, "Market data via Finnhub/FMP — quotes delayed on the free tier",
   open-source licenses (`showLicensePage`).
 - Optional (debug builds only): current API_URL + WS connection status row.
