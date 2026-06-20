@@ -163,4 +163,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get marketsNoData => '暂无数据';
+
+  @override
+  String get favTitle => '自选';
+
+  @override
+  String get favEmptyTitle => '还没有自选股';
+
+  @override
+  String get favEmptyBody => '在「市场」中为股票点亮星标，它就会显示在这里并附带实时价格。';
+
+  @override
+  String favRemoveError(String symbol) {
+    return '无法移除 $symbol';
+  }
 }

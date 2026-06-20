@@ -165,4 +165,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get marketsNoData => 'No data right now';
+
+  @override
+  String get favTitle => 'Favourites';
+
+  @override
+  String get favEmptyTitle => 'Nothing starred yet';
+
+  @override
+  String get favEmptyBody =>
+      'Star a symbol in Markets and it shows up here with a live price.';
+
+  @override
+  String favRemoveError(String symbol) {
+    return 'Could not remove $symbol';
+  }
 }

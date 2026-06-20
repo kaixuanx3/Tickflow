@@ -51,5 +51,14 @@
   "marketsTabGainers": "Top gainers",
   "marketsTabLosers": "Top losers",
   "marketsTabActive": "Most active",
-  "marketsNoData": "No data right now"
+  "marketsNoData": "No data right now",
+  "favTitle": "Favourites",
+  "favEmptyTitle": "Nothing starred yet",
+  "favEmptyBody": "Star a symbol in Markets and it shows up here with a live price.",
+  "favRemoveError": "Could not remove {symbol}",
+  "@favRemoveError": {
+    "placeholders": {
+      "symbol": { "type": "String" }
+    }
+  }
 }

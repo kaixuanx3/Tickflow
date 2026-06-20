@@ -409,6 +409,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data right now'**
   String get marketsNoData;
+
+  /// No description provided for @favTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourites'**
+  String get favTitle;
+
+  /// No description provided for @favEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing starred yet'**
+  String get favEmptyTitle;
+
+  /// No description provided for @favEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Star a symbol in Markets and it shows up here with a live price.'**
+  String get favEmptyBody;
+
+  /// No description provided for @favRemoveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove {symbol}'**
+  String favRemoveError(String symbol);
 }
 
 class _AppLocalizationsDelegate

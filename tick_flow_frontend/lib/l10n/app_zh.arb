@@ -51,5 +51,9 @@
   "marketsTabGainers": "涨幅榜",
   "marketsTabLosers": "跌幅榜",
   "marketsTabActive": "最活跃",
-  "marketsNoData": "暂无数据"
+  "marketsNoData": "暂无数据",
+  "favTitle": "自选",
+  "favEmptyTitle": "还没有自选股",
+  "favEmptyBody": "在「市场」中为股票点亮星标，它就会显示在这里并附带实时价格。",
+  "favRemoveError": "无法移除 {symbol}"
 }
