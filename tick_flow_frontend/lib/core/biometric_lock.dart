@@ -8,16 +8,12 @@ import 'theme_mode.dart'; // sharedPreferencesProvider
 
 final _localAuth = LocalAuthentication();
 
-/// Whether this device can do biometric / device-credential auth. Always false
-/// on web (no reliable browser API), so the Menu toggle is hidden there.
-final biometricAvailableProvider = FutureProvider<bool>((ref) async {
-  if (kIsWeb) return false;
-  try {
-    return await _localAuth.isDeviceSupported();
-  } catch (_) {
-    return false;
-  }
-});
+/// Whether to offer the biometric-lock UI: any non-web platform (web has no
+/// reliable browser API). Whether the device can *currently* authenticate is
+/// proven at [BiometricEnabledController.enable] time — so the toggle still
+/// shows on, e.g., an emulator with no enrolled fingerprint, and guides the
+/// user instead of silently hiding.
+final biometricSupportedProvider = Provider<bool>((ref) => !kIsWeb);
 
 /// Persisted on/off switch for the app lock.
 class BiometricEnabledController extends Notifier<bool> {

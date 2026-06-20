@@ -14,7 +14,7 @@ class MenuScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final email = ref.watch(authControllerProvider).value?.email ?? '';
     final mode = ref.watch(themeModeProvider);
-    final bioAvailable = ref.watch(biometricAvailableProvider).value ?? false;
+    final bioAvailable = ref.watch(biometricSupportedProvider);
     final bioEnabled = ref.watch(biometricEnabledProvider);
 
     return Scaffold(
@@ -116,7 +116,11 @@ Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool value) a
     final ok = await ref.read(biometricEnabledProvider.notifier).enable();
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not enable biometric unlock')),
+        const SnackBar(
+          content: Text(
+            'Set up a fingerprint or screen lock on this device to use biometric unlock.',
+          ),
+        ),
       );
     }
   } else {
