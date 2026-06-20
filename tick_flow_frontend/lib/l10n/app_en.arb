@@ -180,5 +180,12 @@
   "detailCountry": "Country",
   "detailMarketCap": "Market cap",
   "detailIpo": "IPO",
-  "detailWebsite": "Website"
+  "detailWebsite": "Website",
+  "commonClear": "Clear",
+  "searchHint": "Search symbol or company",
+  "searchIdle": "Search US stocks by symbol or company name.",
+  "searchNoMatches": "No matches for \"{query}\".",
+  "@searchNoMatches": {
+    "placeholders": { "query": { "type": "String" } }
+  }
 }

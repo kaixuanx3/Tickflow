@@ -949,6 +949,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Website'**
   String get detailWebsite;
+
+  /// No description provided for @commonClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get commonClear;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search symbol or company'**
+  String get searchHint;
+
+  /// No description provided for @searchIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search US stocks by symbol or company name.'**
+  String get searchIdle;
+
+  /// No description provided for @searchNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches for \"{query}\".'**
+  String searchNoMatches(String query);
 }
 
 class _AppLocalizationsDelegate

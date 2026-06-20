@@ -141,5 +141,9 @@
   "detailCountry": "国家/地区",
   "detailMarketCap": "市值",
   "detailIpo": "IPO",
-  "detailWebsite": "网站"
+  "detailWebsite": "网站",
+  "commonClear": "清除",
+  "searchHint": "搜索代码或公司",
+  "searchIdle": "按代码或公司名称搜索美股。",
+  "searchNoMatches": "没有与「{query}」匹配的结果。"
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/error_retry.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/symbol_search_controller.dart';
 import 'symbol_row.dart';
 
@@ -31,6 +32,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final results = ref.watch(symbolSearchProvider);
     final query = _controller.text.trim();
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,12 +41,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           autofocus: true,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: 'Search symbol or company',
+            hintText: l10n.searchHint,
             border: InputBorder.none,
             suffixIcon: query.isEmpty
                 ? null
                 : IconButton(
-                    tooltip: 'Clear',
+                    tooltip: l10n.commonClear,
                     icon: const Icon(Icons.close),
                     onPressed: () {
                       _controller.clear();
@@ -56,9 +58,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ),
       ),
       body: query.isEmpty
-          ? const _CenteredHint(
+          ? _CenteredHint(
               icon: Icons.search,
-              message: 'Search US stocks by symbol or company name.',
+              message: l10n.searchIdle,
             )
           : results.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -69,7 +71,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               data: (list) => list.isEmpty
                   ? _CenteredHint(
                       icon: Icons.search_off,
-                      message: 'No matches for "$query".',
+                      message: l10n.searchNoMatches(query),
                     )
                   : ListView.builder(
                       itemCount: list.length,

@@ -464,4 +464,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailWebsite => 'Website';
+
+  @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get searchHint => 'Search symbol or company';
+
+  @override
+  String get searchIdle => 'Search US stocks by symbol or company name.';
+
+  @override
+  String searchNoMatches(String query) {
+    return 'No matches for \"$query\".';
+  }
 }

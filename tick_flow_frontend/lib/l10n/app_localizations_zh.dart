@@ -451,4 +451,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get detailWebsite => '网站';
+
+  @override
+  String get commonClear => '清除';
+
+  @override
+  String get searchHint => '搜索代码或公司';
+
+  @override
+  String get searchIdle => '按代码或公司名称搜索美股。';
+
+  @override
+  String searchNoMatches(String query) {
+    return '没有与「$query」匹配的结果。';
+  }
 }
