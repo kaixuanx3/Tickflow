@@ -86,9 +86,14 @@ class MenuScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const _SectionHeader('About'),
+          const _SectionHeader('Support'),
           _MenuCard(
             children: [
+              _MenuRow(
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                onTap: () => context.push('/help'),
+              ),
               _MenuRow(
                 icon: Icons.info_outline,
                 title: 'About Tickflow',

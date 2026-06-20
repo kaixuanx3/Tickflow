@@ -9,6 +9,7 @@ import '../features/markets/view/markets_screen.dart';
 import '../features/markets/view/search_screen.dart';
 import '../features/menu/view/account_screen.dart';
 import '../features/menu/view/change_password_screen.dart';
+import '../features/menu/view/help_screen.dart';
 import '../features/menu/view/menu_screen.dart';
 import '../features/notifications/view/notifications_screen.dart';
 import '../features/portfolio/view/analytics_screen.dart';
@@ -66,6 +67,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/change-password',
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, _) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/help',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const HelpScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
