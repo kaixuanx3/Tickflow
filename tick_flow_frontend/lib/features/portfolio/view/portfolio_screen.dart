@@ -10,6 +10,7 @@ import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/portfolio_controller.dart';
 import '../viewmodel/portfolio_day_change.dart';
 import 'holding_sheet.dart';
@@ -44,10 +45,11 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen> {
   @override
   Widget build(BuildContext context) {
     final summary = ref.watch(portfolioProvider);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Portfolio')),
+      appBar: AppBar(title: Text(l10n.portfolioTitle)),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Add holding',
+        tooltip: l10n.portfolioAddHolding,
         onPressed: () => showHoldingSheet(context),
         child: const Icon(Icons.add),
       ),
@@ -131,6 +133,7 @@ class _EmptyPortfolio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -140,11 +143,10 @@ class _EmptyPortfolio extends StatelessWidget {
             Icon(Icons.pie_chart_outline,
                 size: 48, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(height: 12),
-            Text('No holdings yet', style: theme.textTheme.titleMedium),
+            Text(l10n.portfolioEmptyTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
-              'Add what you own — quantity and buy price — and Tickflow '
-              'tracks value and gain/loss for you.',
+              l10n.portfolioEmptyBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -153,7 +155,7 @@ class _EmptyPortfolio extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => showHoldingSheet(context),
               icon: const Icon(Icons.add),
-              label: const Text('Add your first holding'),
+              label: Text(l10n.portfolioAddFirst),
             ),
           ],
         ),
@@ -173,6 +175,7 @@ class _TotalsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final market = theme.extension<MarketColors>()!;
     final gainColor = summary.totalGainLoss >= 0 ? market.gain : market.loss;
+    final l10n = AppLocalizations.of(context);
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -185,7 +188,7 @@ class _TotalsCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Total value',
+                    l10n.portfolioTotalValue,
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
@@ -199,7 +202,7 @@ class _TotalsCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Analytics',
+                          l10n.portfolioAnalytics,
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w600,
@@ -234,7 +237,7 @@ class _TotalsCard extends StatelessWidget {
                   ChangePill(percent: dayChange!.percent, compact: true),
                   const SizedBox(width: 8),
                   Text(
-                    'today',
+                    l10n.portfolioToday,
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
@@ -251,7 +254,7 @@ class _TotalsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Cost',
+                        l10n.portfolioCost,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
@@ -268,7 +271,7 @@ class _TotalsCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total gain / loss',
+                        l10n.portfolioTotalGainLoss,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
@@ -297,6 +300,7 @@ class _IncompleteBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       child: Row(
@@ -305,7 +309,7 @@ class _IncompleteBanner extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Some holdings have no live price right now — totals exclude them.',
+              l10n.portfolioIncomplete,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
@@ -332,26 +336,27 @@ class _HoldingsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 4),
       child: Row(
         children: [
           Text(
-            'Holdings',
+            l10n.portfolioHoldings,
             style:
                 theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const Spacer(),
           if (editing)
             Text(
-              'Drag to reorder',
+              l10n.portfolioDragToReorder,
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           if (canReorder)
             TextButton(
               onPressed: onToggle,
-              child: Text(editing ? 'Done' : 'Edit'),
+              child: Text(editing ? l10n.portfolioDone : l10n.portfolioEdit),
             ),
         ],
       ),
@@ -412,12 +417,15 @@ class _HoldingRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final market = theme.extension<MarketColors>()!;
     final h = holding;
+    final l10n = AppLocalizations.of(context);
 
     final profile = ref.watch(profileProvider(h.symbol)).value;
     // CompanyProfile.name falls back to the symbol, so only show a real name.
     final name =
         (profile != null && profile.name != h.symbol) ? profile.name : null;
-    final unit = h.assetType == AssetType.crypto ? 'Units' : 'Shares';
+    final unit = h.assetType == AssetType.crypto
+        ? l10n.portfolioUnitUnits
+        : l10n.portfolioUnitShares;
 
     final priced = h.gainLoss != null;
     final gainColor = priced
@@ -458,7 +466,8 @@ class _HoldingRow extends ConsumerWidget {
                   ],
                   const SizedBox(height: 1),
                   Text(
-                    '${formatQty(h.qty)} $unit, Avg. ${formatMoney(h.buyPrice)}',
+                    l10n.portfolioHoldingSubtitle(
+                        formatQty(h.qty), unit, formatMoney(h.buyPrice)),
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     maxLines: 1,
@@ -479,7 +488,7 @@ class _HoldingRow extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Text.rich(
                   TextSpan(
-                    text: 'Current ',
+                    text: '${l10n.portfolioCurrentLabel} ',
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     children: [

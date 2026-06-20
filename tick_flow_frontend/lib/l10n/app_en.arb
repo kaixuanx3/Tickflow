@@ -60,5 +60,53 @@
     "placeholders": {
       "symbol": { "type": "String" }
     }
-  }
+  },
+  "portfolioTitle": "Portfolio",
+  "portfolioAddHolding": "Add holding",
+  "portfolioEmptyTitle": "No holdings yet",
+  "portfolioEmptyBody": "Add what you own — quantity and buy price — and Tickflow tracks value and gain/loss for you.",
+  "portfolioAddFirst": "Add your first holding",
+  "portfolioTotalValue": "Total value",
+  "portfolioAnalytics": "Analytics",
+  "portfolioToday": "today",
+  "portfolioCost": "Cost",
+  "portfolioTotalGainLoss": "Total gain / loss",
+  "portfolioIncomplete": "Some holdings have no live price right now — totals exclude them.",
+  "portfolioHoldings": "Holdings",
+  "portfolioDragToReorder": "Drag to reorder",
+  "portfolioDone": "Done",
+  "portfolioEdit": "Edit",
+  "portfolioUnitShares": "Shares",
+  "portfolioUnitUnits": "Units",
+  "portfolioHoldingSubtitle": "{qty} {unit}, Avg. {avg}",
+  "@portfolioHoldingSubtitle": {
+    "placeholders": {
+      "qty": { "type": "String" },
+      "unit": { "type": "String" },
+      "avg": { "type": "String" }
+    }
+  },
+  "portfolioCurrentLabel": "Current",
+  "portfolioEditTitle": "Edit {symbol}",
+  "@portfolioEditTitle": {
+    "placeholders": { "symbol": { "type": "String" } }
+  },
+  "portfolioSymbol": "Symbol",
+  "portfolioSymbolHint": "US ticker, e.g. AAPL",
+  "portfolioEnterSymbol": "Enter a symbol",
+  "portfolioQuantity": "Quantity",
+  "portfolioQtyError": "Must be more than 0",
+  "portfolioBuyPrice": "Buy price",
+  "portfolioPriceError": "Must be 0 or more",
+  "portfolioSaveChanges": "Save changes",
+  "portfolioDeleteHolding": "Delete holding",
+  "portfolioRemoveTitle": "Remove {symbol}?",
+  "@portfolioRemoveTitle": {
+    "placeholders": { "symbol": { "type": "String" } }
+  },
+  "portfolioRemoveBody": "This deletes the holding from your portfolio.",
+  "portfolioRemove": "Remove",
+  "assetTypeStock": "Stock",
+  "assetTypeEtf": "ETF",
+  "assetTypeCrypto": "Crypto"
 }

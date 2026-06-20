@@ -433,6 +433,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not remove {symbol}'**
   String favRemoveError(String symbol);
+
+  /// No description provided for @portfolioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio'**
+  String get portfolioTitle;
+
+  /// No description provided for @portfolioAddHolding.
+  ///
+  /// In en, this message translates to:
+  /// **'Add holding'**
+  String get portfolioAddHolding;
+
+  /// No description provided for @portfolioEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No holdings yet'**
+  String get portfolioEmptyTitle;
+
+  /// No description provided for @portfolioEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add what you own — quantity and buy price — and Tickflow tracks value and gain/loss for you.'**
+  String get portfolioEmptyBody;
+
+  /// No description provided for @portfolioAddFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first holding'**
+  String get portfolioAddFirst;
+
+  /// No description provided for @portfolioTotalValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total value'**
+  String get portfolioTotalValue;
+
+  /// No description provided for @portfolioAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get portfolioAnalytics;
+
+  /// No description provided for @portfolioToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get portfolioToday;
+
+  /// No description provided for @portfolioCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost'**
+  String get portfolioCost;
+
+  /// No description provided for @portfolioTotalGainLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Total gain / loss'**
+  String get portfolioTotalGainLoss;
+
+  /// No description provided for @portfolioIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Some holdings have no live price right now — totals exclude them.'**
+  String get portfolioIncomplete;
+
+  /// No description provided for @portfolioHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings'**
+  String get portfolioHoldings;
+
+  /// No description provided for @portfolioDragToReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get portfolioDragToReorder;
+
+  /// No description provided for @portfolioDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get portfolioDone;
+
+  /// No description provided for @portfolioEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get portfolioEdit;
+
+  /// No description provided for @portfolioUnitShares.
+  ///
+  /// In en, this message translates to:
+  /// **'Shares'**
+  String get portfolioUnitShares;
+
+  /// No description provided for @portfolioUnitUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get portfolioUnitUnits;
+
+  /// No description provided for @portfolioHoldingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{qty} {unit}, Avg. {avg}'**
+  String portfolioHoldingSubtitle(String qty, String unit, String avg);
+
+  /// No description provided for @portfolioCurrentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get portfolioCurrentLabel;
+
+  /// No description provided for @portfolioEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {symbol}'**
+  String portfolioEditTitle(String symbol);
+
+  /// No description provided for @portfolioSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbol'**
+  String get portfolioSymbol;
+
+  /// No description provided for @portfolioSymbolHint.
+  ///
+  /// In en, this message translates to:
+  /// **'US ticker, e.g. AAPL'**
+  String get portfolioSymbolHint;
+
+  /// No description provided for @portfolioEnterSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a symbol'**
+  String get portfolioEnterSymbol;
+
+  /// No description provided for @portfolioQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get portfolioQuantity;
+
+  /// No description provided for @portfolioQtyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be more than 0'**
+  String get portfolioQtyError;
+
+  /// No description provided for @portfolioBuyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy price'**
+  String get portfolioBuyPrice;
+
+  /// No description provided for @portfolioPriceError.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be 0 or more'**
+  String get portfolioPriceError;
+
+  /// No description provided for @portfolioSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get portfolioSaveChanges;
+
+  /// No description provided for @portfolioDeleteHolding.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete holding'**
+  String get portfolioDeleteHolding;
+
+  /// No description provided for @portfolioRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {symbol}?'**
+  String portfolioRemoveTitle(String symbol);
+
+  /// No description provided for @portfolioRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes the holding from your portfolio.'**
+  String get portfolioRemoveBody;
+
+  /// No description provided for @portfolioRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get portfolioRemove;
+
+  /// No description provided for @assetTypeStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get assetTypeStock;
+
+  /// No description provided for @assetTypeEtf.
+  ///
+  /// In en, this message translates to:
+  /// **'ETF'**
+  String get assetTypeEtf;
+
+  /// No description provided for @assetTypeCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto'**
+  String get assetTypeCrypto;
 }
 
 class _AppLocalizationsDelegate

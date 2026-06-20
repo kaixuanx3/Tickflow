@@ -180,4 +180,118 @@ class AppLocalizationsEn extends AppLocalizations {
   String favRemoveError(String symbol) {
     return 'Could not remove $symbol';
   }
+
+  @override
+  String get portfolioTitle => 'Portfolio';
+
+  @override
+  String get portfolioAddHolding => 'Add holding';
+
+  @override
+  String get portfolioEmptyTitle => 'No holdings yet';
+
+  @override
+  String get portfolioEmptyBody =>
+      'Add what you own — quantity and buy price — and Tickflow tracks value and gain/loss for you.';
+
+  @override
+  String get portfolioAddFirst => 'Add your first holding';
+
+  @override
+  String get portfolioTotalValue => 'Total value';
+
+  @override
+  String get portfolioAnalytics => 'Analytics';
+
+  @override
+  String get portfolioToday => 'today';
+
+  @override
+  String get portfolioCost => 'Cost';
+
+  @override
+  String get portfolioTotalGainLoss => 'Total gain / loss';
+
+  @override
+  String get portfolioIncomplete =>
+      'Some holdings have no live price right now — totals exclude them.';
+
+  @override
+  String get portfolioHoldings => 'Holdings';
+
+  @override
+  String get portfolioDragToReorder => 'Drag to reorder';
+
+  @override
+  String get portfolioDone => 'Done';
+
+  @override
+  String get portfolioEdit => 'Edit';
+
+  @override
+  String get portfolioUnitShares => 'Shares';
+
+  @override
+  String get portfolioUnitUnits => 'Units';
+
+  @override
+  String portfolioHoldingSubtitle(String qty, String unit, String avg) {
+    return '$qty $unit, Avg. $avg';
+  }
+
+  @override
+  String get portfolioCurrentLabel => 'Current';
+
+  @override
+  String portfolioEditTitle(String symbol) {
+    return 'Edit $symbol';
+  }
+
+  @override
+  String get portfolioSymbol => 'Symbol';
+
+  @override
+  String get portfolioSymbolHint => 'US ticker, e.g. AAPL';
+
+  @override
+  String get portfolioEnterSymbol => 'Enter a symbol';
+
+  @override
+  String get portfolioQuantity => 'Quantity';
+
+  @override
+  String get portfolioQtyError => 'Must be more than 0';
+
+  @override
+  String get portfolioBuyPrice => 'Buy price';
+
+  @override
+  String get portfolioPriceError => 'Must be 0 or more';
+
+  @override
+  String get portfolioSaveChanges => 'Save changes';
+
+  @override
+  String get portfolioDeleteHolding => 'Delete holding';
+
+  @override
+  String portfolioRemoveTitle(String symbol) {
+    return 'Remove $symbol?';
+  }
+
+  @override
+  String get portfolioRemoveBody =>
+      'This deletes the holding from your portfolio.';
+
+  @override
+  String get portfolioRemove => 'Remove';
+
+  @override
+  String get assetTypeStock => 'Stock';
+
+  @override
+  String get assetTypeEtf => 'ETF';
+
+  @override
+  String get assetTypeCrypto => 'Crypto';
 }

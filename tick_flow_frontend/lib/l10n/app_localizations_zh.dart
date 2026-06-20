@@ -177,4 +177,115 @@ class AppLocalizationsZh extends AppLocalizations {
   String favRemoveError(String symbol) {
     return '无法移除 $symbol';
   }
+
+  @override
+  String get portfolioTitle => '投资组合';
+
+  @override
+  String get portfolioAddHolding => '添加持仓';
+
+  @override
+  String get portfolioEmptyTitle => '还没有持仓';
+
+  @override
+  String get portfolioEmptyBody => '添加你持有的资产（数量和买入价），Tickflow 会为你跟踪市值和盈亏。';
+
+  @override
+  String get portfolioAddFirst => '添加第一笔持仓';
+
+  @override
+  String get portfolioTotalValue => '总市值';
+
+  @override
+  String get portfolioAnalytics => '分析';
+
+  @override
+  String get portfolioToday => '今日';
+
+  @override
+  String get portfolioCost => '成本';
+
+  @override
+  String get portfolioTotalGainLoss => '总盈亏';
+
+  @override
+  String get portfolioIncomplete => '部分持仓暂无实时价格，总计已将其排除。';
+
+  @override
+  String get portfolioHoldings => '持仓';
+
+  @override
+  String get portfolioDragToReorder => '拖动以重新排序';
+
+  @override
+  String get portfolioDone => '完成';
+
+  @override
+  String get portfolioEdit => '编辑';
+
+  @override
+  String get portfolioUnitShares => '股';
+
+  @override
+  String get portfolioUnitUnits => '单位';
+
+  @override
+  String portfolioHoldingSubtitle(String qty, String unit, String avg) {
+    return '$qty $unit，平均 $avg';
+  }
+
+  @override
+  String get portfolioCurrentLabel => '现价';
+
+  @override
+  String portfolioEditTitle(String symbol) {
+    return '编辑 $symbol';
+  }
+
+  @override
+  String get portfolioSymbol => '代码';
+
+  @override
+  String get portfolioSymbolHint => '美股代码，例如 AAPL';
+
+  @override
+  String get portfolioEnterSymbol => '请输入代码';
+
+  @override
+  String get portfolioQuantity => '数量';
+
+  @override
+  String get portfolioQtyError => '必须大于 0';
+
+  @override
+  String get portfolioBuyPrice => '买入价';
+
+  @override
+  String get portfolioPriceError => '必须大于或等于 0';
+
+  @override
+  String get portfolioSaveChanges => '保存更改';
+
+  @override
+  String get portfolioDeleteHolding => '删除持仓';
+
+  @override
+  String portfolioRemoveTitle(String symbol) {
+    return '移除 $symbol？';
+  }
+
+  @override
+  String get portfolioRemoveBody => '这会从你的投资组合中删除该持仓。';
+
+  @override
+  String get portfolioRemove => '移除';
+
+  @override
+  String get assetTypeStock => '股票';
+
+  @override
+  String get assetTypeEtf => 'ETF';
+
+  @override
+  String get assetTypeCrypto => '加密货币';
 }
