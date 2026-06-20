@@ -122,5 +122,6 @@
   "alertEditTitle": "编辑 {symbol} 提醒",
   "alertDeleteButton": "删除提醒",
   "alertDeleteTitle": "删除 {symbol} 提醒？",
-  "alertDeleteContent": "{rule} {threshold} —— 这也会将其从你的活动提醒历史中移除。"
+  "alertDeleteContent": "{rule} {threshold} —— 这也会将其从你的活动提醒历史中移除。",
+  "navAlerts": "提醒"
 }

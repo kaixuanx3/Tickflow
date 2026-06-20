@@ -835,6 +835,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{rule} {threshold} — this also removes it from your history of active alerts.'**
   String alertDeleteContent(String rule, String threshold);
+
+  /// No description provided for @navAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get navAlerts;
 }
 
 class _AppLocalizationsDelegate

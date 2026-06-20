@@ -155,5 +155,6 @@
       "rule": { "type": "String" },
       "threshold": { "type": "String" }
     }
-  }
+  },
+  "navAlerts": "Alerts"
 }

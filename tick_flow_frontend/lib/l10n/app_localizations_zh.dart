@@ -392,4 +392,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String alertDeleteContent(String rule, String threshold) {
     return '$rule $threshold —— 这也会将其从你的活动提醒历史中移除。';
   }
+
+  @override
+  String get navAlerts => '提醒';
 }

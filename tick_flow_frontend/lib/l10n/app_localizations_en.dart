@@ -404,4 +404,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String alertDeleteContent(String rule, String threshold) {
     return '$rule $threshold — this also removes it from your history of active alerts.';
   }
+
+  @override
+  String get navAlerts => 'Alerts';
 }
