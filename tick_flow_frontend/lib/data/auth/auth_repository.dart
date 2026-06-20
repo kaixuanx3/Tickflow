@@ -25,6 +25,21 @@ class AuthRepository {
 
   Future<void> signOut() => _storage.clear();
 
+  /// Changes the password for an email/password account. No session change.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/auth/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
   /// Updates the display name via PATCH /auth/me and refreshes the cached user.
   Future<AuthUser> updateProfile({required String? name}) async {
     try {

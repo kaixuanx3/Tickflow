@@ -13,6 +13,7 @@ export interface UserRepo {
   findById(userId: string): Promise<UserRecord | null>;
   create(email: string, passwordHash: string | null): Promise<UserRecord>;
   updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord>;
+  updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
   /** Idempotent; related rows cascade via the schema's onDelete: Cascade. */
   delete(userId: string): Promise<void>;
 }
@@ -22,6 +23,8 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string | null;
+  /** false for Google-only accounts — the app hides "Change password" for them. */
+  hasPassword: boolean;
 }
 
 /** Implemented by infrastructure (google-auth-library); null = token rejected. */
@@ -43,9 +46,16 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
+export class PasswordNotSetError extends Error {
+  constructor() {
+    super('this account signs in with Google and has no password to change');
+    this.name = 'PasswordNotSetError';
+  }
+}
+
 export interface AuthResult {
   token: string;
-  user: { id: string; email: string; name: string | null };
+  user: UserProfile;
 }
 
 export class AuthService {
@@ -107,6 +117,21 @@ export class AuthService {
     return this.toProfile(user);
   }
 
+  /** Verifies the current password, then sets a new one. Email/password accounts only. */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.users.findById(userId);
+    if (!user) throw new InvalidCredentialsError();
+    if (!user.passwordHash) throw new PasswordNotSetError();
+    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      throw new InvalidCredentialsError();
+    }
+    await this.users.updatePasswordHash(userId, await bcrypt.hash(newPassword, 10));
+  }
+
   /** Same JWT for REST and the WS auth message. */
   verifyToken(token: string): { userId: string } | null {
     try {
@@ -124,6 +149,11 @@ export class AuthService {
   }
 
   private toProfile(user: UserRecord): UserProfile {
-    return { id: user.id, email: user.email, name: user.name };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      hasPassword: user.passwordHash !== null,
+    };
   }
 }

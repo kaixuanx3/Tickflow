@@ -3,6 +3,7 @@ import {
   AuthService,
   EmailTakenError,
   InvalidCredentialsError,
+  PasswordNotSetError,
   type UserRecord,
   type UserRepo,
 } from './auth-service.js';
@@ -30,6 +31,11 @@ class MemoryUserRepo implements UserRepo {
     if (!user) throw new Error('user not found');
     if (data.name !== undefined) user.name = data.name;
     return user;
+  }
+
+  async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) user.passwordHash = passwordHash;
   }
 
   async delete(userId: string): Promise<void> {
@@ -168,7 +174,12 @@ describe('AuthService', () => {
 
     const profile = await service.getProfile(user.id);
 
-    expect(profile).toEqual({ id: user.id, email: 'kai@example.com', name: null });
+    expect(profile).toEqual({
+      id: user.id,
+      email: 'kai@example.com',
+      name: null,
+      hasPassword: true,
+    });
     expect(profile).not.toHaveProperty('passwordHash');
   });
 
@@ -205,6 +216,43 @@ describe('AuthService', () => {
     const profile = await service.updateProfile(user.id, {});
 
     expect(profile.name).toBe('Kai');
+  });
+
+  it('getProfile reports hasPassword false for Google-only accounts', async () => {
+    const { repo, service } = makeService();
+    repo.users.push({ id: 'g1', email: 'google@example.com', name: null, passwordHash: null });
+
+    expect((await service.getProfile('g1'))?.hasPassword).toBe(false);
+  });
+
+  it('changePassword swaps the hash so the new password works and the old fails', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+
+    await service.changePassword(user.id, 'password123', 'new-password456');
+
+    await expect(service.login('kai@example.com', 'password123')).rejects.toThrow(
+      InvalidCredentialsError,
+    );
+    expect((await service.login('kai@example.com', 'new-password456')).user.id).toBe(user.id);
+  });
+
+  it('changePassword rejects a wrong current password', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+
+    await expect(
+      service.changePassword(user.id, 'wrong-current', 'new-password456'),
+    ).rejects.toThrow(InvalidCredentialsError);
+  });
+
+  it('changePassword rejects Google-only accounts with no password', async () => {
+    const { repo, service } = makeService();
+    repo.users.push({ id: 'g1', email: 'google@example.com', name: null, passwordHash: null });
+
+    await expect(service.changePassword('g1', 'whatever1', 'new-password456')).rejects.toThrow(
+      PasswordNotSetError,
+    );
   });
 
   it('verifyToken rejects garbage and foreign-signed tokens', async () => {

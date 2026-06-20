@@ -18,6 +18,8 @@ class MenuScreen extends ConsumerWidget {
     final mode = ref.watch(themeModeProvider);
     final bioAvailable = ref.watch(biometricSupportedProvider);
     final bioEnabled = ref.watch(biometricEnabledProvider);
+    // Unknown (older session) → assume there's a password; Google-only hides it.
+    final canChangePassword = user?.hasPassword ?? true;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Menu')),
@@ -46,19 +48,26 @@ class MenuScreen extends ConsumerWidget {
               ),
             ],
           ),
-          if (bioAvailable) ...[
+          if (canChangePassword || bioAvailable) ...[
             const _SectionHeader('Security'),
             _MenuCard(
               children: [
-                _MenuRow(
-                  icon: Icons.fingerprint,
-                  title: 'Biometric unlock',
-                  onTap: () => _toggleBiometric(context, ref, !bioEnabled),
-                  trailing: Switch(
-                    value: bioEnabled,
-                    onChanged: (v) => _toggleBiometric(context, ref, v),
+                if (canChangePassword)
+                  _MenuRow(
+                    icon: Icons.lock_outline,
+                    title: 'Change password',
+                    onTap: () => context.push('/change-password'),
                   ),
-                ),
+                if (bioAvailable)
+                  _MenuRow(
+                    icon: Icons.fingerprint,
+                    title: 'Biometric unlock',
+                    onTap: () => _toggleBiometric(context, ref, !bioEnabled),
+                    trailing: Switch(
+                      value: bioEnabled,
+                      onChanged: (v) => _toggleBiometric(context, ref, v),
+                    ),
+                  ),
               ],
             ),
           ],

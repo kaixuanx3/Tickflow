@@ -36,6 +36,10 @@ class MemoryUserRepo implements UserRepo {
     if (data.name !== undefined) user.name = data.name;
     return user;
   }
+  async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) user.passwordHash = passwordHash;
+  }
   async delete(userId: string): Promise<void> {
     this.users = this.users.filter((u) => u.id !== userId);
   }
