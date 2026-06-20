@@ -6,13 +6,17 @@ export interface UserRecord {
   email: string;
   name: string | null;
   passwordHash: string | null;
+  pushEnabled: boolean;
 }
 
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
   findById(userId: string): Promise<UserRecord | null>;
   create(email: string, passwordHash: string | null): Promise<UserRecord>;
-  updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord>;
+  updateProfile(
+    userId: string,
+    data: { name?: string | null; pushEnabled?: boolean },
+  ): Promise<UserRecord>;
   updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
   /** Idempotent; related rows cascade via the schema's onDelete: Cascade. */
   delete(userId: string): Promise<void>;
@@ -25,6 +29,8 @@ export interface UserProfile {
   name: string | null;
   /** false for Google-only accounts — the app hides "Change password" for them. */
   hasPassword: boolean;
+  /** false = alert push muted (in-app feed still records). */
+  pushEnabled: boolean;
 }
 
 /** Implemented by infrastructure (google-auth-library); null = token rejected. */
@@ -107,12 +113,16 @@ export class AuthService {
   }
 
   /** Partial update: only fields present in `patch` change. Blank name clears it to null. */
-  async updateProfile(userId: string, patch: { name?: string | undefined }): Promise<UserProfile> {
-    const data: { name?: string | null } = {};
+  async updateProfile(
+    userId: string,
+    patch: { name?: string | undefined; pushEnabled?: boolean | undefined },
+  ): Promise<UserProfile> {
+    const data: { name?: string | null; pushEnabled?: boolean } = {};
     if (patch.name !== undefined) {
       const trimmed = patch.name.trim();
       data.name = trimmed === '' ? null : trimmed;
     }
+    if (patch.pushEnabled !== undefined) data.pushEnabled = patch.pushEnabled;
     const user = await this.users.updateProfile(userId, data);
     return this.toProfile(user);
   }
@@ -154,6 +164,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       hasPassword: user.passwordHash !== null,
+      pushEnabled: user.pushEnabled,
     };
   }
 }

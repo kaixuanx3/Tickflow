@@ -25,7 +25,7 @@ class MemoryUserRepo implements UserRepo {
     return this.users.find((u) => u.id === userId) ?? null;
   }
   async create(email: string, passwordHash: string | null): Promise<UserRecord> {
-    const user = { id: `u${this.users.length + 1}`, email, name: null, passwordHash };
+    const user = { id: `u${this.users.length + 1}`, email, name: null, passwordHash, pushEnabled: true };
     this.users.push(user);
     return user;
   }

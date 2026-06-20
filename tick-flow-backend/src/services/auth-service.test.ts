@@ -21,15 +21,19 @@ class MemoryUserRepo implements UserRepo {
   }
 
   async create(email: string, passwordHash: string | null): Promise<UserRecord> {
-    const user = { id: `u${this.nextId++}`, email, name: null, passwordHash };
+    const user = { id: `u${this.nextId++}`, email, name: null, passwordHash, pushEnabled: true };
     this.users.push(user);
     return user;
   }
 
-  async updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord> {
+  async updateProfile(
+    userId: string,
+    data: { name?: string | null; pushEnabled?: boolean },
+  ): Promise<UserRecord> {
     const user = this.users.find((u) => u.id === userId);
     if (!user) throw new Error('user not found');
     if (data.name !== undefined) user.name = data.name;
+    if (data.pushEnabled !== undefined) user.pushEnabled = data.pushEnabled;
     return user;
   }
 
@@ -106,7 +110,13 @@ describe('AuthService', () => {
 
   it('login rejects accounts without a password hash (Google-only)', async () => {
     const { repo, service } = makeService();
-    repo.users.push({ id: 'u9', email: 'google@example.com', name: null, passwordHash: null });
+    repo.users.push({
+      id: 'u9',
+      email: 'google@example.com',
+      name: null,
+      passwordHash: null,
+      pushEnabled: true,
+    });
 
     await expect(service.login('google@example.com', 'whatever1')).rejects.toThrow(
       InvalidCredentialsError,
@@ -179,6 +189,7 @@ describe('AuthService', () => {
       email: 'kai@example.com',
       name: null,
       hasPassword: true,
+      pushEnabled: true,
     });
     expect(profile).not.toHaveProperty('passwordHash');
   });
@@ -218,9 +229,26 @@ describe('AuthService', () => {
     expect(profile.name).toBe('Kai');
   });
 
+  it('updateProfile toggles pushEnabled without disturbing the name', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+    await service.updateProfile(user.id, { name: 'Kai' });
+
+    const profile = await service.updateProfile(user.id, { pushEnabled: false });
+
+    expect(profile.pushEnabled).toBe(false);
+    expect(profile.name).toBe('Kai');
+  });
+
   it('getProfile reports hasPassword false for Google-only accounts', async () => {
     const { repo, service } = makeService();
-    repo.users.push({ id: 'g1', email: 'google@example.com', name: null, passwordHash: null });
+    repo.users.push({
+      id: 'g1',
+      email: 'google@example.com',
+      name: null,
+      passwordHash: null,
+      pushEnabled: true,
+    });
 
     expect((await service.getProfile('g1'))?.hasPassword).toBe(false);
   });
@@ -248,7 +276,13 @@ describe('AuthService', () => {
 
   it('changePassword rejects Google-only accounts with no password', async () => {
     const { repo, service } = makeService();
-    repo.users.push({ id: 'g1', email: 'google@example.com', name: null, passwordHash: null });
+    repo.users.push({
+      id: 'g1',
+      email: 'google@example.com',
+      name: null,
+      passwordHash: null,
+      pushEnabled: true,
+    });
 
     await expect(service.changePassword('g1', 'whatever1', 'new-password456')).rejects.toThrow(
       PasswordNotSetError,

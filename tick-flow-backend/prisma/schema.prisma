@@ -12,6 +12,7 @@ model User {
   email        String          @unique
   name         String? // display name shown in the menu; null until the user sets one
   passwordHash String? // null once Google-only sign-in exists
+  pushEnabled  Boolean         @default(true) // false mutes alert push (in-app feed still records)
   createdAt    DateTime        @default(now())
   watchlist    WatchlistItem[]
   holdings     Holding[]

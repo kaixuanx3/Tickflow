@@ -26,9 +26,11 @@ class AuthController extends AsyncNotifier<AuthUser?> {
     state = AsyncData(user);
   }
 
-  /// Persists a new display name and refreshes session state (profile card updates).
-  Future<void> updateProfile({required String? name}) async {
-    final user = await ref.read(authRepositoryProvider).updateProfile(name: name);
+  /// Persists profile changes (name and/or push toggle) and refreshes session state.
+  Future<void> updateProfile({String? name, bool? pushEnabled}) async {
+    final user = await ref
+        .read(authRepositoryProvider)
+        .updateProfile(name: name, pushEnabled: pushEnabled);
     state = AsyncData(user);
   }
 

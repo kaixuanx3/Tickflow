@@ -40,10 +40,14 @@ class AuthRepository {
     }
   }
 
-  /// Updates the display name via PATCH /auth/me and refreshes the cached user.
-  Future<AuthUser> updateProfile({required String? name}) async {
+  /// Partial profile update via PATCH /auth/me; refreshes the cached user.
+  /// Only non-null args are sent (name "" clears it; omitted fields are untouched).
+  Future<AuthUser> updateProfile({String? name, bool? pushEnabled}) async {
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (pushEnabled != null) body['pushEnabled'] = pushEnabled;
     try {
-      final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: {'name': name});
+      final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: body);
       final user = AuthUser.fromJson(res.data!);
       await _storage.saveUser(user);
       return user;

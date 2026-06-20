@@ -20,6 +20,7 @@ class MenuScreen extends ConsumerWidget {
     final bioEnabled = ref.watch(biometricEnabledProvider);
     // Unknown (older session) → assume there's a password; Google-only hides it.
     final canChangePassword = user?.hasPassword ?? true;
+    final pushOn = user?.pushEnabled ?? true;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Menu')),
@@ -71,6 +72,20 @@ class MenuScreen extends ConsumerWidget {
               ],
             ),
           ],
+          const _SectionHeader('Notifications'),
+          _MenuCard(
+            children: [
+              _MenuRow(
+                icon: Icons.notifications_outlined,
+                title: 'Push notifications',
+                onTap: () => _togglePush(context, ref, !pushOn),
+                trailing: Switch(
+                  value: pushOn,
+                  onChanged: (v) => _togglePush(context, ref, v),
+                ),
+              ),
+            ],
+          ),
           const _SectionHeader('About'),
           _MenuCard(
             children: [
@@ -135,6 +150,19 @@ String _initials(String label) {
   final letters = source.replaceAll(RegExp('[^A-Za-z]'), '');
   if (letters.isEmpty) return label.isEmpty ? '?' : label[0].toUpperCase();
   return letters.substring(0, letters.length >= 2 ? 2 : 1).toUpperCase();
+}
+
+Future<void> _togglePush(BuildContext context, WidgetRef ref, bool value) async {
+  try {
+    await ref.read(authControllerProvider.notifier).updateProfile(pushEnabled: value);
+  } catch (e) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e is ApiException ? e.message : 'Could not update notifications'),
+      ),
+    );
+  }
 }
 
 Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool value) async {

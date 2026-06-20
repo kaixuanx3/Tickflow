@@ -1,7 +1,13 @@
 import type { PrismaClient } from '@prisma/client';
 import type { UserRecord, UserRepo } from '../services/auth-service.js';
 
-const userFields = { id: true, email: true, name: true, passwordHash: true } as const;
+const userFields = {
+  id: true,
+  email: true,
+  name: true,
+  passwordHash: true,
+  pushEnabled: true,
+} as const;
 
 export class PrismaUserRepo implements UserRepo {
   constructor(private readonly prisma: PrismaClient) {}
@@ -18,7 +24,10 @@ export class PrismaUserRepo implements UserRepo {
     return this.prisma.user.create({ data: { email, passwordHash }, select: userFields });
   }
 
-  async updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord> {
+  async updateProfile(
+    userId: string,
+    data: { name?: string | null; pushEnabled?: boolean },
+  ): Promise<UserRecord> {
     return this.prisma.user.update({ where: { id: userId }, data, select: userFields });
   }
 

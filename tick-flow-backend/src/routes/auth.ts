@@ -17,6 +17,7 @@ const googleSchema = z.object({ idToken: z.string().min(1) });
 
 const profilePatchSchema = z.object({
   name: z.string().trim().max(60, 'name must be 60 characters or fewer').optional(),
+  pushEnabled: z.boolean().optional(),
 });
 
 const changePasswordSchema = z.object({
