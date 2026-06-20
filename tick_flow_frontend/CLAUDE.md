@@ -28,10 +28,15 @@ vendor API keys in the app.
 ## Backend contract (condensed — backend internals live in ../tick-flow-backend/CLAUDE.md)
 
 ### Auth
-- `POST /auth/register` / `POST /auth/login` body `{email, password(≥8)}` → `201/200 {token, user:{id,email}}`
+- `POST /auth/register` / `POST /auth/login` body `{email, password(≥8)}` → `201/200 {token, user:{id,email,name,pushEnabled,hasPassword}}`
 - `POST /auth/google` `{idToken}` → 503 until GOOGLE_CLIENT_ID is configured server-side
   (it currently isn't) — v1 auth is email/password only.
 - Protected routes: header `Authorization: Bearer <token>`. JWT expires in 7d — on 401, re-login.
+- `GET/PATCH /auth/me` (Bearer) → user profile. `PATCH {name?, pushEnabled?}` is a true partial
+  update (omit a field = leave untouched; empty `name` clears it). `hasPassword` is read-only
+  (false for Google-only accounts).
+- `POST /auth/change-password` (Bearer) `{currentPassword, newPassword(≥8)}` → verifies the
+  current password (401 if wrong, 409 for Google-only accounts with no password).
 - `DELETE /auth/me` (Bearer) → 204 — deletes the account and all its data (watchlist,
   portfolio, alerts, notifications). The Menu's "Delete account" uses it.
 - Errors are always `{error: string}` with proper status codes (400/401/404/409/502/503).
@@ -133,16 +138,19 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 - **Triggered feed**: history from `/notifications`, newest first, pull-to-refresh
   (the reliable path on web; FCM push comes later, if at all).
 
-### 5. Menu
-- Account: signed-in email + Sign out (wipe token → login) + Delete account
-  (`DELETE /auth/me`, behind a confirm dialog). No password change — the backend has no
-  endpoint for that, so don't build that UI.
+### 5. Menu — sectioned settings (profile card + grouped cards)
+- Profile card: avatar initials + display `name` (falls back to email when unset) + email.
+- Account: **Account details** screen (`/account`) — edit the display `name` via `PATCH /auth/me`.
 - Appearance: System / Light / Dark (persisted in shared_preferences).
-- Security (mobile only, hidden on web): **Biometric unlock** toggle — when on, a Face ID /
-  fingerprint lock (`local_auth`, gated in `core/biometric_lock.dart`) covers the app on cold
-  launch and after ~30s backgrounded.
+- Security: **Change password** (`/change-password` → `POST /auth/change-password`; the row is
+  hidden when `hasPassword` is false — i.e. Google-only accounts) · **Biometric unlock** toggle
+  (mobile only, hidden on web) — when on, a Face ID / fingerprint lock (`local_auth`, gated in
+  `core/biometric_lock.dart`) covers the app on cold launch and after ~30s backgrounded.
+- Notifications: **Push notifications** toggle (`pushEnabled` via `PATCH /auth/me`). When off,
+  FCM push is muted but the in-app Notifications feed still receives entries.
 - About: app version, "Market data via Finnhub/FMP — quotes delayed on the free tier",
   open-source licenses (`showLicensePage`).
+- Sign out (wipe token → login) · Delete account (`DELETE /auth/me`, behind a confirm dialog).
 - Optional (debug builds only): current API_URL + WS connection status row.
 
 ### Symbol Detail (pushed, not a tab)
