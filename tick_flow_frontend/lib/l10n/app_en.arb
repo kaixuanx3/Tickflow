@@ -30,5 +30,19 @@
   "deleteAccountBody": "This permanently deletes your account, watchlist, portfolio, alerts and notifications. This cannot be undone.",
   "commonCancel": "Cancel",
   "commonDelete": "Delete",
-  "deleteAccountError": "Could not delete account"
+  "deleteAccountError": "Could not delete account",
+  "commonGenericError": "Something went wrong — please try again.",
+  "authTagline": "Track US stocks in real time",
+  "authEmail": "Email",
+  "authEnterEmail": "Enter your email",
+  "authInvalidEmail": "Enter a valid email",
+  "authPassword": "Password",
+  "authPasswordHint": "At least 8 characters",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authPasswordTooShort": "Password must be at least 8 characters",
+  "authCreateAccount": "Create account",
+  "authSignIn": "Sign in",
+  "authToggleToSignIn": "Have an account? Sign in",
+  "authToggleToRegister": "New here? Create an account"
 }

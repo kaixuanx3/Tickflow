@@ -100,4 +100,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deleteAccountError => '无法删除账户';
+
+  @override
+  String get commonGenericError => '出了点问题，请重试。';
+
+  @override
+  String get authTagline => '实时追踪美股';
+
+  @override
+  String get authEmail => '邮箱';
+
+  @override
+  String get authEnterEmail => '请输入邮箱';
+
+  @override
+  String get authInvalidEmail => '请输入有效的邮箱';
+
+  @override
+  String get authPassword => '密码';
+
+  @override
+  String get authPasswordHint => '至少 8 个字符';
+
+  @override
+  String get authShowPassword => '显示密码';
+
+  @override
+  String get authHidePassword => '隐藏密码';
+
+  @override
+  String get authPasswordTooShort => '密码至少为 8 个字符';
+
+  @override
+  String get authCreateAccount => '注册账户';
+
+  @override
+  String get authSignIn => '登录';
+
+  @override
+  String get authToggleToSignIn => '已有账户？登录';
+
+  @override
+  String get authToggleToRegister => '还没有账户？注册';
 }

@@ -30,5 +30,19 @@
   "deleteAccountBody": "这将永久删除您的账户、关注列表、投资组合、提醒和通知，且无法撤销。",
   "commonCancel": "取消",
   "commonDelete": "删除",
-  "deleteAccountError": "无法删除账户"
+  "deleteAccountError": "无法删除账户",
+  "commonGenericError": "出了点问题，请重试。",
+  "authTagline": "实时追踪美股",
+  "authEmail": "邮箱",
+  "authEnterEmail": "请输入邮箱",
+  "authInvalidEmail": "请输入有效的邮箱",
+  "authPassword": "密码",
+  "authPasswordHint": "至少 8 个字符",
+  "authShowPassword": "显示密码",
+  "authHidePassword": "隐藏密码",
+  "authPasswordTooShort": "密码至少为 8 个字符",
+  "authCreateAccount": "注册账户",
+  "authSignIn": "登录",
+  "authToggleToSignIn": "已有账户？登录",
+  "authToggleToRegister": "还没有账户？注册"
 }

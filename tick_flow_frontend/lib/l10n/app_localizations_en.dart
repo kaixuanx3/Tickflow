@@ -102,4 +102,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountError => 'Could not delete account';
+
+  @override
+  String get commonGenericError => 'Something went wrong — please try again.';
+
+  @override
+  String get authTagline => 'Track US stocks in real time';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authEnterEmail => 'Enter your email';
+
+  @override
+  String get authInvalidEmail => 'Enter a valid email';
+
+  @override
+  String get authPassword => 'Password';
+
+  @override
+  String get authPasswordHint => 'At least 8 characters';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
+  String get authPasswordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String get authCreateAccount => 'Create account';
+
+  @override
+  String get authSignIn => 'Sign in';
+
+  @override
+  String get authToggleToSignIn => 'Have an account? Sign in';
+
+  @override
+  String get authToggleToRegister => 'New here? Create an account';
 }
