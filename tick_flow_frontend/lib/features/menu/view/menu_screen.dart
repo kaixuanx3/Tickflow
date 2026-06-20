@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/biometric_lock.dart';
+import '../../../core/locale_controller.dart';
 import '../../../core/theme_mode.dart';
 import '../../../data/api/api_client.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/viewmodel/auth_controller.dart';
 
 class MenuScreen extends ConsumerWidget {
@@ -13,9 +15,11 @@ class MenuScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final user = ref.watch(authControllerProvider).value;
     final email = user?.email ?? '';
     final mode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
     final bioAvailable = ref.watch(biometricSupportedProvider);
     final bioEnabled = ref.watch(biometricEnabledProvider);
     // Unknown (older session) → assume there's a password; Google-only hides it.
@@ -23,52 +27,58 @@ class MenuScreen extends ConsumerWidget {
     final pushOn = user?.pushEnabled ?? true;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Menu')),
+      appBar: AppBar(title: Text(l10n.menuTitle)),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 8),
         children: [
           _ProfileCard(name: user?.name, email: email),
-          const _SectionHeader('Account'),
+          _SectionHeader(l10n.menuSectionAccount),
           _MenuCard(
             children: [
               _MenuRow(
                 icon: Icons.person_outline,
-                title: 'Account details',
+                title: l10n.menuAccountDetails,
                 onTap: () => context.push('/account'),
               ),
               _MenuRow(
                 icon: Icons.workspace_premium_outlined,
-                title: 'Subscriptions',
-                value: 'Free',
+                title: l10n.menuSubscriptions,
+                value: l10n.menuPlanFree,
                 onTap: () => context.push('/plans'),
               ),
             ],
           ),
-          const _SectionHeader('Preferences'),
+          _SectionHeader(l10n.menuSectionPreferences),
           _MenuCard(
             children: [
               _MenuRow(
                 icon: Icons.brightness_6_outlined,
-                title: 'Appearance',
-                value: _themeLabel(mode),
+                title: l10n.menuAppearance,
+                value: _themeLabel(l10n, mode),
                 onTap: () => _showThemeSheet(context, ref, mode),
+              ),
+              _MenuRow(
+                icon: Icons.translate_outlined,
+                title: l10n.menuLanguage,
+                value: _languageLabel(l10n, locale),
+                onTap: () => _showLanguageSheet(context, ref, locale),
               ),
             ],
           ),
           if (canChangePassword || bioAvailable) ...[
-            const _SectionHeader('Security'),
+            _SectionHeader(l10n.menuSectionSecurity),
             _MenuCard(
               children: [
                 if (canChangePassword)
                   _MenuRow(
                     icon: Icons.lock_outline,
-                    title: 'Change password',
+                    title: l10n.menuChangePassword,
                     onTap: () => context.push('/change-password'),
                   ),
                 if (bioAvailable)
                   _MenuRow(
                     icon: Icons.fingerprint,
-                    title: 'Biometrics',
+                    title: l10n.menuBiometrics,
                     onTap: () => _toggleBiometric(context, ref, !bioEnabled),
                     trailing: Switch(
                       value: bioEnabled,
@@ -78,12 +88,12 @@ class MenuScreen extends ConsumerWidget {
               ],
             ),
           ],
-          const _SectionHeader('Notifications'),
+          _SectionHeader(l10n.menuSectionNotifications),
           _MenuCard(
             children: [
               _MenuRow(
                 icon: Icons.notifications_outlined,
-                title: 'Push notifications',
+                title: l10n.menuPushNotifications,
                 onTap: () => _togglePush(context, ref, !pushOn),
                 trailing: Switch(
                   value: pushOn,
@@ -92,17 +102,17 @@ class MenuScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const _SectionHeader('Support'),
+          _SectionHeader(l10n.menuSectionSupport),
           _MenuCard(
             children: [
               _MenuRow(
                 icon: Icons.help_outline,
-                title: 'Help & Support',
+                title: l10n.menuHelpSupport,
                 onTap: () => context.push('/help'),
               ),
               _MenuRow(
                 icon: Icons.info_outline,
-                title: 'About Tickflow',
+                title: l10n.menuAboutApp,
                 onTap: () => _showAbout(context),
               ),
             ],
@@ -113,7 +123,7 @@ class MenuScreen extends ConsumerWidget {
             child: OutlinedButton.icon(
               onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
               icon: const Icon(Icons.logout),
-              label: const Text('Sign out'),
+              label: Text(l10n.menuSignOut),
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             ),
           ),
@@ -122,7 +132,7 @@ class MenuScreen extends ConsumerWidget {
             child: TextButton.icon(
               onPressed: () => _confirmDelete(context, ref),
               icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
-              label: Text('Delete account',
+              label: Text(l10n.menuDeleteAccount,
                   style: TextStyle(color: theme.colorScheme.error)),
               style: TextButton.styleFrom(minimumSize: const Size.fromHeight(46)),
             ),
@@ -144,10 +154,17 @@ class MenuScreen extends ConsumerWidget {
   }
 }
 
-String _themeLabel(ThemeMode m) => switch (m) {
-      ThemeMode.system => 'System',
-      ThemeMode.light => 'Light',
-      ThemeMode.dark => 'Dark',
+String _themeLabel(AppLocalizations l10n, ThemeMode m) => switch (m) {
+      ThemeMode.system => l10n.optionSystem,
+      ThemeMode.light => l10n.themeLight,
+      ThemeMode.dark => l10n.themeDark,
+    };
+
+String _languageLabel(AppLocalizations l10n, Locale? locale) =>
+    switch (locale?.languageCode) {
+      'en' => l10n.languageEnglish,
+      'zh' => l10n.languageChinese,
+      _ => l10n.optionSystem,
     };
 
 /// Avatar initials from a name or email: "Alex Thompson" → "AT",
@@ -170,7 +187,9 @@ Future<void> _togglePush(BuildContext context, WidgetRef ref, bool value) async 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(e is ApiException ? e.message : 'Could not update notifications'),
+        content: Text(e is ApiException
+            ? e.message
+            : AppLocalizations.of(context).notificationsUpdateError),
       ),
     );
   }
@@ -181,11 +200,7 @@ Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool value) a
     final ok = await ref.read(biometricEnabledProvider.notifier).enable();
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Set up a fingerprint or screen lock on this device to use biometric unlock.',
-          ),
-        ),
+        SnackBar(content: Text(AppLocalizations.of(context).biometricSetupHint)),
       );
     }
   } else {
@@ -203,6 +218,12 @@ void _showAbout(BuildContext context) => showAboutDialog(
     );
 
 void _showThemeSheet(BuildContext context, WidgetRef ref, ThemeMode current) {
+  final l10n = AppLocalizations.of(context);
+  final options = <(ThemeMode, String, IconData)>[
+    (ThemeMode.system, l10n.optionSystem, Icons.brightness_auto_outlined),
+    (ThemeMode.light, l10n.themeLight, Icons.light_mode_outlined),
+    (ThemeMode.dark, l10n.themeDark, Icons.dark_mode_outlined),
+  ];
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -210,11 +231,7 @@ void _showThemeSheet(BuildContext context, WidgetRef ref, ThemeMode current) {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final option in const [
-            (ThemeMode.system, 'System', Icons.brightness_auto_outlined),
-            (ThemeMode.light, 'Light', Icons.light_mode_outlined),
-            (ThemeMode.dark, 'Dark', Icons.dark_mode_outlined),
-          ])
+          for (final option in options)
             ListTile(
               leading: Icon(option.$3),
               title: Text(option.$2),
@@ -230,26 +247,56 @@ void _showThemeSheet(BuildContext context, WidgetRef ref, ThemeMode current) {
   );
 }
 
+void _showLanguageSheet(BuildContext context, WidgetRef ref, Locale? current) {
+  final l10n = AppLocalizations.of(context);
+  final options = <(Locale?, String, IconData)>[
+    (null, l10n.optionSystem, Icons.language_outlined),
+    (const Locale('en'), l10n.languageEnglish, Icons.translate_outlined),
+    (const Locale('zh'), l10n.languageChinese, Icons.translate_outlined),
+  ];
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final option in options)
+            ListTile(
+              leading: Icon(option.$3),
+              title: Text(option.$2),
+              trailing: current?.languageCode == option.$1?.languageCode
+                  ? const Icon(Icons.check)
+                  : null,
+              onTap: () {
+                ref.read(localeProvider.notifier).set(option.$1);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
 Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  final l10n = AppLocalizations.of(context);
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Delete account?'),
-      content: const Text(
-        'This permanently deletes your account, watchlist, portfolio, alerts '
-        'and notifications. This cannot be undone.',
-      ),
+      title: Text(l10n.deleteAccountTitle),
+      content: Text(l10n.deleteAccountBody),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l10n.commonCancel),
         ),
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(dialogContext).colorScheme.error,
           ),
-          child: const Text('Delete'),
+          child: Text(l10n.commonDelete),
         ),
       ],
     ),
@@ -262,7 +309,7 @@ Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(e is ApiException ? e.message : 'Could not delete account'),
+        content: Text(e is ApiException ? e.message : l10n.deleteAccountError),
       ),
     );
   }
@@ -280,7 +327,7 @@ class _ProfileCard extends StatelessWidget {
     final theme = Theme.of(context);
     final hasName = name != null && name!.isNotEmpty;
     final primary = hasName ? name! : email;
-    final secondary = hasName ? email : 'Signed in';
+    final secondary = hasName ? email : AppLocalizations.of(context).menuSignedIn;
     return Card(
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: Padding(
