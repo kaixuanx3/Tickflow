@@ -17,111 +17,308 @@ class MenuScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Menu')),
       body: ListView(
+        padding: const EdgeInsets.only(bottom: 8),
         children: [
-          ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-            title: Text(email),
-            subtitle: const Text('Signed in'),
+          _ProfileCard(email: email),
+          const _SectionHeader('Preferences'),
+          _MenuCard(
+            children: [
+              _MenuRow(
+                icon: Icons.brightness_6_outlined,
+                title: 'Appearance',
+                value: _themeLabel(mode),
+                onTap: () => _showThemeSheet(context, ref, mode),
+              ),
+            ],
           ),
-          const Divider(),
+          const _SectionHeader('About'),
+          _MenuCard(
+            children: [
+              _MenuRow(
+                icon: Icons.info_outline,
+                title: 'About Tickflow',
+                onTap: () => _showAbout(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Appearance', style: theme.textTheme.labelLarge),
-                const SizedBox(height: 8),
-                SegmentedButton<ThemeMode>(
-                  segments: const [
-                    ButtonSegment(
-                      value: ThemeMode.system,
-                      icon: Icon(Icons.brightness_auto),
-                      label: Text('System'),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.light,
-                      icon: Icon(Icons.light_mode),
-                      label: Text('Light'),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.dark,
-                      icon: Icon(Icons.dark_mode),
-                      label: Text('Dark'),
-                    ),
-                  ],
-                  selected: {mode},
-                  onSelectionChanged: (selection) =>
-                      ref.read(themeModeProvider.notifier).set(selection.first),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: OutlinedButton.icon(
+              onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+              icon: const Icon(Icons.logout),
+              label: const Text('Sign out'),
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             ),
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('About Tickflow'),
-            onTap: () => showAboutDialog(
-              context: context,
-              applicationName: 'Tickflow',
-              applicationVersion: '1.0.0',
-              applicationLegalese:
-                  'Market data via Finnhub & Financial Modeling Prep — '
-                  'quotes are delayed on the free data tier.',
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: TextButton.icon(
+              onPressed: () => _confirmDelete(context, ref),
+              icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
+              label: Text('Delete account',
+                  style: TextStyle(color: theme.colorScheme.error)),
+              style: TextButton.styleFrom(minimumSize: const Size.fromHeight(46)),
             ),
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sign out'),
-            onTap: () => ref.read(authControllerProvider.notifier).signOut(),
-          ),
-          const Divider(),
-          ListTile(
-            leading: Icon(Icons.delete_forever, color: theme.colorScheme.error),
-            title: Text('Delete account', style: TextStyle(color: theme.colorScheme.error)),
-            subtitle: const Text('Permanently removes your account and all its data'),
-            onTap: () => _confirmDelete(context, ref),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Center(
+              child: Text(
+                'Tickflow v1.0.0 · Market data via Finnhub & FMP',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+String _themeLabel(ThemeMode m) => switch (m) {
+      ThemeMode.system => 'System',
+      ThemeMode.light => 'Light',
+      ThemeMode.dark => 'Dark',
+    };
+
+/// First up-to-2 letters of the email's local part, e.g. kaixuanx3 → "KA".
+String _initials(String email) {
+  final local = email.split('@').first;
+  final letters = local.replaceAll(RegExp('[^A-Za-z]'), '');
+  if (letters.isEmpty) return email.isEmpty ? '?' : email[0].toUpperCase();
+  return letters.substring(0, letters.length >= 2 ? 2 : 1).toUpperCase();
+}
+
+void _showAbout(BuildContext context) => showAboutDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete account?'),
-        content: const Text(
-          'This permanently deletes your account, watchlist, portfolio, alerts '
-          'and notifications. This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+      applicationName: 'Tickflow',
+      applicationVersion: '1.0.0',
+      applicationLegalese:
+          'Market data via Finnhub & Financial Modeling Prep — quotes are '
+          'delayed on the free data tier.',
+    );
+
+void _showThemeSheet(BuildContext context, WidgetRef ref, ThemeMode current) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheetContext) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final option in const [
+            (ThemeMode.system, 'System', Icons.brightness_auto_outlined),
+            (ThemeMode.light, 'Light', Icons.light_mode_outlined),
+            (ThemeMode.dark, 'Dark', Icons.dark_mode_outlined),
+          ])
+            ListTile(
+              leading: Icon(option.$3),
+              title: Text(option.$2),
+              trailing: current == option.$1 ? const Icon(Icons.check) : null,
+              onTap: () {
+                ref.read(themeModeProvider.notifier).set(option.$1);
+                Navigator.of(sheetContext).pop();
+              },
             ),
-            child: const Text('Delete'),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete account?'),
+      content: const Text(
+        'This permanently deletes your account, watchlist, portfolio, alerts '
+        'and notifications. This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          style: TextButton.styleFrom(
+            foregroundColor: Theme.of(dialogContext).colorScheme.error,
           ),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  try {
+    // On success the session clears and the router redirects to login.
+    await ref.read(authControllerProvider.notifier).deleteAccount();
+  } catch (e) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e is ApiException ? e.message : 'Could not delete account'),
+      ),
+    );
+  }
+}
+
+/// Account summary card at the top of the menu.
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.email});
+
+  final String email;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              child: Text(
+                _initials(email),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Signed in',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small uppercase group label, e.g. "PREFERENCES".
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      child: Text(
+        label.toUpperCase(),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+}
+
+/// A card grouping one or more [_MenuRow]s, hairline-divided.
+class _MenuCard extends StatelessWidget {
+  const _MenuCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 64),
+            children[i],
+          ],
         ],
       ),
     );
-    if (confirmed != true) return;
-    try {
-      // On success the session clears and the router redirects to login.
-      await ref.read(authControllerProvider.notifier).deleteAccount();
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e is ApiException ? e.message : 'Could not delete account'),
+  }
+}
+
+/// Single-line settings row: icon tile · title · optional value/trailing · chevron.
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({
+    required this.icon,
+    required this.title,
+    this.value,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? value;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 20, color: theme.colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ),
+            if (value != null) ...[
+              Text(
+                value!,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(width: 6),
+            ],
+            if (onTap != null)
+              Icon(Icons.chevron_right, color: theme.colorScheme.onSurfaceVariant),
+          ],
         ),
-      );
-    }
+      ),
+    );
   }
 }
