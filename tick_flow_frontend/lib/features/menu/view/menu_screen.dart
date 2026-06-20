@@ -62,7 +62,7 @@ class MenuScreen extends ConsumerWidget {
                 if (bioAvailable)
                   _MenuRow(
                     icon: Icons.fingerprint,
-                    title: 'Biometric unlock',
+                    title: 'Biometrics',
                     onTap: () => _toggleBiometric(context, ref, !bioEnabled),
                     trailing: Switch(
                       value: bioEnabled,
