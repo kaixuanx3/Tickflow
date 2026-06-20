@@ -32,6 +32,8 @@ vendor API keys in the app.
 - `POST /auth/google` `{idToken}` → 503 until GOOGLE_CLIENT_ID is configured server-side
   (it currently isn't) — v1 auth is email/password only.
 - Protected routes: header `Authorization: Bearer <token>`. JWT expires in 7d — on 401, re-login.
+- `DELETE /auth/me` (Bearer) → 204 — deletes the account and all its data (watchlist,
+  portfolio, alerts, notifications). The Menu's "Delete account" uses it.
 - Errors are always `{error: string}` with proper status codes (400/401/404/409/502/503).
 
 ### REST
@@ -129,8 +131,9 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
   (the reliable path on web; FCM push comes later, if at all).
 
 ### 5. Menu
-- Account: signed-in email + Sign out (wipe token → login). No password change / account
-  deletion — the backend has no endpoints for those, don't build the UI.
+- Account: signed-in email + Sign out (wipe token → login) + Delete account
+  (`DELETE /auth/me`, behind a confirm dialog). No password change — the backend has no
+  endpoint for that, so don't build that UI.
 - Appearance: System / Light / Dark (persisted in shared_preferences).
 - About: app version, "Market data via Finnhub/FMP — quotes delayed on the free tier",
   open-source licenses (`showLicensePage`).
