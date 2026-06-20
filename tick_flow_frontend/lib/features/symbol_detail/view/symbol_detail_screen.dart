@@ -9,6 +9,7 @@ import '../../../core/widgets/star_button.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
+import '../../../l10n/app_localizations.dart';
 import 'candle_chart.dart';
 
 class SymbolDetailScreen extends ConsumerStatefulWidget {
@@ -46,6 +47,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final profile = ref.watch(profileProvider(widget.symbol));
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
     final candlesKey = (symbol: widget.symbol, range: _range);
@@ -87,7 +89,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        'Free data tier serves daily bars — "1D" shows roughly the last week.',
+                        l10n.detailDailyBarsNote,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       ),
@@ -104,7 +106,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
                       data: (series) => series.candles.isEmpty
                           ? Center(
                               child: Text(
-                                'No chart data',
+                                l10n.detailNoChartData,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant),
                               ),
@@ -116,7 +118,7 @@ class _SymbolDetailScreenState extends ConsumerState<SymbolDetailScreen> {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 4),
                                     child: Text(
-                                      'Showing cached chart data',
+                                      l10n.detailCachedChart,
                                       style: theme.textTheme.bodySmall?.copyWith(
                                           color: theme.colorScheme.onSurfaceVariant),
                                     ),
@@ -211,6 +213,7 @@ class _PriceBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final q = quote;
     if (q == null) {
       return Text(
@@ -233,14 +236,16 @@ class _PriceBlock extends StatelessWidget {
                   .copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(width: 8),
-            if (q.delayed) const _Badge('Delayed'),
-            if (q.stale) ...[const SizedBox(width: 4), const _Badge('Cached')],
+            if (q.delayed) _Badge(l10n.detailDelayed),
+            if (q.stale) ...[const SizedBox(width: 4), _Badge(l10n.detailCached)],
           ],
         ),
         const SizedBox(height: 4),
         Text(
-          '${q.change >= 0 ? '+' : ''}${q.change.toStringAsFixed(2)} '
-          '(${formatPercent(q.changePercent)}) today',
+          l10n.detailChangeToday(
+            '${q.change >= 0 ? '+' : ''}${q.change.toStringAsFixed(2)}',
+            formatPercent(q.changePercent),
+          ),
           style: tabularDigits(theme.textTheme.bodyMedium!).copyWith(color: color),
         ),
       ],
@@ -279,6 +284,7 @@ class _TodayStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final q = quote;
 
     Widget stat(String label, double? value) => Expanded(
@@ -302,14 +308,14 @@ class _TodayStats extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Today', style: theme.textTheme.labelLarge),
+            Text(l10n.detailTodayTitle, style: theme.textTheme.labelLarge),
             const SizedBox(height: 12),
             Row(
               children: [
-                stat('Open', q?.open),
-                stat('High', q?.high),
-                stat('Low', q?.low),
-                stat('Prev close', q?.prevClose),
+                stat(l10n.detailStatOpen, q?.open),
+                stat(l10n.detailStatHigh, q?.high),
+                stat(l10n.detailStatLow, q?.low),
+                stat(l10n.detailStatPrevClose, q?.prevClose),
               ],
             ),
           ],
@@ -327,14 +333,15 @@ class _AboutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final rows = <(String, String)>[
-      if (profile.industry?.isNotEmpty ?? false) ('Industry', profile.industry!),
-      if (profile.exchange?.isNotEmpty ?? false) ('Exchange', profile.exchange!),
-      if (profile.country?.isNotEmpty ?? false) ('Country', profile.country!),
+      if (profile.industry?.isNotEmpty ?? false) (l10n.detailIndustry, profile.industry!),
+      if (profile.exchange?.isNotEmpty ?? false) (l10n.detailExchange, profile.exchange!),
+      if (profile.country?.isNotEmpty ?? false) (l10n.detailCountry, profile.country!),
       if (profile.marketCapMillions != null)
-        ('Market cap', formatMarketCapMillions(profile.marketCapMillions)),
-      if (profile.ipo?.isNotEmpty ?? false) ('IPO', profile.ipo!),
-      if (profile.website?.isNotEmpty ?? false) ('Website', profile.website!),
+        (l10n.detailMarketCap, formatMarketCapMillions(profile.marketCapMillions)),
+      if (profile.ipo?.isNotEmpty ?? false) (l10n.detailIpo, profile.ipo!),
+      if (profile.website?.isNotEmpty ?? false) (l10n.detailWebsite, profile.website!),
     ];
     if (rows.isEmpty) return const SizedBox.shrink();
 
@@ -344,7 +351,7 @@ class _AboutCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('About', style: theme.textTheme.labelLarge),
+            Text(l10n.detailAbout, style: theme.textTheme.labelLarge),
             const SizedBox(height: 12),
             for (final (label, value) in rows)
               Padding(

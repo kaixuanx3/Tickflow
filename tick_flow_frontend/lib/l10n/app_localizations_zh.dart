@@ -395,4 +395,60 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get navAlerts => '提醒';
+
+  @override
+  String get detailDailyBarsNote => '免费数据仅提供日线 ——「1D」大致显示最近一周。';
+
+  @override
+  String get detailNoChartData => '暂无图表数据';
+
+  @override
+  String get detailCachedChart => '正在显示缓存的图表数据';
+
+  @override
+  String get detailDelayed => '延迟';
+
+  @override
+  String get detailCached => '缓存';
+
+  @override
+  String detailChangeToday(String change, String percent) {
+    return '$change（$percent）今日';
+  }
+
+  @override
+  String get detailTodayTitle => '今日';
+
+  @override
+  String get detailStatOpen => '开盘';
+
+  @override
+  String get detailStatHigh => '最高';
+
+  @override
+  String get detailStatLow => '最低';
+
+  @override
+  String get detailStatPrevClose => '昨收';
+
+  @override
+  String get detailAbout => '关于';
+
+  @override
+  String get detailIndustry => '行业';
+
+  @override
+  String get detailExchange => '交易所';
+
+  @override
+  String get detailCountry => '国家/地区';
+
+  @override
+  String get detailMarketCap => '市值';
+
+  @override
+  String get detailIpo => 'IPO';
+
+  @override
+  String get detailWebsite => '网站';
 }

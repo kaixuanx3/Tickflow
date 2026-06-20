@@ -156,5 +156,29 @@
       "threshold": { "type": "String" }
     }
   },
-  "navAlerts": "Alerts"
+  "navAlerts": "Alerts",
+  "detailDailyBarsNote": "Free data tier serves daily bars — \"1D\" shows roughly the last week.",
+  "detailNoChartData": "No chart data",
+  "detailCachedChart": "Showing cached chart data",
+  "detailDelayed": "Delayed",
+  "detailCached": "Cached",
+  "detailChangeToday": "{change} ({percent}) today",
+  "@detailChangeToday": {
+    "placeholders": {
+      "change": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "detailTodayTitle": "Today",
+  "detailStatOpen": "Open",
+  "detailStatHigh": "High",
+  "detailStatLow": "Low",
+  "detailStatPrevClose": "Prev close",
+  "detailAbout": "About",
+  "detailIndustry": "Industry",
+  "detailExchange": "Exchange",
+  "detailCountry": "Country",
+  "detailMarketCap": "Market cap",
+  "detailIpo": "IPO",
+  "detailWebsite": "Website"
 }

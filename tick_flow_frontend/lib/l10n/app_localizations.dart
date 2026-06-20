@@ -841,6 +841,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alerts'**
   String get navAlerts;
+
+  /// No description provided for @detailDailyBarsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Free data tier serves daily bars — \"1D\" shows roughly the last week.'**
+  String get detailDailyBarsNote;
+
+  /// No description provided for @detailNoChartData.
+  ///
+  /// In en, this message translates to:
+  /// **'No chart data'**
+  String get detailNoChartData;
+
+  /// No description provided for @detailCachedChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing cached chart data'**
+  String get detailCachedChart;
+
+  /// No description provided for @detailDelayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delayed'**
+  String get detailDelayed;
+
+  /// No description provided for @detailCached.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached'**
+  String get detailCached;
+
+  /// No description provided for @detailChangeToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} ({percent}) today'**
+  String detailChangeToday(String change, String percent);
+
+  /// No description provided for @detailTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get detailTodayTitle;
+
+  /// No description provided for @detailStatOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get detailStatOpen;
+
+  /// No description provided for @detailStatHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get detailStatHigh;
+
+  /// No description provided for @detailStatLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get detailStatLow;
+
+  /// No description provided for @detailStatPrevClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Prev close'**
+  String get detailStatPrevClose;
+
+  /// No description provided for @detailAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get detailAbout;
+
+  /// No description provided for @detailIndustry.
+  ///
+  /// In en, this message translates to:
+  /// **'Industry'**
+  String get detailIndustry;
+
+  /// No description provided for @detailExchange.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange'**
+  String get detailExchange;
+
+  /// No description provided for @detailCountry.
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get detailCountry;
+
+  /// No description provided for @detailMarketCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Market cap'**
+  String get detailMarketCap;
+
+  /// No description provided for @detailIpo.
+  ///
+  /// In en, this message translates to:
+  /// **'IPO'**
+  String get detailIpo;
+
+  /// No description provided for @detailWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get detailWebsite;
 }
 
 class _AppLocalizationsDelegate

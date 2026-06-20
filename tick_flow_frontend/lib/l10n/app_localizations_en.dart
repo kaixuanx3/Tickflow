@@ -407,4 +407,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get navAlerts => 'Alerts';
+
+  @override
+  String get detailDailyBarsNote =>
+      'Free data tier serves daily bars — \"1D\" shows roughly the last week.';
+
+  @override
+  String get detailNoChartData => 'No chart data';
+
+  @override
+  String get detailCachedChart => 'Showing cached chart data';
+
+  @override
+  String get detailDelayed => 'Delayed';
+
+  @override
+  String get detailCached => 'Cached';
+
+  @override
+  String detailChangeToday(String change, String percent) {
+    return '$change ($percent) today';
+  }
+
+  @override
+  String get detailTodayTitle => 'Today';
+
+  @override
+  String get detailStatOpen => 'Open';
+
+  @override
+  String get detailStatHigh => 'High';
+
+  @override
+  String get detailStatLow => 'Low';
+
+  @override
+  String get detailStatPrevClose => 'Prev close';
+
+  @override
+  String get detailAbout => 'About';
+
+  @override
+  String get detailIndustry => 'Industry';
+
+  @override
+  String get detailExchange => 'Exchange';
+
+  @override
+  String get detailCountry => 'Country';
+
+  @override
+  String get detailMarketCap => 'Market cap';
+
+  @override
+  String get detailIpo => 'IPO';
+
+  @override
+  String get detailWebsite => 'Website';
 }
