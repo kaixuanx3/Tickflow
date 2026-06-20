@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/api/api_client.dart';
 import '../../../data/auth/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Change password: current + new + confirm, for email/password accounts.
 class ChangePasswordScreen extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _error = null);
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
@@ -41,13 +43,13 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed')),
+        SnackBar(content: Text(l10n.changePwSuccess)),
       );
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
-      setState(() => _error = 'Something went wrong — please try again.');
+      setState(() => _error = l10n.commonGenericError);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -56,8 +58,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Change password')),
+      appBar: AppBar(title: Text(l10n.menuChangePassword)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -72,9 +75,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                     TextFormField(
                       controller: _current,
                       decoration: InputDecoration(
-                        labelText: 'Current password',
+                        labelText: l10n.changePwCurrent,
                         suffixIcon: IconButton(
-                          tooltip: _obscureCurrent ? 'Show password' : 'Hide password',
+                          tooltip: _obscureCurrent ? l10n.authShowPassword : l10n.authHidePassword,
                           icon: Icon(
                               _obscureCurrent ? Icons.visibility : Icons.visibility_off),
                           onPressed: () =>
@@ -85,16 +88,16 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.password],
                       validator: (v) =>
-                          (v ?? '').isEmpty ? 'Enter your current password' : null,
+                          (v ?? '').isEmpty ? l10n.changePwCurrentError : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _next,
                       decoration: InputDecoration(
-                        labelText: 'New password',
-                        helperText: 'At least 8 characters',
+                        labelText: l10n.changePwNew,
+                        helperText: l10n.authPasswordHint,
                         suffixIcon: IconButton(
-                          tooltip: _obscureNew ? 'Show password' : 'Hide password',
+                          tooltip: _obscureNew ? l10n.authShowPassword : l10n.authHidePassword,
                           icon:
                               Icon(_obscureNew ? Icons.visibility : Icons.visibility_off),
                           onPressed: () => setState(() => _obscureNew = !_obscureNew),
@@ -104,19 +107,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                       textInputAction: TextInputAction.next,
                       autofillHints: const [AutofillHints.newPassword],
                       validator: (v) => (v ?? '').length < 8
-                          ? 'New password must be at least 8 characters'
+                          ? l10n.changePwNewError
                           : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _confirm,
-                      decoration: const InputDecoration(labelText: 'Confirm new password'),
+                      decoration: InputDecoration(labelText: l10n.changePwConfirm),
                       obscureText: _obscureNew,
                       textInputAction: TextInputAction.done,
                       autofillHints: const [AutofillHints.newPassword],
                       onFieldSubmitted: (_) => _submit(),
                       validator: (v) =>
-                          v != _next.text ? 'Passwords don\'t match' : null,
+                          v != _next.text ? l10n.changePwMismatch : null,
                     ),
                     if (_error != null)
                       Padding(
@@ -140,7 +143,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Change password'),
+                          : Text(l10n.menuChangePassword),
                     ),
                   ],
                 ),

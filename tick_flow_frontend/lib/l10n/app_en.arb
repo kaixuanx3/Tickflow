@@ -187,5 +187,17 @@
   "searchNoMatches": "No matches for \"{query}\".",
   "@searchNoMatches": {
     "placeholders": { "query": { "type": "String" } }
-  }
+  },
+  "accountUpdated": "Profile updated",
+  "accountEmailHint": "Your email can't be changed",
+  "accountDisplayName": "Display name",
+  "accountDisplayNameHint": "Shown on your profile · leave blank to use your email",
+  "commonSave": "Save",
+  "changePwSuccess": "Password changed",
+  "changePwCurrent": "Current password",
+  "changePwCurrentError": "Enter your current password",
+  "changePwNew": "New password",
+  "changePwNewError": "New password must be at least 8 characters",
+  "changePwConfirm": "Confirm new password",
+  "changePwMismatch": "Passwords don't match"
 }

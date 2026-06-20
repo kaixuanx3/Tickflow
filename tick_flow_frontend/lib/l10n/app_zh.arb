@@ -145,5 +145,17 @@
   "commonClear": "清除",
   "searchHint": "搜索代码或公司",
   "searchIdle": "按代码或公司名称搜索美股。",
-  "searchNoMatches": "没有与「{query}」匹配的结果。"
+  "searchNoMatches": "没有与「{query}」匹配的结果。",
+  "accountUpdated": "资料已更新",
+  "accountEmailHint": "邮箱无法更改",
+  "accountDisplayName": "显示名称",
+  "accountDisplayNameHint": "显示在你的资料中 · 留空则使用邮箱",
+  "commonSave": "保存",
+  "changePwSuccess": "密码已修改",
+  "changePwCurrent": "当前密码",
+  "changePwCurrentError": "请输入当前密码",
+  "changePwNew": "新密码",
+  "changePwNewError": "新密码至少为 8 个字符",
+  "changePwConfirm": "确认新密码",
+  "changePwMismatch": "两次输入的密码不一致"
 }

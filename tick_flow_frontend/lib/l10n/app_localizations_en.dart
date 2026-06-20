@@ -478,4 +478,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String searchNoMatches(String query) {
     return 'No matches for \"$query\".';
   }
+
+  @override
+  String get accountUpdated => 'Profile updated';
+
+  @override
+  String get accountEmailHint => 'Your email can\'t be changed';
+
+  @override
+  String get accountDisplayName => 'Display name';
+
+  @override
+  String get accountDisplayNameHint =>
+      'Shown on your profile · leave blank to use your email';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get changePwSuccess => 'Password changed';
+
+  @override
+  String get changePwCurrent => 'Current password';
+
+  @override
+  String get changePwCurrentError => 'Enter your current password';
+
+  @override
+  String get changePwNew => 'New password';
+
+  @override
+  String get changePwNewError => 'New password must be at least 8 characters';
+
+  @override
+  String get changePwConfirm => 'Confirm new password';
+
+  @override
+  String get changePwMismatch => 'Passwords don\'t match';
 }

@@ -465,4 +465,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String searchNoMatches(String query) {
     return '没有与「$query」匹配的结果。';
   }
+
+  @override
+  String get accountUpdated => '资料已更新';
+
+  @override
+  String get accountEmailHint => '邮箱无法更改';
+
+  @override
+  String get accountDisplayName => '显示名称';
+
+  @override
+  String get accountDisplayNameHint => '显示在你的资料中 · 留空则使用邮箱';
+
+  @override
+  String get commonSave => '保存';
+
+  @override
+  String get changePwSuccess => '密码已修改';
+
+  @override
+  String get changePwCurrent => '当前密码';
+
+  @override
+  String get changePwCurrentError => '请输入当前密码';
+
+  @override
+  String get changePwNew => '新密码';
+
+  @override
+  String get changePwNewError => '新密码至少为 8 个字符';
+
+  @override
+  String get changePwConfirm => '确认新密码';
+
+  @override
+  String get changePwMismatch => '两次输入的密码不一致';
 }

@@ -973,6 +973,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No matches for \"{query}\".'**
   String searchNoMatches(String query);
+
+  /// No description provided for @accountUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get accountUpdated;
+
+  /// No description provided for @accountEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email can\'t be changed'**
+  String get accountEmailHint;
+
+  /// No description provided for @accountDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get accountDisplayName;
+
+  /// No description provided for @accountDisplayNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown on your profile · leave blank to use your email'**
+  String get accountDisplayNameHint;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @changePwSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed'**
+  String get changePwSuccess;
+
+  /// No description provided for @changePwCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get changePwCurrent;
+
+  /// No description provided for @changePwCurrentError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password'**
+  String get changePwCurrentError;
+
+  /// No description provided for @changePwNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get changePwNew;
+
+  /// No description provided for @changePwNewError.
+  ///
+  /// In en, this message translates to:
+  /// **'New password must be at least 8 characters'**
+  String get changePwNewError;
+
+  /// No description provided for @changePwConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get changePwConfirm;
+
+  /// No description provided for @changePwMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match'**
+  String get changePwMismatch;
 }
 
 class _AppLocalizationsDelegate

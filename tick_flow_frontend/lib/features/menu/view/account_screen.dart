@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/api/api_client.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/viewmodel/auth_controller.dart';
 
 /// Account details: read-only email + editable display name.
@@ -31,6 +32,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _error = null);
     if (!_formKey.currentState!.validate()) return;
     setState(() => _busy = true);
@@ -38,13 +40,13 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       await ref.read(authControllerProvider.notifier).updateProfile(name: _name.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated')),
+        SnackBar(content: Text(l10n.accountUpdated)),
       );
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } catch (_) {
-      setState(() => _error = 'Something went wrong — please try again.');
+      setState(() => _error = l10n.commonGenericError);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -53,10 +55,11 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final email = ref.watch(authControllerProvider).value?.email ?? '';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Account details')),
+      appBar: AppBar(title: Text(l10n.menuAccountDetails)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -70,18 +73,18 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                   TextFormField(
                     initialValue: email,
                     enabled: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      helperText: 'Your email can\'t be changed',
+                    decoration: InputDecoration(
+                      labelText: l10n.authEmail,
+                      helperText: l10n.accountEmailHint,
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _name,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Display name',
-                      helperText: 'Shown on your profile · leave blank to use your email',
+                    decoration: InputDecoration(
+                      labelText: l10n.accountDisplayName,
+                      helperText: l10n.accountDisplayNameHint,
                     ),
                     textCapitalization: TextCapitalization.words,
                     textInputAction: TextInputAction.done,
@@ -111,7 +114,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Save'),
+                        : Text(l10n.commonSave),
                   ),
                 ],
               ),
