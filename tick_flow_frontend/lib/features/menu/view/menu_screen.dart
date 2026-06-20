@@ -38,7 +38,7 @@ class MenuScreen extends ConsumerWidget {
               ),
               _MenuRow(
                 icon: Icons.workspace_premium_outlined,
-                title: 'Plans',
+                title: 'Subscriptions',
                 value: 'Free',
                 onTap: () => context.push('/plans'),
               ),
