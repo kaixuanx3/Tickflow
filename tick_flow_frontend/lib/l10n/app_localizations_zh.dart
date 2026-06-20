@@ -288,4 +288,108 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get assetTypeCrypto => '加密货币';
+
+  @override
+  String get notifTitle => '通知';
+
+  @override
+  String get notifTabAlerts => '我的提醒';
+
+  @override
+  String get notifTabTriggered => '已触发';
+
+  @override
+  String get notifNewAlert => '新建提醒';
+
+  @override
+  String get alertsEmptyTitle => '还没有提醒';
+
+  @override
+  String get alertsEmptyBody => '当价格越过你设定的阈值时通知你。';
+
+  @override
+  String get alertsCreateFirst => '创建第一个提醒';
+
+  @override
+  String get alertRearm => '重新启用';
+
+  @override
+  String get alertRearmError => '无法重新启用该提醒';
+
+  @override
+  String alertTriggeredCount(int count) {
+    return '已触发 $count 次';
+  }
+
+  @override
+  String get triggeredEmptyTitle => '暂无触发记录';
+
+  @override
+  String get triggeredEmptyBody => '当你的某个提醒触发时，会显示在这里。';
+
+  @override
+  String get alertRuleAbove => '高于';
+
+  @override
+  String get alertRuleBelow => '低于';
+
+  @override
+  String get alertKindOneShot => '一次性';
+
+  @override
+  String get alertKindReArm => '可重复';
+
+  @override
+  String get alertStatusActive => '已启用';
+
+  @override
+  String get alertStatusCooldown => '冷却中';
+
+  @override
+  String get alertStatusDone => '已完成';
+
+  @override
+  String get alertSegPriceAbove => '价格高于';
+
+  @override
+  String get alertSegPriceBelow => '价格低于';
+
+  @override
+  String get alertHintAbove => '当价格高于阈值时触发。';
+
+  @override
+  String get alertHintBelow => '当价格低于阈值时触发。';
+
+  @override
+  String get alertKindOneShotDesc => '触发一次后会保留在历史记录中，直到重新启用。';
+
+  @override
+  String get alertKindReArmDesc => '触发后进入冷却，当价格回落时自动重新启用。';
+
+  @override
+  String get alertThreshold => '阈值';
+
+  @override
+  String get alertCreate => '创建提醒';
+
+  @override
+  String get alertNewTitle => '新建价格提醒';
+
+  @override
+  String alertEditTitle(String symbol) {
+    return '编辑 $symbol 提醒';
+  }
+
+  @override
+  String get alertDeleteButton => '删除提醒';
+
+  @override
+  String alertDeleteTitle(String symbol) {
+    return '删除 $symbol 提醒？';
+  }
+
+  @override
+  String alertDeleteContent(String rule, String threshold) {
+    return '$rule $threshold —— 这也会将其从你的活动提醒历史中移除。';
+  }
 }

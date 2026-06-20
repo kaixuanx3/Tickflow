@@ -643,6 +643,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Crypto'**
   String get assetTypeCrypto;
+
+  /// No description provided for @notifTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifTitle;
+
+  /// No description provided for @notifTabAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'My alerts'**
+  String get notifTabAlerts;
+
+  /// No description provided for @notifTabTriggered.
+  ///
+  /// In en, this message translates to:
+  /// **'Triggered'**
+  String get notifTabTriggered;
+
+  /// No description provided for @notifNewAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'New alert'**
+  String get notifNewAlert;
+
+  /// No description provided for @alertsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No alerts yet'**
+  String get alertsEmptyTitle;
+
+  /// No description provided for @alertsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when a price crosses your threshold.'**
+  String get alertsEmptyBody;
+
+  /// No description provided for @alertsCreateFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first alert'**
+  String get alertsCreateFirst;
+
+  /// No description provided for @alertRearm.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-arm'**
+  String get alertRearm;
+
+  /// No description provided for @alertRearmError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not re-arm the alert'**
+  String get alertRearmError;
+
+  /// No description provided for @alertTriggeredCount.
+  ///
+  /// In en, this message translates to:
+  /// **'triggered {count}×'**
+  String alertTriggeredCount(int count);
+
+  /// No description provided for @triggeredEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing triggered yet'**
+  String get triggeredEmptyTitle;
+
+  /// No description provided for @triggeredEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When one of your alerts fires, it shows up here.'**
+  String get triggeredEmptyBody;
+
+  /// No description provided for @alertRuleAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Above'**
+  String get alertRuleAbove;
+
+  /// No description provided for @alertRuleBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Below'**
+  String get alertRuleBelow;
+
+  /// No description provided for @alertKindOneShot.
+  ///
+  /// In en, this message translates to:
+  /// **'One-shot'**
+  String get alertKindOneShot;
+
+  /// No description provided for @alertKindReArm.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-arm'**
+  String get alertKindReArm;
+
+  /// No description provided for @alertStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get alertStatusActive;
+
+  /// No description provided for @alertStatusCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooldown'**
+  String get alertStatusCooldown;
+
+  /// No description provided for @alertStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get alertStatusDone;
+
+  /// No description provided for @alertSegPriceAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Price above'**
+  String get alertSegPriceAbove;
+
+  /// No description provided for @alertSegPriceBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price below'**
+  String get alertSegPriceBelow;
+
+  /// No description provided for @alertHintAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Triggers when the price goes above the threshold.'**
+  String get alertHintAbove;
+
+  /// No description provided for @alertHintBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Triggers when the price goes below the threshold.'**
+  String get alertHintBelow;
+
+  /// No description provided for @alertKindOneShotDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fires once, then stays in your history until re-armed.'**
+  String get alertKindOneShotDesc;
+
+  /// No description provided for @alertKindReArmDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fires, cools down, and automatically re-arms when the price retreats.'**
+  String get alertKindReArmDesc;
+
+  /// No description provided for @alertThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Threshold'**
+  String get alertThreshold;
+
+  /// No description provided for @alertCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create alert'**
+  String get alertCreate;
+
+  /// No description provided for @alertNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New price alert'**
+  String get alertNewTitle;
+
+  /// No description provided for @alertEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit {symbol} alert'**
+  String alertEditTitle(String symbol);
+
+  /// No description provided for @alertDeleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete alert'**
+  String get alertDeleteButton;
+
+  /// No description provided for @alertDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {symbol} alert?'**
+  String alertDeleteTitle(String symbol);
+
+  /// No description provided for @alertDeleteContent.
+  ///
+  /// In en, this message translates to:
+  /// **'{rule} {threshold} — this also removes it from your history of active alerts.'**
+  String alertDeleteContent(String rule, String threshold);
 }
 
 class _AppLocalizationsDelegate

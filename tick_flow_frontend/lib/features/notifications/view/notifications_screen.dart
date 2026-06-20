@@ -7,26 +7,44 @@ import '../../../core/widgets/error_retry.dart';
 import '../../../data/alerts/alert_models.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/notifications/notification_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/alerts_controller.dart';
 import '../viewmodel/notifications_feed_controller.dart';
 import 'alert_sheet.dart';
+
+String _ruleLabel(AppLocalizations l10n, AlertRuleType r) => switch (r) {
+      AlertRuleType.priceAbove => l10n.alertRuleAbove,
+      AlertRuleType.priceBelow => l10n.alertRuleBelow,
+    };
+
+String _kindLabel(AppLocalizations l10n, AlertKind k) => switch (k) {
+      AlertKind.oneShot => l10n.alertKindOneShot,
+      AlertKind.reArm => l10n.alertKindReArm,
+    };
+
+String _statusLabel(AppLocalizations l10n, AlertStatus s) => switch (s) {
+      AlertStatus.active => l10n.alertStatusActive,
+      AlertStatus.cooldown => l10n.alertStatusCooldown,
+      AlertStatus.done => l10n.alertStatusDone,
+    };
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications'),
-          bottom: const TabBar(
-            tabs: [Tab(text: 'My alerts'), Tab(text: 'Triggered')],
+          title: Text(l10n.notifTitle),
+          bottom: TabBar(
+            tabs: [Tab(text: l10n.notifTabAlerts), Tab(text: l10n.notifTabTriggered)],
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          tooltip: 'New alert',
+          tooltip: l10n.notifNewAlert,
           onPressed: () => showAlertSheet(context),
           child: const Icon(Icons.add_alert),
         ),
@@ -44,6 +62,7 @@ class _AlertsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final alerts = ref.watch(alertsProvider);
 
     return alerts.when(
@@ -63,10 +82,10 @@ class _AlertsTab extends ConsumerWidget {
                   Icon(Icons.add_alert,
                       size: 48, color: theme.colorScheme.onSurfaceVariant),
                   const SizedBox(height: 12),
-                  Text('No alerts yet', style: theme.textTheme.titleMedium),
+                  Text(l10n.alertsEmptyTitle, style: theme.textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Text(
-                    'Get notified when a price crosses your threshold.',
+                    l10n.alertsEmptyBody,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -75,7 +94,7 @@ class _AlertsTab extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: () => showAlertSheet(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Create your first alert'),
+                    label: Text(l10n.alertsCreateFirst),
                   ),
                 ],
               ),
@@ -103,6 +122,7 @@ class _AlertRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final a = alert;
 
     return ListTile(
@@ -115,8 +135,8 @@ class _AlertRow extends ConsumerWidget {
         ],
       ),
       subtitle: Text(
-        '${a.ruleType.label} ${formatMoney(a.threshold)} · ${a.kind.label}'
-        '${a.triggerCount > 0 ? ' · triggered ${a.triggerCount}×' : ''}',
+        '${_ruleLabel(l10n, a.ruleType)} ${formatMoney(a.threshold)} · ${_kindLabel(l10n, a.kind)}'
+        '${a.triggerCount > 0 ? ' · ${l10n.alertTriggeredCount(a.triggerCount)}' : ''}',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -131,13 +151,13 @@ class _AlertRow extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        e is ApiException ? e.message : 'Could not re-arm the alert',
+                        e is ApiException ? e.message : l10n.alertRearmError,
                       ),
                     ),
                   );
                 }
               },
-              child: const Text('Re-arm'),
+              child: Text(l10n.alertRearm),
             ),
     );
   }
@@ -149,6 +169,7 @@ class _TriggeredTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final feed = ref.watch(notificationsFeedProvider);
 
     return feed.when(
@@ -168,10 +189,10 @@ class _TriggeredTab extends ConsumerWidget {
                   Icon(Icons.notifications_none,
                       size: 48, color: theme.colorScheme.onSurfaceVariant),
                   const SizedBox(height: 12),
-                  Text('Nothing triggered yet', style: theme.textTheme.titleMedium),
+                  Text(l10n.triggeredEmptyTitle, style: theme.textTheme.titleMedium),
                   const SizedBox(height: 8),
                   Text(
-                    'When one of your alerts fires, it shows up here.',
+                    l10n.triggeredEmptyBody,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -226,6 +247,7 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final (bg, fg) = switch (status) {
       AlertStatus.active => (scheme.secondaryContainer, scheme.onSecondaryContainer),
       AlertStatus.cooldown => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
@@ -238,7 +260,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status.label.toUpperCase(),
+        _statusLabel(l10n, status).toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: fg),
       ),
     );

@@ -294,4 +294,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get assetTypeCrypto => 'Crypto';
+
+  @override
+  String get notifTitle => 'Notifications';
+
+  @override
+  String get notifTabAlerts => 'My alerts';
+
+  @override
+  String get notifTabTriggered => 'Triggered';
+
+  @override
+  String get notifNewAlert => 'New alert';
+
+  @override
+  String get alertsEmptyTitle => 'No alerts yet';
+
+  @override
+  String get alertsEmptyBody =>
+      'Get notified when a price crosses your threshold.';
+
+  @override
+  String get alertsCreateFirst => 'Create your first alert';
+
+  @override
+  String get alertRearm => 'Re-arm';
+
+  @override
+  String get alertRearmError => 'Could not re-arm the alert';
+
+  @override
+  String alertTriggeredCount(int count) {
+    return 'triggered $count×';
+  }
+
+  @override
+  String get triggeredEmptyTitle => 'Nothing triggered yet';
+
+  @override
+  String get triggeredEmptyBody =>
+      'When one of your alerts fires, it shows up here.';
+
+  @override
+  String get alertRuleAbove => 'Above';
+
+  @override
+  String get alertRuleBelow => 'Below';
+
+  @override
+  String get alertKindOneShot => 'One-shot';
+
+  @override
+  String get alertKindReArm => 'Re-arm';
+
+  @override
+  String get alertStatusActive => 'Active';
+
+  @override
+  String get alertStatusCooldown => 'Cooldown';
+
+  @override
+  String get alertStatusDone => 'Done';
+
+  @override
+  String get alertSegPriceAbove => 'Price above';
+
+  @override
+  String get alertSegPriceBelow => 'Price below';
+
+  @override
+  String get alertHintAbove =>
+      'Triggers when the price goes above the threshold.';
+
+  @override
+  String get alertHintBelow =>
+      'Triggers when the price goes below the threshold.';
+
+  @override
+  String get alertKindOneShotDesc =>
+      'Fires once, then stays in your history until re-armed.';
+
+  @override
+  String get alertKindReArmDesc =>
+      'Fires, cools down, and automatically re-arms when the price retreats.';
+
+  @override
+  String get alertThreshold => 'Threshold';
+
+  @override
+  String get alertCreate => 'Create alert';
+
+  @override
+  String get alertNewTitle => 'New price alert';
+
+  @override
+  String alertEditTitle(String symbol) {
+    return 'Edit $symbol alert';
+  }
+
+  @override
+  String get alertDeleteButton => 'Delete alert';
+
+  @override
+  String alertDeleteTitle(String symbol) {
+    return 'Delete $symbol alert?';
+  }
+
+  @override
+  String alertDeleteContent(String rule, String threshold) {
+    return '$rule $threshold — this also removes it from your history of active alerts.';
+  }
 }
