@@ -4,14 +4,24 @@ import jwt from 'jsonwebtoken';
 export interface UserRecord {
   id: string;
   email: string;
+  name: string | null;
   passwordHash: string | null;
 }
 
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
+  findById(userId: string): Promise<UserRecord | null>;
   create(email: string, passwordHash: string | null): Promise<UserRecord>;
+  updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord>;
   /** Idempotent; related rows cascade via the schema's onDelete: Cascade. */
   delete(userId: string): Promise<void>;
+}
+
+/** Account info served by GET /auth/me — never includes the password hash. */
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
 }
 
 /** Implemented by infrastructure (google-auth-library); null = token rejected. */
@@ -35,7 +45,7 @@ export class InvalidCredentialsError extends Error {
 
 export interface AuthResult {
   token: string;
-  user: { id: string; email: string };
+  user: { id: string; email: string; name: string | null };
 }
 
 export class AuthService {
@@ -80,6 +90,23 @@ export class AuthService {
     await this.users.delete(userId);
   }
 
+  /** Current account info, or null if the (still-valid) token names a deleted user. */
+  async getProfile(userId: string): Promise<UserProfile | null> {
+    const user = await this.users.findById(userId);
+    return user ? this.toProfile(user) : null;
+  }
+
+  /** Partial update: only fields present in `patch` change. Blank name clears it to null. */
+  async updateProfile(userId: string, patch: { name?: string | undefined }): Promise<UserProfile> {
+    const data: { name?: string | null } = {};
+    if (patch.name !== undefined) {
+      const trimmed = patch.name.trim();
+      data.name = trimmed === '' ? null : trimmed;
+    }
+    const user = await this.users.updateProfile(userId, data);
+    return this.toProfile(user);
+  }
+
   /** Same JWT for REST and the WS auth message. */
   verifyToken(token: string): { userId: string } | null {
     try {
@@ -93,6 +120,10 @@ export class AuthService {
 
   private toResult(user: UserRecord): AuthResult {
     const token = jwt.sign({ sub: user.id }, this.jwtSecret, { expiresIn: this.tokenTtl });
-    return { token, user: { id: user.id, email: user.email } };
+    return { token, user: this.toProfile(user) };
+  }
+
+  private toProfile(user: UserRecord): UserProfile {
+    return { id: user.id, email: user.email, name: user.name };
   }
 }

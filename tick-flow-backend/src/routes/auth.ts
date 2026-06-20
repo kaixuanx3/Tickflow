@@ -14,6 +14,10 @@ const credentialsSchema = z.object({
 
 const googleSchema = z.object({ idToken: z.string().min(1) });
 
+const profilePatchSchema = z.object({
+  name: z.string().trim().max(60, 'name must be 60 characters or fewer').optional(),
+});
+
 export function registerAuthRoutes(
   app: FastifyInstance,
   authService: AuthService,
@@ -67,6 +71,20 @@ export function registerAuthRoutes(
       }
       throw err;
     }
+  });
+
+  app.get('/auth/me', { preHandler: authGuard }, async (req, reply) => {
+    const profile = await authService.getProfile(req.userId);
+    if (!profile) return reply.code(404).send({ error: 'account not found' });
+    return profile;
+  });
+
+  app.patch('/auth/me', { preHandler: authGuard }, async (req, reply) => {
+    const parsed = profilePatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: z.prettifyError(parsed.error) });
+    }
+    return authService.updateProfile(req.userId, parsed.data);
   });
 
   // Delete the authenticated account and all its data (cascade). Idempotent.

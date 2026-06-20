@@ -1,21 +1,25 @@
 import type { PrismaClient } from '@prisma/client';
 import type { UserRecord, UserRepo } from '../services/auth-service.js';
 
+const userFields = { id: true, email: true, name: true, passwordHash: true } as const;
+
 export class PrismaUserRepo implements UserRepo {
   constructor(private readonly prisma: PrismaClient) {}
 
   async findByEmail(email: string): Promise<UserRecord | null> {
-    return this.prisma.user.findUnique({
-      where: { email },
-      select: { id: true, email: true, passwordHash: true },
-    });
+    return this.prisma.user.findUnique({ where: { email }, select: userFields });
+  }
+
+  async findById(userId: string): Promise<UserRecord | null> {
+    return this.prisma.user.findUnique({ where: { id: userId }, select: userFields });
   }
 
   async create(email: string, passwordHash: string | null): Promise<UserRecord> {
-    return this.prisma.user.create({
-      data: { email, passwordHash },
-      select: { id: true, email: true, passwordHash: true },
-    });
+    return this.prisma.user.create({ data: { email, passwordHash }, select: userFields });
+  }
+
+  async updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord> {
+    return this.prisma.user.update({ where: { id: userId }, data, select: userFields });
   }
 
   async delete(userId: string): Promise<void> {

@@ -15,9 +15,20 @@ class MemoryUserRepo implements UserRepo {
     return this.users.find((u) => u.email === email) ?? null;
   }
 
-  async create(email: string, passwordHash: string): Promise<UserRecord> {
-    const user = { id: `u${this.nextId++}`, email, passwordHash };
+  async findById(userId: string): Promise<UserRecord | null> {
+    return this.users.find((u) => u.id === userId) ?? null;
+  }
+
+  async create(email: string, passwordHash: string | null): Promise<UserRecord> {
+    const user = { id: `u${this.nextId++}`, email, name: null, passwordHash };
     this.users.push(user);
+    return user;
+  }
+
+  async updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord> {
+    const user = this.users.find((u) => u.id === userId);
+    if (!user) throw new Error('user not found');
+    if (data.name !== undefined) user.name = data.name;
     return user;
   }
 
@@ -89,7 +100,7 @@ describe('AuthService', () => {
 
   it('login rejects accounts without a password hash (Google-only)', async () => {
     const { repo, service } = makeService();
-    repo.users.push({ id: 'u9', email: 'google@example.com', passwordHash: null });
+    repo.users.push({ id: 'u9', email: 'google@example.com', name: null, passwordHash: null });
 
     await expect(service.login('google@example.com', 'whatever1')).rejects.toThrow(
       InvalidCredentialsError,
@@ -141,6 +152,59 @@ describe('AuthService', () => {
   it('deleteAccount is idempotent for an unknown id', async () => {
     const { service } = makeService();
     await expect(service.deleteAccount('does-not-exist')).resolves.toBeUndefined();
+  });
+
+  it('register starts a new account with no display name', async () => {
+    const { service } = makeService();
+
+    const result = await service.register('kai@example.com', 'password123');
+
+    expect(result.user.name).toBeNull();
+  });
+
+  it('getProfile returns id/email/name and never the password hash', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+
+    const profile = await service.getProfile(user.id);
+
+    expect(profile).toEqual({ id: user.id, email: 'kai@example.com', name: null });
+    expect(profile).not.toHaveProperty('passwordHash');
+  });
+
+  it('getProfile returns null when the token names a deleted user', async () => {
+    const { service } = makeService();
+    await expect(service.getProfile('does-not-exist')).resolves.toBeNull();
+  });
+
+  it('updateProfile sets and trims the display name', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+
+    const profile = await service.updateProfile(user.id, { name: '  Kai X  ' });
+
+    expect(profile.name).toBe('Kai X');
+    expect((await service.getProfile(user.id))?.name).toBe('Kai X');
+  });
+
+  it('updateProfile clears the name when given a blank string', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+    await service.updateProfile(user.id, { name: 'Kai' });
+
+    const profile = await service.updateProfile(user.id, { name: '   ' });
+
+    expect(profile.name).toBeNull();
+  });
+
+  it('updateProfile leaves the name untouched when name is omitted', async () => {
+    const { service } = makeService();
+    const { user } = await service.register('kai@example.com', 'password123');
+    await service.updateProfile(user.id, { name: 'Kai' });
+
+    const profile = await service.updateProfile(user.id, {});
+
+    expect(profile.name).toBe('Kai');
   });
 
   it('verifyToken rejects garbage and foreign-signed tokens', async () => {

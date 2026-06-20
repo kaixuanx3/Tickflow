@@ -25,6 +25,18 @@ class AuthRepository {
 
   Future<void> signOut() => _storage.clear();
 
+  /// Updates the display name via PATCH /auth/me and refreshes the cached user.
+  Future<AuthUser> updateProfile({required String? name}) async {
+    try {
+      final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: {'name': name});
+      final user = AuthUser.fromJson(res.data!);
+      await _storage.saveUser(user);
+      return user;
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
   /// Deletes the account server-side (cascades all data), then clears the
   /// local session. On failure the token is kept so the user stays signed in.
   Future<void> deleteAccount() async {

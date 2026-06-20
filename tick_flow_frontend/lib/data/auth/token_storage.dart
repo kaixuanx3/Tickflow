@@ -26,6 +26,10 @@ class TokenStorage {
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
   }
 
+  /// Updates the cached user without touching the token (e.g. after a profile edit).
+  Future<void> saveUser(AuthUser user) =>
+      _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+
   Future<void> clear() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _userKey);

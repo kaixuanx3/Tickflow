@@ -10,6 +10,7 @@ datasource db {
 model User {
   id           String          @id @default(cuid())
   email        String          @unique
+  name         String? // display name shown in the menu; null until the user sets one
   passwordHash String? // null once Google-only sign-in exists
   createdAt    DateTime        @default(now())
   watchlist    WatchlistItem[]

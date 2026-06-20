@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/biometric_lock.dart';
 import '../../../core/theme_mode.dart';
@@ -12,7 +13,8 @@ class MenuScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final email = ref.watch(authControllerProvider).value?.email ?? '';
+    final user = ref.watch(authControllerProvider).value;
+    final email = user?.email ?? '';
     final mode = ref.watch(themeModeProvider);
     final bioAvailable = ref.watch(biometricSupportedProvider);
     final bioEnabled = ref.watch(biometricEnabledProvider);
@@ -22,7 +24,17 @@ class MenuScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 8),
         children: [
-          _ProfileCard(email: email),
+          _ProfileCard(name: user?.name, email: email),
+          const _SectionHeader('Account'),
+          _MenuCard(
+            children: [
+              _MenuRow(
+                icon: Icons.person_outline,
+                title: 'Account details',
+                onTap: () => context.push('/account'),
+              ),
+            ],
+          ),
           const _SectionHeader('Preferences'),
           _MenuCard(
             children: [
@@ -103,11 +115,16 @@ String _themeLabel(ThemeMode m) => switch (m) {
       ThemeMode.dark => 'Dark',
     };
 
-/// First up-to-2 letters of the email's local part, e.g. kaixuanx3 → "KA".
-String _initials(String email) {
-  final local = email.split('@').first;
-  final letters = local.replaceAll(RegExp('[^A-Za-z]'), '');
-  if (letters.isEmpty) return email.isEmpty ? '?' : email[0].toUpperCase();
+/// Avatar initials from a name or email: "Alex Thompson" → "AT",
+/// "kaixuanx3@gmail.com" → "KA".
+String _initials(String label) {
+  final source = label.contains('@') ? label.split('@').first : label;
+  final words = source.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  final letters = source.replaceAll(RegExp('[^A-Za-z]'), '');
+  if (letters.isEmpty) return label.isEmpty ? '?' : label[0].toUpperCase();
   return letters.substring(0, letters.length >= 2 ? 2 : 1).toUpperCase();
 }
 
@@ -205,13 +222,17 @@ Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
 
 /// Account summary card at the top of the menu.
 class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.email});
+  const _ProfileCard({required this.name, required this.email});
 
+  final String? name;
   final String email;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasName = name != null && name!.isNotEmpty;
+    final primary = hasName ? name! : email;
+    final secondary = hasName ? email : 'Signed in';
     return Card(
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: Padding(
@@ -222,7 +243,7 @@ class _ProfileCard extends StatelessWidget {
               radius: 26,
               backgroundColor: theme.colorScheme.primaryContainer,
               child: Text(
-                _initials(email),
+                _initials(primary),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onPrimaryContainer,
                   fontWeight: FontWeight.w700,
@@ -235,7 +256,7 @@ class _ProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    email,
+                    primary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall
@@ -243,7 +264,9 @@ class _ProfileCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Signed in',
+                    secondary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
