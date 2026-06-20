@@ -160,12 +160,8 @@ String _themeLabel(AppLocalizations l10n, ThemeMode m) => switch (m) {
       ThemeMode.dark => l10n.themeDark,
     };
 
-String _languageLabel(AppLocalizations l10n, Locale? locale) =>
-    switch (locale?.languageCode) {
-      'en' => l10n.languageEnglish,
-      'zh' => l10n.languageChinese,
-      _ => l10n.optionSystem,
-    };
+String _languageLabel(AppLocalizations l10n, Locale locale) =>
+    locale.languageCode == 'zh' ? l10n.languageChinese : l10n.languageEnglish;
 
 /// Avatar initials from a name or email: "Alex Thompson" → "AT",
 /// "kaixuanx3@gmail.com" → "KA".
@@ -247,10 +243,9 @@ void _showThemeSheet(BuildContext context, WidgetRef ref, ThemeMode current) {
   );
 }
 
-void _showLanguageSheet(BuildContext context, WidgetRef ref, Locale? current) {
+void _showLanguageSheet(BuildContext context, WidgetRef ref, Locale current) {
   final l10n = AppLocalizations.of(context);
-  final options = <(Locale?, String, IconData)>[
-    (null, l10n.optionSystem, Icons.language_outlined),
+  final options = <(Locale, String, IconData)>[
     (const Locale('en'), l10n.languageEnglish, Icons.translate_outlined),
     (const Locale('zh'), l10n.languageChinese, Icons.translate_outlined),
   ];
@@ -265,7 +260,7 @@ void _showLanguageSheet(BuildContext context, WidgetRef ref, Locale? current) {
             ListTile(
               leading: Icon(option.$3),
               title: Text(option.$2),
-              trailing: current?.languageCode == option.$1?.languageCode
+              trailing: current.languageCode == option.$1.languageCode
                   ? const Icon(Icons.check)
                   : null,
               onTap: () {
