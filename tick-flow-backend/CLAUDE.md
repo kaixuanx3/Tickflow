@@ -103,6 +103,7 @@ ACTIVE ──condition met──► TRIGGERED ──► enqueue notification job
 - Idempotency: BullMQ job ID = `alert-{id}-trigger-{trigger_count}` (BullMQ forbids `:` in job ids) — duplicate evaluation can't double-send.
 - Status transition + enqueue atomic (transaction/check-and-set).
 - Evaluation runs on every tick (streamed or polled).
+- Delivery respects the user's `pushEnabled` flag: when off, the FCM push is skipped but the in-app feed entry is still written.
 
 ### Resilience
 Upstream down/rate-limited → keep serving cached data with `stale: true`, never crash. Backoff + jitter on reconnects.
@@ -111,6 +112,8 @@ Upstream down/rate-limited → keep serving cached data with `stale: true`, neve
 
 ```
 POST /auth/register | /auth/login | /auth/google     → JWT
+GET/PATCH/DELETE /auth/me                             (profile: name, pushEnabled · hasPassword read-only · DELETE = account)
+POST /auth/change-password                            (email/password accounts; verifies current)
 GET  /symbols/search?q=
 GET  /symbols?page=                                   (US symbol list, paginated)
 GET  /quotes?symbols=AAPL,TSLA                        (batched, cache-backed)
