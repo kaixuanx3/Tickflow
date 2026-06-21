@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/alerts/alert_models.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/markets/quotes_cache.dart';
@@ -217,7 +218,7 @@ class _AlertRowState extends ConsumerState<_AlertRow> {
           padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
           child: Row(
             children: [
-              _SymbolAvatar(symbol: a.symbol),
+              SymbolLogo(symbol: a.symbol, size: 44),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -263,33 +264,6 @@ class _AlertRowState extends ConsumerState<_AlertRow> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Rounded-square ticker monogram (first two letters of the symbol).
-class _SymbolAvatar extends StatelessWidget {
-  const _SymbolAvatar({required this.symbol});
-
-  final String symbol;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final initials = symbol.length >= 2 ? symbol.substring(0, 2) : symbol;
-    return Container(
-      width: 44,
-      height: 44,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        initials,
-        style: theme.textTheme.labelLarge
-            ?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.5),
       ),
     );
   }
