@@ -46,6 +46,7 @@ dependencies:
   intl: ^0.20.2
   google_fonts: ^8.1.0
   local_auth: ^2.3.0
+  cached_network_image: ^3.4.1 # disk-cached company logos (see core/widgets/symbol_logo.dart)
 
 dev_dependencies:
   flutter_test:
