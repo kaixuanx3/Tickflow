@@ -265,5 +265,6 @@
   "timeHoursAgo": "{hours}h ago",
   "@timeHoursAgo": { "placeholders": { "hours": { "type": "int" } } },
   "timeDaysAgo": "{days}d ago",
-  "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } }
+  "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } },
+  "allocationOther": "Other"
 }

@@ -1387,6 +1387,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days}d ago'**
   String timeDaysAgo(int days);
+
+  /// No description provided for @allocationOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get allocationOther;
 }
 
 class _AppLocalizationsDelegate

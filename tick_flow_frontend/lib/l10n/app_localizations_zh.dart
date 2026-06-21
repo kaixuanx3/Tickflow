@@ -703,4 +703,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String timeDaysAgo(int days) {
     return '$days 天前';
   }
+
+  @override
+  String get allocationOther => '其他';
 }

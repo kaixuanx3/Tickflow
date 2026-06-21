@@ -726,4 +726,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String timeDaysAgo(int days) {
     return '${days}d ago';
   }
+
+  @override
+  String get allocationOther => 'Other';
 }

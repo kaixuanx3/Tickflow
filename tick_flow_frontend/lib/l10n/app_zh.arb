@@ -214,5 +214,6 @@
   "timeJustNow": "刚刚",
   "timeMinutesAgo": "{minutes} 分钟前",
   "timeHoursAgo": "{hours} 小时前",
-  "timeDaysAgo": "{days} 天前"
+  "timeDaysAgo": "{days} 天前",
+  "allocationOther": "其他"
 }
