@@ -573,4 +573,60 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get helpFaqA5 =>
       'Your session is kept in your device\'s secure storage. On mobile you can also turn on Biometrics under Menu → Security.';
+
+  @override
+  String get plansOnFree => 'You\'re on the Free plan';
+
+  @override
+  String get plansSubtitle =>
+      'Pro unlocks more once it launches — no charge today.';
+
+  @override
+  String get plansBadgeCurrent => 'Current';
+
+  @override
+  String get plansPriceMonth => '/month';
+
+  @override
+  String get plansFreeTagline => 'Everything you need to track US markets.';
+
+  @override
+  String get plansFreeFeature1 => 'US stocks & ETFs';
+
+  @override
+  String get plansFreeFeature2 => 'Live (delayed) quotes';
+
+  @override
+  String get plansFreeFeature3 => 'Watchlist & portfolio';
+
+  @override
+  String get plansFreeFeature4 => 'Price alerts + notifications feed';
+
+  @override
+  String get plansFreeFeature5 => 'Daily charts';
+
+  @override
+  String get plansCurrentPlan => 'Current plan';
+
+  @override
+  String get plansProTagline => 'For tracking the whole market, in real time.';
+
+  @override
+  String get plansProFeature1 => 'Global markets, not just US';
+
+  @override
+  String get plansProFeature2 => 'Real-time quotes (no delay)';
+
+  @override
+  String get plansProFeature3 => 'Intraday charts & extended history';
+
+  @override
+  String get plansProFeature4 => 'Unlimited alerts';
+
+  @override
+  String get plansProFeature5 => 'Priority support';
+
+  @override
+  String get plansProNote =>
+      'Pro is in development — these features aren\'t available yet.';
 }

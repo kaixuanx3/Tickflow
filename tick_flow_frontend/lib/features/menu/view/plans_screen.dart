@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// Display-only plans preview. There is no billing — Pro is a "coming soon"
 /// roadmap card, not a real purchase (the Pro perks like global data are vendor
 /// limitations we can't unlock today).
@@ -9,8 +11,9 @@ class PlansScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Plans')),
+      appBar: AppBar(title: Text(l10n.menuSubscriptions)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -20,51 +23,51 @@ class PlansScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  "You're on the Free plan",
+                  l10n.plansOnFree,
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Pro unlocks more once it launches — no charge today.',
+                  l10n.plansSubtitle,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 20),
                 _PlanCard(
-                  name: 'Free',
-                  badge: 'Current',
+                  name: l10n.menuPlanFree,
+                  badge: l10n.plansBadgeCurrent,
                   price: r'$0',
-                  priceSuffix: '/month',
-                  tagline: 'Everything you need to track US markets.',
-                  features: const [
-                    'US stocks & ETFs',
-                    'Live (delayed) quotes',
-                    'Watchlist & portfolio',
-                    'Price alerts + notifications feed',
-                    'Daily charts',
+                  priceSuffix: l10n.plansPriceMonth,
+                  tagline: l10n.plansFreeTagline,
+                  features: [
+                    l10n.plansFreeFeature1,
+                    l10n.plansFreeFeature2,
+                    l10n.plansFreeFeature3,
+                    l10n.plansFreeFeature4,
+                    l10n.plansFreeFeature5,
                   ],
-                  buttonLabel: 'Current plan',
+                  buttonLabel: l10n.plansCurrentPlan,
                 ),
                 const SizedBox(height: 16),
                 _PlanCard(
                   name: 'Pro',
-                  badge: 'Coming soon',
+                  badge: l10n.commonComingSoon,
                   badgeAccent: true,
                   highlighted: true,
-                  tagline: 'For tracking the whole market, in real time.',
-                  features: const [
-                    'Global markets, not just US',
-                    'Real-time quotes (no delay)',
-                    'Intraday charts & extended history',
-                    'Unlimited alerts',
-                    'Priority support',
+                  tagline: l10n.plansProTagline,
+                  features: [
+                    l10n.plansProFeature1,
+                    l10n.plansProFeature2,
+                    l10n.plansProFeature3,
+                    l10n.plansProFeature4,
+                    l10n.plansProFeature5,
                   ],
-                  buttonLabel: 'Coming soon',
+                  buttonLabel: l10n.commonComingSoon,
                 ),
                 const SizedBox(height: 16),
                 Center(
                   child: Text(
-                    "Pro is in development — these features aren't available yet.",
+                    l10n.plansProNote,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

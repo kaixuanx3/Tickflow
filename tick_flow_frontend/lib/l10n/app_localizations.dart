@@ -1147,6 +1147,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your session is kept in your device\'s secure storage. On mobile you can also turn on Biometrics under Menu → Security.'**
   String get helpFaqA5;
+
+  /// No description provided for @plansOnFree.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on the Free plan'**
+  String get plansOnFree;
+
+  /// No description provided for @plansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro unlocks more once it launches — no charge today.'**
+  String get plansSubtitle;
+
+  /// No description provided for @plansBadgeCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get plansBadgeCurrent;
+
+  /// No description provided for @plansPriceMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'/month'**
+  String get plansPriceMonth;
+
+  /// No description provided for @plansFreeTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything you need to track US markets.'**
+  String get plansFreeTagline;
+
+  /// No description provided for @plansFreeFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'US stocks & ETFs'**
+  String get plansFreeFeature1;
+
+  /// No description provided for @plansFreeFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Live (delayed) quotes'**
+  String get plansFreeFeature2;
+
+  /// No description provided for @plansFreeFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Watchlist & portfolio'**
+  String get plansFreeFeature3;
+
+  /// No description provided for @plansFreeFeature4.
+  ///
+  /// In en, this message translates to:
+  /// **'Price alerts + notifications feed'**
+  String get plansFreeFeature4;
+
+  /// No description provided for @plansFreeFeature5.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily charts'**
+  String get plansFreeFeature5;
+
+  /// No description provided for @plansCurrentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Current plan'**
+  String get plansCurrentPlan;
+
+  /// No description provided for @plansProTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'For tracking the whole market, in real time.'**
+  String get plansProTagline;
+
+  /// No description provided for @plansProFeature1.
+  ///
+  /// In en, this message translates to:
+  /// **'Global markets, not just US'**
+  String get plansProFeature1;
+
+  /// No description provided for @plansProFeature2.
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time quotes (no delay)'**
+  String get plansProFeature2;
+
+  /// No description provided for @plansProFeature3.
+  ///
+  /// In en, this message translates to:
+  /// **'Intraday charts & extended history'**
+  String get plansProFeature3;
+
+  /// No description provided for @plansProFeature4.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited alerts'**
+  String get plansProFeature4;
+
+  /// No description provided for @plansProFeature5.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority support'**
+  String get plansProFeature5;
+
+  /// No description provided for @plansProNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro is in development — these features aren\'t available yet.'**
+  String get plansProNote;
 }
 
 class _AppLocalizationsDelegate

@@ -555,4 +555,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFaqA5 => '你的登录会话保存在设备的安全存储中。在移动端，你还可以在「菜单 → 安全」中开启生物识别。';
+
+  @override
+  String get plansOnFree => '你正在使用免费方案';
+
+  @override
+  String get plansSubtitle => 'Pro 上线后将解锁更多功能 —— 目前不收费。';
+
+  @override
+  String get plansBadgeCurrent => '当前';
+
+  @override
+  String get plansPriceMonth => '/月';
+
+  @override
+  String get plansFreeTagline => '追踪美股所需的一切。';
+
+  @override
+  String get plansFreeFeature1 => '美股和 ETF';
+
+  @override
+  String get plansFreeFeature2 => '实时（延迟）报价';
+
+  @override
+  String get plansFreeFeature3 => '自选和投资组合';
+
+  @override
+  String get plansFreeFeature4 => '价格提醒 + 通知列表';
+
+  @override
+  String get plansFreeFeature5 => '日线图表';
+
+  @override
+  String get plansCurrentPlan => '当前方案';
+
+  @override
+  String get plansProTagline => '实时追踪整个市场。';
+
+  @override
+  String get plansProFeature1 => '全球市场，不止美股';
+
+  @override
+  String get plansProFeature2 => '实时报价（无延迟）';
+
+  @override
+  String get plansProFeature3 => '日内图表和更长历史';
+
+  @override
+  String get plansProFeature4 => '无限提醒';
+
+  @override
+  String get plansProFeature5 => '优先支持';
+
+  @override
+  String get plansProNote => 'Pro 正在开发中 —— 这些功能尚不可用。';
 }
