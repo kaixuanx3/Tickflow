@@ -515,4 +515,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changePwMismatch => 'Passwords don\'t match';
+
+  @override
+  String get commonComingSoon => 'Coming soon';
+
+  @override
+  String get helpFaqsHeader => 'FAQs';
+
+  @override
+  String get helpContactHeader => 'Contact';
+
+  @override
+  String get helpEmailUs => 'Email us';
+
+  @override
+  String helpEmailCopied(String email) {
+    return '$email copied to clipboard';
+  }
+
+  @override
+  String get helpLiveChat => 'Live chat';
+
+  @override
+  String get helpReplyTime => 'We usually reply within 1–2 business days.';
+
+  @override
+  String get helpFaqQ1 => 'Why are my quotes delayed?';
+
+  @override
+  String get helpFaqA1 =>
+      'Market data comes from Finnhub and Financial Modeling Prep. On the free data tier, quotes are delayed and some charts may be unavailable.';
+
+  @override
+  String get helpFaqQ2 => 'Which markets are covered?';
+
+  @override
+  String get helpFaqA2 =>
+      'US-listed stocks and ETFs for now. Wider global coverage is on the roadmap — see Subscriptions.';
+
+  @override
+  String get helpFaqQ3 => 'How do I add a holding?';
+
+  @override
+  String get helpFaqA3 =>
+      'Go to the Portfolio tab, tap +, then enter the symbol, quantity and your buy price. Everything is valued for you automatically.';
+
+  @override
+  String get helpFaqQ4 => 'How do price alerts work?';
+
+  @override
+  String get helpFaqA4 =>
+      'Open a symbol and tap Create alert, or add one from the Alerts tab. When it triggers it shows up in your in-app notifications feed.';
+
+  @override
+  String get helpFaqQ5 => 'Is my account secure?';
+
+  @override
+  String get helpFaqA5 =>
+      'Your session is kept in your device\'s secure storage. On mobile you can also turn on Biometrics under Menu → Security.';
 }

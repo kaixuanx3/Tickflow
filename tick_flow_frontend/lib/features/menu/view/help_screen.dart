@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// Static help centre: FAQs, a contact email (tap to copy), and a coming-soon
 /// live-chat row. No backend — purely informational.
 class HelpScreen extends StatelessWidget {
@@ -8,47 +10,28 @@ class HelpScreen extends StatelessWidget {
 
   static const _supportEmail = 'support@tickflow.my';
 
-  static const _faqs = <(String, String)>[
-    (
-      'Why are my quotes delayed?',
-      'Market data comes from Finnhub and Financial Modeling Prep. On the free '
-          'data tier, quotes are delayed and some charts may be unavailable.',
-    ),
-    (
-      'Which markets are covered?',
-      'US-listed stocks and ETFs for now. Wider global coverage is on the '
-          'roadmap — see Plans.',
-    ),
-    (
-      'How do I add a holding?',
-      'Go to the Portfolio tab, tap +, then enter the symbol, quantity and your '
-          'buy price. Everything is valued for you automatically.',
-    ),
-    (
-      'How do price alerts work?',
-      'Open a symbol and tap Create alert, or add one from the Alerts tab. When '
-          'it triggers it shows up in your in-app notifications feed.',
-    ),
-    (
-      'Is my account secure?',
-      "Your session is kept in your device's secure storage. On mobile you can "
-          'also turn on Biometrics under Menu → Security.',
-    ),
-  ];
-
   Future<void> _copyEmail(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     await Clipboard.setData(const ClipboardData(text: _supportEmail));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$_supportEmail copied to clipboard')),
+      SnackBar(content: Text(l10n.helpEmailCopied(_supportEmail))),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final faqs = <(String, String)>[
+      (l10n.helpFaqQ1, l10n.helpFaqA1),
+      (l10n.helpFaqQ2, l10n.helpFaqA2),
+      (l10n.helpFaqQ3, l10n.helpFaqA3),
+      (l10n.helpFaqQ4, l10n.helpFaqA4),
+      (l10n.helpFaqQ5, l10n.helpFaqA5),
+    ];
     return Scaffold(
-      appBar: AppBar(title: const Text('Help & Support')),
+      appBar: AppBar(title: Text(l10n.menuHelpSupport)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -58,7 +41,7 @@ class HelpScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'FAQs',
+                  l10n.helpFaqsHeader,
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
@@ -66,16 +49,16 @@ class HelpScreen extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      for (var i = 0; i < _faqs.length; i++) ...[
+                      for (var i = 0; i < faqs.length; i++) ...[
                         if (i > 0) const Divider(height: 1),
                         ExpansionTile(
-                          title: Text(_faqs[i].$1),
+                          title: Text(faqs[i].$1),
                           shape: const Border(),
                           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                           expandedCrossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _faqs[i].$2,
+                              faqs[i].$2,
                               style: theme.textTheme.bodyMedium
                                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                             ),
@@ -87,7 +70,7 @@ class HelpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Contact',
+                  l10n.helpContactHeader,
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
@@ -97,17 +80,17 @@ class HelpScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.mail_outline),
-                        title: const Text('Email us'),
+                        title: Text(l10n.helpEmailUs),
                         subtitle: const Text(_supportEmail),
                         trailing: const Icon(Icons.copy_rounded, size: 18),
                         onTap: () => _copyEmail(context),
                       ),
                       const Divider(height: 1),
-                      const ListTile(
+                      ListTile(
                         enabled: false,
-                        leading: Icon(Icons.chat_bubble_outline),
-                        title: Text('Live chat'),
-                        subtitle: Text('Coming soon'),
+                        leading: const Icon(Icons.chat_bubble_outline),
+                        title: Text(l10n.helpLiveChat),
+                        subtitle: Text(l10n.commonComingSoon),
                       ),
                     ],
                   ),
@@ -115,7 +98,7 @@ class HelpScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    'We usually reply within 1–2 business days.',
+                    l10n.helpReplyTime,
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),

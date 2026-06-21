@@ -157,5 +157,22 @@
   "changePwNew": "新密码",
   "changePwNewError": "新密码至少为 8 个字符",
   "changePwConfirm": "确认新密码",
-  "changePwMismatch": "两次输入的密码不一致"
+  "changePwMismatch": "两次输入的密码不一致",
+  "commonComingSoon": "敬请期待",
+  "helpFaqsHeader": "常见问题",
+  "helpContactHeader": "联系我们",
+  "helpEmailUs": "给我们发邮件",
+  "helpEmailCopied": "{email} 已复制到剪贴板",
+  "helpLiveChat": "在线客服",
+  "helpReplyTime": "我们通常在 1–2 个工作日内回复。",
+  "helpFaqQ1": "为什么我的报价有延迟？",
+  "helpFaqA1": "行情数据来自 Finnhub 和 Financial Modeling Prep。在免费数据层级，报价会有延迟，部分图表可能不可用。",
+  "helpFaqQ2": "覆盖哪些市场？",
+  "helpFaqA2": "目前为美国上市的股票和 ETF。更广泛的全球覆盖已在规划中 —— 详见订阅。",
+  "helpFaqQ3": "如何添加持仓？",
+  "helpFaqA3": "进入「投资组合」标签，点击 +，然后输入代码、数量和买入价。一切都会自动为你计算。",
+  "helpFaqQ4": "价格提醒如何运作？",
+  "helpFaqA4": "打开某个股票并点击「创建提醒」，或在「提醒」标签中添加。触发时会显示在你的应用内通知列表中。",
+  "helpFaqQ5": "我的账户安全吗？",
+  "helpFaqA5": "你的登录会话保存在设备的安全存储中。在移动端，你还可以在「菜单 → 安全」中开启生物识别。"
 }

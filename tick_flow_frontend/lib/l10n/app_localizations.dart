@@ -1045,6 +1045,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passwords don\'t match'**
   String get changePwMismatch;
+
+  /// No description provided for @commonComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get commonComingSoon;
+
+  /// No description provided for @helpFaqsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQs'**
+  String get helpFaqsHeader;
+
+  /// No description provided for @helpContactHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get helpContactHeader;
+
+  /// No description provided for @helpEmailUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Email us'**
+  String get helpEmailUs;
+
+  /// No description provided for @helpEmailCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'{email} copied to clipboard'**
+  String helpEmailCopied(String email);
+
+  /// No description provided for @helpLiveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Live chat'**
+  String get helpLiveChat;
+
+  /// No description provided for @helpReplyTime.
+  ///
+  /// In en, this message translates to:
+  /// **'We usually reply within 1–2 business days.'**
+  String get helpReplyTime;
+
+  /// No description provided for @helpFaqQ1.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are my quotes delayed?'**
+  String get helpFaqQ1;
+
+  /// No description provided for @helpFaqA1.
+  ///
+  /// In en, this message translates to:
+  /// **'Market data comes from Finnhub and Financial Modeling Prep. On the free data tier, quotes are delayed and some charts may be unavailable.'**
+  String get helpFaqA1;
+
+  /// No description provided for @helpFaqQ2.
+  ///
+  /// In en, this message translates to:
+  /// **'Which markets are covered?'**
+  String get helpFaqQ2;
+
+  /// No description provided for @helpFaqA2.
+  ///
+  /// In en, this message translates to:
+  /// **'US-listed stocks and ETFs for now. Wider global coverage is on the roadmap — see Subscriptions.'**
+  String get helpFaqA2;
+
+  /// No description provided for @helpFaqQ3.
+  ///
+  /// In en, this message translates to:
+  /// **'How do I add a holding?'**
+  String get helpFaqQ3;
+
+  /// No description provided for @helpFaqA3.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the Portfolio tab, tap +, then enter the symbol, quantity and your buy price. Everything is valued for you automatically.'**
+  String get helpFaqA3;
+
+  /// No description provided for @helpFaqQ4.
+  ///
+  /// In en, this message translates to:
+  /// **'How do price alerts work?'**
+  String get helpFaqQ4;
+
+  /// No description provided for @helpFaqA4.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a symbol and tap Create alert, or add one from the Alerts tab. When it triggers it shows up in your in-app notifications feed.'**
+  String get helpFaqA4;
+
+  /// No description provided for @helpFaqQ5.
+  ///
+  /// In en, this message translates to:
+  /// **'Is my account secure?'**
+  String get helpFaqQ5;
+
+  /// No description provided for @helpFaqA5.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session is kept in your device\'s secure storage. On mobile you can also turn on Biometrics under Menu → Security.'**
+  String get helpFaqA5;
 }
 
 class _AppLocalizationsDelegate

@@ -501,4 +501,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get changePwMismatch => '两次输入的密码不一致';
+
+  @override
+  String get commonComingSoon => '敬请期待';
+
+  @override
+  String get helpFaqsHeader => '常见问题';
+
+  @override
+  String get helpContactHeader => '联系我们';
+
+  @override
+  String get helpEmailUs => '给我们发邮件';
+
+  @override
+  String helpEmailCopied(String email) {
+    return '$email 已复制到剪贴板';
+  }
+
+  @override
+  String get helpLiveChat => '在线客服';
+
+  @override
+  String get helpReplyTime => '我们通常在 1–2 个工作日内回复。';
+
+  @override
+  String get helpFaqQ1 => '为什么我的报价有延迟？';
+
+  @override
+  String get helpFaqA1 =>
+      '行情数据来自 Finnhub 和 Financial Modeling Prep。在免费数据层级，报价会有延迟，部分图表可能不可用。';
+
+  @override
+  String get helpFaqQ2 => '覆盖哪些市场？';
+
+  @override
+  String get helpFaqA2 => '目前为美国上市的股票和 ETF。更广泛的全球覆盖已在规划中 —— 详见订阅。';
+
+  @override
+  String get helpFaqQ3 => '如何添加持仓？';
+
+  @override
+  String get helpFaqA3 => '进入「投资组合」标签，点击 +，然后输入代码、数量和买入价。一切都会自动为你计算。';
+
+  @override
+  String get helpFaqQ4 => '价格提醒如何运作？';
+
+  @override
+  String get helpFaqA4 => '打开某个股票并点击「创建提醒」，或在「提醒」标签中添加。触发时会显示在你的应用内通知列表中。';
+
+  @override
+  String get helpFaqQ5 => '我的账户安全吗？';
+
+  @override
+  String get helpFaqA5 => '你的登录会话保存在设备的安全存储中。在移动端，你还可以在「菜单 → 安全」中开启生物识别。';
 }

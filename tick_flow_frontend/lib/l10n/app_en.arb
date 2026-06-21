@@ -199,5 +199,25 @@
   "changePwNew": "New password",
   "changePwNewError": "New password must be at least 8 characters",
   "changePwConfirm": "Confirm new password",
-  "changePwMismatch": "Passwords don't match"
+  "changePwMismatch": "Passwords don't match",
+  "commonComingSoon": "Coming soon",
+  "helpFaqsHeader": "FAQs",
+  "helpContactHeader": "Contact",
+  "helpEmailUs": "Email us",
+  "helpEmailCopied": "{email} copied to clipboard",
+  "@helpEmailCopied": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "helpLiveChat": "Live chat",
+  "helpReplyTime": "We usually reply within 1–2 business days.",
+  "helpFaqQ1": "Why are my quotes delayed?",
+  "helpFaqA1": "Market data comes from Finnhub and Financial Modeling Prep. On the free data tier, quotes are delayed and some charts may be unavailable.",
+  "helpFaqQ2": "Which markets are covered?",
+  "helpFaqA2": "US-listed stocks and ETFs for now. Wider global coverage is on the roadmap — see Subscriptions.",
+  "helpFaqQ3": "How do I add a holding?",
+  "helpFaqA3": "Go to the Portfolio tab, tap +, then enter the symbol, quantity and your buy price. Everything is valued for you automatically.",
+  "helpFaqQ4": "How do price alerts work?",
+  "helpFaqA4": "Open a symbol and tap Create alert, or add one from the Alerts tab. When it triggers it shows up in your in-app notifications feed.",
+  "helpFaqQ5": "Is my account secure?",
+  "helpFaqA5": "Your session is kept in your device's secure storage. On mobile you can also turn on Biometrics under Menu → Security."
 }
