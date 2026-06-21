@@ -59,6 +59,7 @@ enum AlertStatus {
   active
   cooldown
   done
+  paused
 }
 
 model Alert {
