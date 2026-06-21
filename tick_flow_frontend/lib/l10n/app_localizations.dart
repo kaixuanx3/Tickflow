@@ -1255,6 +1255,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pro is in development — these features aren\'t available yet.'**
   String get plansProNote;
+
+  /// No description provided for @analyticsEstValueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated value'**
+  String get analyticsEstValueTitle;
+
+  /// No description provided for @analyticsEstValueBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This line reconstructs your value from each holding\'s daily closing prices (today\'s quantities). Holdings without price history — crypto and some ETFs the data provider doesn\'t cover — aren\'t included, so it can differ from your Total value.'**
+  String get analyticsEstValueBody;
+
+  /// No description provided for @analyticsGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get analyticsGotIt;
+
+  /// No description provided for @analyticsPortfolioValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio value'**
+  String get analyticsPortfolioValue;
+
+  /// No description provided for @analyticsChartUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart unavailable'**
+  String get analyticsChartUnavailable;
+
+  /// No description provided for @analyticsEstFromCloses.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated from daily closes'**
+  String get analyticsEstFromCloses;
+
+  /// No description provided for @analyticsTopContributors.
+  ///
+  /// In en, this message translates to:
+  /// **'Top contributors'**
+  String get analyticsTopContributors;
+
+  /// No description provided for @analyticsQuickStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick stats'**
+  String get analyticsQuickStats;
+
+  /// No description provided for @analyticsLargestPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Largest position'**
+  String get analyticsLargestPosition;
+
+  /// No description provided for @analyticsAssetMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset mix'**
+  String get analyticsAssetMix;
+
+  /// No description provided for @analyticsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add holdings to see your analytics.'**
+  String get analyticsEmpty;
+
+  /// No description provided for @analyticsMixStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Stock} other{{count} Stocks}}'**
+  String analyticsMixStock(int count);
+
+  /// No description provided for @analyticsMixEtf.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ETF} other{{count} ETFs}}'**
+  String analyticsMixEtf(int count);
+
+  /// No description provided for @analyticsMixCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 Crypto} other{{count} Crypto}}'**
+  String analyticsMixCrypto(int count);
+
+  /// No description provided for @allocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocation'**
+  String get allocationTitle;
+
+  /// No description provided for @allocationByHolding.
+  ///
+  /// In en, this message translates to:
+  /// **'Holding'**
+  String get allocationByHolding;
+
+  /// No description provided for @allocationByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get allocationByType;
+
+  /// No description provided for @allocationTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a slice'**
+  String get allocationTapHint;
 }
 
 class _AppLocalizationsDelegate

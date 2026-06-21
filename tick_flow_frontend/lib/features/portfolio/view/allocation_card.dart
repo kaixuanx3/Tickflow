@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/allocation.dart';
 
 class AllocationCard extends StatefulWidget {
@@ -22,6 +23,7 @@ class _AllocationCardState extends State<AllocationCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final slices = condenseSlices(allocationSlices(widget.summary, _mode));
     if (slices.isEmpty) return const SizedBox.shrink();
     final colors = _palette(theme.colorScheme);
@@ -35,11 +37,11 @@ class _AllocationCardState extends State<AllocationCard> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Allocation', style: theme.textTheme.labelLarge)),
+                Expanded(child: Text(l10n.allocationTitle, style: theme.textTheme.labelLarge)),
                 SegmentedButton<AllocationMode>(
-                  segments: const [
-                    ButtonSegment(value: AllocationMode.holding, label: Text('Holding')),
-                    ButtonSegment(value: AllocationMode.assetType, label: Text('Type')),
+                  segments: [
+                    ButtonSegment(value: AllocationMode.holding, label: Text(l10n.allocationByHolding)),
+                    ButtonSegment(value: AllocationMode.assetType, label: Text(l10n.allocationByType)),
                   ],
                   selected: {_mode},
                   showSelectedIcon: false,
@@ -187,7 +189,7 @@ class _AllocationCardState extends State<AllocationCard> {
               size: 20, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(height: 4),
           Text(
-            'Tap a slice',
+            AppLocalizations.of(context).allocationTapHint,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

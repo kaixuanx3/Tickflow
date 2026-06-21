@@ -609,4 +609,80 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get plansProNote => 'Pro 正在开发中 —— 这些功能尚不可用。';
+
+  @override
+  String get analyticsEstValueTitle => '估算价值';
+
+  @override
+  String get analyticsEstValueBody =>
+      '此曲线根据每个持仓的每日收盘价（按当前数量）重建你的价值。没有历史价格的持仓 —— 加密货币以及数据提供商未覆盖的部分 ETF —— 不包含在内，因此可能与你的总市值不同。';
+
+  @override
+  String get analyticsGotIt => '知道了';
+
+  @override
+  String get analyticsPortfolioValue => '投资组合价值';
+
+  @override
+  String get analyticsChartUnavailable => '图表不可用';
+
+  @override
+  String get analyticsEstFromCloses => '根据每日收盘价估算';
+
+  @override
+  String get analyticsTopContributors => '主要贡献';
+
+  @override
+  String get analyticsQuickStats => '快速统计';
+
+  @override
+  String get analyticsLargestPosition => '最大持仓';
+
+  @override
+  String get analyticsAssetMix => '资产构成';
+
+  @override
+  String get analyticsEmpty => '添加持仓以查看分析。';
+
+  @override
+  String analyticsMixStock(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 股票',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String analyticsMixEtf(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ETF',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String analyticsMixCrypto(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 加密货币',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allocationTitle => '占比';
+
+  @override
+  String get allocationByHolding => '按持仓';
+
+  @override
+  String get allocationByType => '按类型';
+
+  @override
+  String get allocationTapHint => '点击扇区查看';
 }

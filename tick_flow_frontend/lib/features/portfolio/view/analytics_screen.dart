@@ -12,6 +12,7 @@ import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/portfolio_controller.dart';
 import '../viewmodel/portfolio_value_series.dart';
 import '../viewmodel/top_contributors.dart';
@@ -25,8 +26,9 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(portfolioProvider);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics')),
+      appBar: AppBar(title: Text(l10n.portfolioAnalytics)),
       body: summary.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorRetry(
@@ -84,20 +86,16 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
   int? _scrubIndex; // point under the finger while scrubbing, else null
 
   void _showInfo() {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Estimated value'),
-        content: const Text(
-          "This line reconstructs your value from each holding's daily closing "
-          "prices (today's quantities). Holdings without price history — crypto "
-          "and some ETFs the data provider doesn't cover — aren't included, so "
-          "it can differ from your Total value.",
-        ),
+        title: Text(l10n.analyticsEstValueTitle),
+        content: Text(l10n.analyticsEstValueBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Got it'),
+            child: Text(l10n.analyticsGotIt),
           ),
         ],
       ),
@@ -108,6 +106,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final market = theme.extension<MarketColors>()!;
+    final l10n = AppLocalizations.of(context);
 
     final candlesBySymbol = <String, List<Candle>>{};
     var loading = false;
@@ -146,7 +145,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
     } else {
       chart = Center(
         child: Text(
-          'Chart unavailable',
+          l10n.analyticsChartUnavailable,
           style: theme.textTheme.bodySmall
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
@@ -162,7 +161,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
           child: Row(
             children: [
               Expanded(
-                child: Text('Portfolio value', style: theme.textTheme.labelLarge),
+                child: Text(l10n.analyticsPortfolioValue, style: theme.textTheme.labelLarge),
               ),
               InkWell(
                 onTap: _showInfo,
@@ -207,7 +206,7 @@ class _ValueChartState extends ConsumerState<_ValueChart> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Estimated from daily closes',
+            l10n.analyticsEstFromCloses,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
@@ -329,6 +328,7 @@ class _TopContributors extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final c = topContributors(holdings);
     if (c == null) return const SizedBox.shrink();
     final single = c.top.id == c.bottom.id;
@@ -339,7 +339,7 @@ class _TopContributors extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Top contributors', style: theme.textTheme.labelLarge),
+            Text(l10n.analyticsTopContributors, style: theme.textTheme.labelLarge),
             const SizedBox(height: 14),
             IntrinsicHeight(
               child: Row(
@@ -418,6 +418,7 @@ class _QuickStatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final holdings = summary.holdings;
     if (holdings.isEmpty) return const SizedBox.shrink();
 
@@ -429,7 +430,7 @@ class _QuickStatsCard extends StatelessWidget {
     }
     final mix = [
       for (final t in AssetType.values)
-        if ((counts[t] ?? 0) > 0) '${counts[t]} ${_typeLabel(t, counts[t]!)}',
+        if ((counts[t] ?? 0) > 0) _mixLabel(l10n, t, counts[t]!),
     ].join(' · ');
 
     return Card(
@@ -439,27 +440,28 @@ class _QuickStatsCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Quick stats', style: theme.textTheme.labelLarge),
+            Text(l10n.analyticsQuickStats, style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
-            _statRow(theme, 'Holdings', '${holdings.length}'),
+            _statRow(theme, l10n.portfolioHoldings, '${holdings.length}'),
             _statRow(
               theme,
-              'Largest position',
+              l10n.analyticsLargestPosition,
               largest == null
                   ? '—'
                   : '${largest.symbol} · ${largest.percent.toStringAsFixed(1)}%',
             ),
-            _statRow(theme, 'Asset mix', mix),
+            _statRow(theme, l10n.analyticsAssetMix, mix),
           ],
         ),
       ),
     );
   }
 
-  String _typeLabel(AssetType t, int n) {
-    if (n == 1 || t == AssetType.crypto) return t.label;
-    return '${t.label}s';
-  }
+  String _mixLabel(AppLocalizations l10n, AssetType t, int n) => switch (t) {
+        AssetType.stock => l10n.analyticsMixStock(n),
+        AssetType.etf => l10n.analyticsMixEtf(n),
+        AssetType.crypto => l10n.analyticsMixCrypto(n),
+      };
 
   Widget _statRow(ThemeData theme, String label, String value) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
@@ -492,11 +494,12 @@ class _EmptyAnalytics extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Text(
-          'Add holdings to see your analytics.',
+          l10n.analyticsEmpty,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),

@@ -629,4 +629,83 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get plansProNote =>
       'Pro is in development — these features aren\'t available yet.';
+
+  @override
+  String get analyticsEstValueTitle => 'Estimated value';
+
+  @override
+  String get analyticsEstValueBody =>
+      'This line reconstructs your value from each holding\'s daily closing prices (today\'s quantities). Holdings without price history — crypto and some ETFs the data provider doesn\'t cover — aren\'t included, so it can differ from your Total value.';
+
+  @override
+  String get analyticsGotIt => 'Got it';
+
+  @override
+  String get analyticsPortfolioValue => 'Portfolio value';
+
+  @override
+  String get analyticsChartUnavailable => 'Chart unavailable';
+
+  @override
+  String get analyticsEstFromCloses => 'Estimated from daily closes';
+
+  @override
+  String get analyticsTopContributors => 'Top contributors';
+
+  @override
+  String get analyticsQuickStats => 'Quick stats';
+
+  @override
+  String get analyticsLargestPosition => 'Largest position';
+
+  @override
+  String get analyticsAssetMix => 'Asset mix';
+
+  @override
+  String get analyticsEmpty => 'Add holdings to see your analytics.';
+
+  @override
+  String analyticsMixStock(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Stocks',
+      one: '1 Stock',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String analyticsMixEtf(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ETFs',
+      one: '1 ETF',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String analyticsMixCrypto(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Crypto',
+      one: '1 Crypto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get allocationTitle => 'Allocation';
+
+  @override
+  String get allocationByHolding => 'Holding';
+
+  @override
+  String get allocationByType => 'Type';
+
+  @override
+  String get allocationTapHint => 'Tap a slice';
 }
