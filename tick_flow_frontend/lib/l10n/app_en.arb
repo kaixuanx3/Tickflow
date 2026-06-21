@@ -45,6 +45,8 @@
   "authSignIn": "Sign in",
   "authToggleToSignIn": "Have an account? Sign in",
   "authToggleToRegister": "New here? Create an account",
+  "authForgotPassword": "Forgot password?",
+  "authForgotPasswordMsg": "Password reset isn't available yet. For help, email support@tickflow.my.",
   "commonRetry": "Retry",
   "marketsTitle": "Markets",
   "marketsSearchHint": "Search US stocks",

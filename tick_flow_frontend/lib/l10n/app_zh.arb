@@ -45,6 +45,8 @@
   "authSignIn": "登录",
   "authToggleToSignIn": "已有账户？登录",
   "authToggleToRegister": "还没有账户？注册",
+  "authForgotPassword": "忘记密码？",
+  "authForgotPasswordMsg": "密码重置功能尚未开放。如需帮助，请发送邮件至 support@tickflow.my。",
   "commonRetry": "重试",
   "marketsTitle": "市场",
   "marketsSearchHint": "搜索美股",

@@ -368,6 +368,18 @@ abstract class AppLocalizations {
   /// **'New here? Create an account'**
   String get authToggleToRegister;
 
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get authForgotPassword;
+
+  /// No description provided for @authForgotPasswordMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset isn\'t available yet. For help, email support@tickflow.my.'**
+  String get authForgotPasswordMsg;
+
   /// No description provided for @commonRetry.
   ///
   /// In en, this message translates to:

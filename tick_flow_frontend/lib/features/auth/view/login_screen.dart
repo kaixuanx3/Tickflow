@@ -159,6 +159,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : Text(_registerMode ? l10n.authCreateAccount : l10n.authSignIn),
                     ),
                     const SizedBox(height: 8),
+                    if (!_registerMode)
+                      TextButton(
+                        onPressed: _busy
+                            ? null
+                            : () => ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.authForgotPasswordMsg)),
+                                ),
+                        child: Text(l10n.authForgotPassword),
+                      ),
                     TextButton(
                       onPressed: _busy
                           ? null

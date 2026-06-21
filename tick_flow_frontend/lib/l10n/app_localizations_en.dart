@@ -146,6 +146,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authToggleToRegister => 'New here? Create an account';
 
   @override
+  String get authForgotPassword => 'Forgot password?';
+
+  @override
+  String get authForgotPasswordMsg =>
+      'Password reset isn\'t available yet. For help, email support@tickflow.my.';
+
+  @override
   String get commonRetry => 'Retry';
 
   @override

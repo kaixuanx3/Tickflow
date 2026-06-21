@@ -144,6 +144,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get authToggleToRegister => '还没有账户？注册';
 
   @override
+  String get authForgotPassword => '忘记密码？';
+
+  @override
+  String get authForgotPasswordMsg =>
+      '密码重置功能尚未开放。如需帮助，请发送邮件至 support@tickflow.my。';
+
+  @override
   String get commonRetry => '重试';
 
   @override
