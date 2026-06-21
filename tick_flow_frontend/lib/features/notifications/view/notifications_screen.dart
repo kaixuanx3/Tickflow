@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/widgets/error_retry.dart';
@@ -27,6 +28,17 @@ String _statusLabel(AppLocalizations l10n, AlertStatus s) => switch (s) {
       AlertStatus.cooldown => l10n.alertStatusCooldown,
       AlertStatus.done => l10n.alertStatusDone,
     };
+
+/// Localized relative time for the Triggered feed (e.g. "2h ago" / "2 小时前").
+String _relativeTime(BuildContext context, DateTime time) {
+  final l10n = AppLocalizations.of(context);
+  final diff = DateTime.now().difference(time);
+  if (diff.isNegative || diff.inSeconds < 60) return l10n.timeJustNow;
+  if (diff.inMinutes < 60) return l10n.timeMinutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.timeHoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.timeDaysAgo(diff.inDays);
+  return DateFormat.MMMd(Localizations.localeOf(context).toString()).format(time);
+}
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -234,7 +246,7 @@ class _NotificationRow extends StatelessWidget {
         ),
       ),
       title: Text(item.message),
-      subtitle: Text(formatRelative(item.createdAt)),
+      subtitle: Text(_relativeTime(context, item.createdAt)),
     );
   }
 }

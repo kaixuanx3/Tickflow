@@ -708,4 +708,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allocationTapHint => 'Tap a slice';
+
+  @override
+  String get timeJustNow => 'just now';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '${minutes}m ago';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '${hours}h ago';
+  }
+
+  @override
+  String timeDaysAgo(int days) {
+    return '${days}d ago';
+  }
 }

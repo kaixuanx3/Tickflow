@@ -258,5 +258,12 @@
   "allocationTitle": "Allocation",
   "allocationByHolding": "Holding",
   "allocationByType": "Type",
-  "allocationTapHint": "Tap a slice"
+  "allocationTapHint": "Tap a slice",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{minutes}m ago",
+  "@timeMinutesAgo": { "placeholders": { "minutes": { "type": "int" } } },
+  "timeHoursAgo": "{hours}h ago",
+  "@timeHoursAgo": { "placeholders": { "hours": { "type": "int" } } },
+  "timeDaysAgo": "{days}d ago",
+  "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } }
 }

@@ -685,4 +685,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get allocationTapHint => '点击扇区查看';
+
+  @override
+  String get timeJustNow => '刚刚';
+
+  @override
+  String timeMinutesAgo(int minutes) {
+    return '$minutes 分钟前';
+  }
+
+  @override
+  String timeHoursAgo(int hours) {
+    return '$hours 小时前';
+  }
+
+  @override
+  String timeDaysAgo(int days) {
+    return '$days 天前';
+  }
 }
