@@ -11,6 +11,7 @@ class FakeAlertsRepository implements AlertsRepository {
   final created = <String>[];
   final updates = <(String, double?, AlertKind?, bool)>[];
   final removed = <String>[];
+  final paused = <String>[];
 
   @override
   Future<List<Alert>> fetch() async {
@@ -44,6 +45,12 @@ class FakeAlertsRepository implements AlertsRepository {
   Future<void> remove(String id) async {
     if (failMutations) throw const ApiException(404, 'alert not found');
     removed.add(id);
+  }
+
+  @override
+  Future<void> pause(String id) async {
+    if (failMutations) throw const ApiException(404, 'alert not found');
+    paused.add(id);
   }
 }
 
@@ -79,6 +86,16 @@ void main() {
     await container.read(alertsProvider.notifier).rearm('a1');
 
     expect(repo.updates.single, ('a1', null, null, true));
+    expect(repo.fetches, 2);
+  });
+
+  test('pause calls repo then re-fetches', () async {
+    final (container, repo) = make();
+    await container.read(alertsProvider.future);
+
+    await container.read(alertsProvider.notifier).pause('a1');
+
+    expect(repo.paused, ['a1']);
     expect(repo.fetches, 2);
   });
 

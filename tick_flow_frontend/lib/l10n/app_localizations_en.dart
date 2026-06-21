@@ -331,6 +331,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertRearmError => 'Could not re-arm the alert';
 
   @override
+  String get alertUpdateError => 'Couldn\'t update the alert';
+
+  @override
+  String get alertNow => 'now';
+
+  @override
+  String get alertPauseTooltip => 'Pause alert';
+
+  @override
+  String get alertResumeTooltip => 'Resume alert';
+
+  @override
   String alertTriggeredCount(int count) {
     return 'triggered $count×';
   }
@@ -362,6 +374,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alertStatusDone => 'Done';
+
+  @override
+  String get alertStatusPaused => 'Paused';
 
   @override
   String get alertSegPriceAbove => 'Price above';

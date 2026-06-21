@@ -57,6 +57,16 @@ class AlertsRepository {
     }
   }
 
+  /// Pause an active alert (status → 'paused'). The engine stops evaluating it
+  /// until it's resumed — re-armed back to 'active' via [update].
+  Future<void> pause(String id) async {
+    try {
+      await _dio.put<Map<String, dynamic>>('/alerts/$id', data: {'status': 'paused'});
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
   Future<void> remove(String id) async {
     try {
       await _dio.delete<void>('/alerts/$id');
