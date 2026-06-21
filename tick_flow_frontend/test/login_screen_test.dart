@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tick_flow_app/features/auth/view/login_screen.dart';
+import 'package:tick_flow_app/l10n/app_localizations.dart';
+
+Widget _app() => ProviderScope(
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const LoginScreen(),
+      ),
+    );
 
 void main() {
   testWidgets('renders the form and validates empty input', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: LoginScreen())),
-    );
+    await tester.pumpWidget(_app());
 
     expect(find.text('Tickflow'), findsOneWidget);
     expect(find.byType(TextFormField), findsNWidgets(2));
@@ -20,9 +27,7 @@ void main() {
   });
 
   testWidgets('toggles to register mode', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: LoginScreen())),
-    );
+    await tester.pumpWidget(_app());
 
     await tester.tap(find.text('New here? Create an account'));
     await tester.pump();

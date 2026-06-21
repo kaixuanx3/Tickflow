@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/formats.dart';
 import '../../../data/api/api_client.dart';
 import '../../../data/alerts/alert_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/alerts_controller.dart';
 
 Future<void> showAlertSheet(BuildContext context, {Alert? existing, String? symbol}) {
@@ -16,6 +17,26 @@ Future<void> showAlertSheet(BuildContext context, {Alert? existing, String? symb
     ),
   );
 }
+
+String _ruleLabel(AppLocalizations l10n, AlertRuleType r) => switch (r) {
+      AlertRuleType.priceAbove => l10n.alertRuleAbove,
+      AlertRuleType.priceBelow => l10n.alertRuleBelow,
+    };
+
+String _ruleSegLabel(AppLocalizations l10n, AlertRuleType r) => switch (r) {
+      AlertRuleType.priceAbove => l10n.alertSegPriceAbove,
+      AlertRuleType.priceBelow => l10n.alertSegPriceBelow,
+    };
+
+String _ruleHint(AppLocalizations l10n, AlertRuleType r) => switch (r) {
+      AlertRuleType.priceAbove => l10n.alertHintAbove,
+      AlertRuleType.priceBelow => l10n.alertHintBelow,
+    };
+
+String _kindLabel(AppLocalizations l10n, AlertKind k) => switch (k) {
+      AlertKind.oneShot => l10n.alertKindOneShot,
+      AlertKind.reArm => l10n.alertKindReArm,
+    };
 
 class _AlertSheet extends ConsumerStatefulWidget {
   const _AlertSheet({this.existing, this.presetSymbol});
@@ -66,7 +87,9 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Something went wrong — please try again.');
+      if (mounted) {
+        setState(() => _error = AppLocalizations.of(context).commonGenericError);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -87,25 +110,27 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
     final alert = widget.existing!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Delete ${alert.symbol} alert?'),
+        title: Text(l10n.alertDeleteTitle(alert.symbol)),
         content: Text(
-          '${alert.ruleType.label} ${formatMoney(alert.threshold)} — this also removes it from your history of active alerts.',
+          l10n.alertDeleteContent(
+              _ruleLabel(l10n, alert.ruleType), formatMoney(alert.threshold)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -117,6 +142,7 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -127,7 +153,9 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                _isEdit ? 'Edit ${widget.existing!.symbol} alert' : 'New price alert',
+                _isEdit
+                    ? l10n.alertEditTitle(widget.existing!.symbol)
+                    : l10n.alertNewTitle,
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -136,18 +164,18 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
                   controller: _symbol,
                   enabled: !_busy,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Symbol',
-                    helperText: 'US ticker, e.g. AAPL',
+                  decoration: InputDecoration(
+                    labelText: l10n.portfolioSymbol,
+                    helperText: l10n.portfolioSymbolHint,
                   ),
                   validator: (v) =>
-                      (v ?? '').trim().isEmpty ? 'Enter a symbol' : null,
+                      (v ?? '').trim().isEmpty ? l10n.portfolioEnterSymbol : null,
                 ),
                 const SizedBox(height: 16),
                 SegmentedButton<AlertRuleType>(
                   segments: [
                     for (final r in AlertRuleType.values)
-                      ButtonSegment(value: r, label: Text('Price ${r.label.toLowerCase()}')),
+                      ButtonSegment(value: r, label: Text(_ruleSegLabel(l10n, r))),
                   ],
                   selected: {_ruleType},
                   showSelectedIcon: false,
@@ -157,7 +185,7 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
                 const SizedBox(height: 12),
               ] else ...[
                 Text(
-                  'Triggers when the price goes ${widget.existing!.ruleType.label.toLowerCase()} the threshold.',
+                  _ruleHint(l10n, widget.existing!.ruleType),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
@@ -167,20 +195,20 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
                 controller: _threshold,
                 enabled: !_busy,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Threshold',
+                decoration: InputDecoration(
+                  labelText: l10n.alertThreshold,
                   prefixText: r'$ ',
                 ),
                 validator: (v) {
                   final n = double.tryParse((v ?? '').trim());
-                  return n == null || n <= 0 ? 'Must be more than 0' : null;
+                  return n == null || n <= 0 ? l10n.portfolioQtyError : null;
                 },
               ),
               const SizedBox(height: 16),
               SegmentedButton<AlertKind>(
                 segments: [
                   for (final k in AlertKind.values)
-                    ButtonSegment(value: k, label: Text(k.label)),
+                    ButtonSegment(value: k, label: Text(_kindLabel(l10n, k))),
                 ],
                 selected: {_kind},
                 showSelectedIcon: false,
@@ -189,8 +217,8 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
               const SizedBox(height: 8),
               Text(
                 _kind == AlertKind.oneShot
-                    ? 'Fires once, then stays in your history until re-armed.'
-                    : 'Fires, cools down, and automatically re-arms when the price retreats.',
+                    ? l10n.alertKindOneShotDesc
+                    : l10n.alertKindReArmDesc,
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
@@ -215,7 +243,7 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_isEdit ? 'Save changes' : 'Create alert'),
+                    : Text(_isEdit ? l10n.portfolioSaveChanges : l10n.alertCreate),
               ),
               if (_isEdit)
                 Padding(
@@ -226,7 +254,7 @@ class _AlertSheetState extends ConsumerState<_AlertSheet> {
                       foregroundColor: theme.colorScheme.error,
                     ),
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Delete alert'),
+                    label: Text(l10n.alertDeleteButton),
                   ),
                 ),
             ],

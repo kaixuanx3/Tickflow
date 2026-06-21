@@ -4,6 +4,7 @@ import {
   AuthService,
   EmailTakenError,
   InvalidCredentialsError,
+  PasswordNotSetError,
   type GoogleTokenVerifier,
 } from '../services/auth-service.js';
 
@@ -13,6 +14,16 @@ const credentialsSchema = z.object({
 });
 
 const googleSchema = z.object({ idToken: z.string().min(1) });
+
+const profilePatchSchema = z.object({
+  name: z.string().trim().max(60, 'name must be 60 characters or fewer').optional(),
+  pushEnabled: z.boolean().optional(),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'enter your current password'),
+  newPassword: z.string().min(8, 'new password must be at least 8 characters'),
+});
 
 export function registerAuthRoutes(
   app: FastifyInstance,
@@ -64,6 +75,43 @@ export function registerAuthRoutes(
     } catch (err) {
       if (err instanceof InvalidCredentialsError) {
         return reply.code(401).send({ error: 'invalid google token' });
+      }
+      throw err;
+    }
+  });
+
+  app.get('/auth/me', { preHandler: authGuard }, async (req, reply) => {
+    const profile = await authService.getProfile(req.userId);
+    if (!profile) return reply.code(404).send({ error: 'account not found' });
+    return profile;
+  });
+
+  app.patch('/auth/me', { preHandler: authGuard }, async (req, reply) => {
+    const parsed = profilePatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: z.prettifyError(parsed.error) });
+    }
+    return authService.updateProfile(req.userId, parsed.data);
+  });
+
+  app.post('/auth/change-password', { preHandler: authGuard }, async (req, reply) => {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: z.prettifyError(parsed.error) });
+    }
+    try {
+      await authService.changePassword(
+        req.userId,
+        parsed.data.currentPassword,
+        parsed.data.newPassword,
+      );
+      return reply.code(204).send();
+    } catch (err) {
+      if (err instanceof InvalidCredentialsError) {
+        return reply.code(401).send({ error: 'current password is incorrect' });
+      }
+      if (err instanceof PasswordNotSetError) {
+        return reply.code(409).send({ error: err.message });
       }
       throw err;
     }

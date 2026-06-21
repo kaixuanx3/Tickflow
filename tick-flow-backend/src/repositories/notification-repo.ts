@@ -1,5 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type {
+  NotificationPrefsRepo,
   NotificationRecord,
   NotificationRepo,
   PushTokenRepo,
@@ -30,6 +31,19 @@ export class PrismaNotificationRepo implements NotificationRepo {
       take: limit,
       select: { id: true, symbol: true, message: true, price: true, createdAt: true },
     });
+  }
+}
+
+export class PrismaNotificationPrefsRepo implements NotificationPrefsRepo {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async isPushEnabled(userId: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { pushEnabled: true },
+    });
+    // Missing user (race with deletion) → nothing to push to; treat as muted.
+    return user?.pushEnabled ?? false;
   }
 }
 

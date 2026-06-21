@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/ws/live_ticks.dart';
+import '../../l10n/app_localizations.dart';
 
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -13,6 +14,7 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // The tick socket runs exactly while a signed-in shell is on screen.
     ref.watch(liveTicksProvider);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
@@ -21,24 +23,25 @@ class AppShell extends ConsumerWidget {
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.show_chart), label: 'Markets'),
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.star_border),
-            selectedIcon: Icon(Icons.star),
-            label: 'Favourites',
+              icon: const Icon(Icons.show_chart), label: l10n.marketsTitle),
+          NavigationDestination(
+            icon: const Icon(Icons.star_border),
+            selectedIcon: const Icon(Icons.star),
+            label: l10n.favTitle,
           ),
           NavigationDestination(
-            icon: Icon(Icons.pie_chart_outline),
-            selectedIcon: Icon(Icons.pie_chart),
-            label: 'Portfolio',
+            icon: const Icon(Icons.pie_chart_outline),
+            selectedIcon: const Icon(Icons.pie_chart),
+            label: l10n.portfolioTitle,
           ),
           NavigationDestination(
-            icon: Icon(Icons.notifications_none),
-            selectedIcon: Icon(Icons.notifications),
-            label: 'Alerts',
+            icon: const Icon(Icons.notifications_none),
+            selectedIcon: const Icon(Icons.notifications),
+            label: l10n.navAlerts,
           ),
-          NavigationDestination(icon: Icon(Icons.menu), label: 'Menu'),
+          NavigationDestination(icon: const Icon(Icons.menu), label: l10n.menuTitle),
         ],
       ),
     );

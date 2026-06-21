@@ -30,6 +30,19 @@ class QuotesController extends Notifier<Map<String, Quote>> {
     _debounce = Timer(const Duration(milliseconds: 250), _flush);
   }
 
+  /// Seed the cache with quotes already fetched elsewhere (e.g. the movers
+  /// ranking snapshot) so rows render instantly instead of each firing its own
+  /// `/quotes` request. Marks them requested so [request] won't refetch.
+  void prime(Iterable<Quote> quotes) {
+    final next = {...state};
+    for (final q in quotes) {
+      next[q.symbol] = q;
+      _requested.add(q.symbol);
+      _pending.remove(q.symbol);
+    }
+    state = next;
+  }
+
   void clear() {
     _pending.clear();
     _requested.clear();

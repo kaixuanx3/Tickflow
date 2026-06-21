@@ -131,4 +131,30 @@ void main() {
         );
     expect(container.read(quotesProvider), isEmpty);
   });
+
+  test('prime seeds quotes instantly and blocks a redundant refetch', () async {
+    final notifier = container.read(quotesProvider.notifier);
+    notifier.prime([
+      Quote(
+        symbol: 'AAPL',
+        price: 150,
+        change: 1,
+        changePercent: 0.5,
+        high: 151,
+        low: 149,
+        open: 150,
+        prevClose: 149,
+        ts: 0,
+        stale: false,
+        delayed: true,
+      ),
+    ]);
+
+    // Available immediately, with no network call.
+    expect(container.read(quotesProvider)['AAPL']!.price, 150);
+
+    notifier.request('AAPL');
+    await settle();
+    expect(repo.batches, isEmpty); // primed symbols are never refetched
+  });
 }

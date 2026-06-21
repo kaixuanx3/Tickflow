@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/allocation.dart';
 
 class AllocationCard extends StatefulWidget {
@@ -22,6 +23,7 @@ class _AllocationCardState extends State<AllocationCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final slices = condenseSlices(allocationSlices(widget.summary, _mode));
     if (slices.isEmpty) return const SizedBox.shrink();
     final colors = _palette(theme.colorScheme);
@@ -35,11 +37,11 @@ class _AllocationCardState extends State<AllocationCard> {
           children: [
             Row(
               children: [
-                Expanded(child: Text('Allocation', style: theme.textTheme.labelLarge)),
+                Expanded(child: Text(l10n.allocationTitle, style: theme.textTheme.labelLarge)),
                 SegmentedButton<AllocationMode>(
-                  segments: const [
-                    ButtonSegment(value: AllocationMode.holding, label: Text('Holding')),
-                    ButtonSegment(value: AllocationMode.assetType, label: Text('Type')),
+                  segments: [
+                    ButtonSegment(value: AllocationMode.holding, label: Text(l10n.allocationByHolding)),
+                    ButtonSegment(value: AllocationMode.assetType, label: Text(l10n.allocationByType)),
                   ],
                   selected: {_mode},
                   showSelectedIcon: false,
@@ -129,6 +131,19 @@ class _AllocationCardState extends State<AllocationCard> {
     );
   }
 
+  /// Localizes a slice's label: asset-type names + "Other" in assetType mode;
+  /// the symbol as-is in holding mode.
+  String _sliceLabel(BuildContext context, DonutSlice slice) {
+    final l10n = AppLocalizations.of(context);
+    if (slice.isOther) return l10n.allocationOther;
+    return switch (slice.assetType) {
+      AssetType.stock => l10n.assetTypeStock,
+      AssetType.etf => l10n.assetTypeEtf,
+      AssetType.crypto => l10n.assetTypeCrypto,
+      null => slice.label,
+    };
+  }
+
   /// One legend entry — tappable to select its slice (same as tapping the
   /// donut). Colour dot, label, right-aligned percent; bold when selected.
   Widget _legendItem(ThemeData theme, int index, DonutSlice slice, Color color) {
@@ -151,7 +166,7 @@ class _AllocationCardState extends State<AllocationCard> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                slice.label,
+                _sliceLabel(context, slice),
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                 ),
@@ -187,7 +202,7 @@ class _AllocationCardState extends State<AllocationCard> {
               size: 20, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(height: 4),
           Text(
-            'Tap a slice',
+            AppLocalizations.of(context).allocationTapHint,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -201,7 +216,7 @@ class _AllocationCardState extends State<AllocationCard> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          slice.label,
+          _sliceLabel(context, slice),
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

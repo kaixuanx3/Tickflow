@@ -30,6 +30,16 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> deleteAccount() async => stored = null;
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {}
+
+  @override
+  Future<AuthUser> updateProfile({String? name, bool? pushEnabled}) async =>
+      stored ?? const AuthUser(id: '1', email: 'test@test.dev');
 }
 
 ProviderContainer makeContainer(FakeAuthRepository repo) {

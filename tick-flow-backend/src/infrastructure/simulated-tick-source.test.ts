@@ -82,4 +82,54 @@ describe('SimulatedTickSource', () => {
 
     expect(ticks.map((t) => t.symbol).sort()).toEqual(['AAPL', 'TSLA']);
   });
+
+  it('seeds the starting price from seedPrice (not basePrice)', async () => {
+    const source = new SimulatedTickSource({
+      intervalMs: 100,
+      seed: 1,
+      seedPrice: async () => 500,
+    });
+    const ticks = collect(source);
+
+    source.subscribe('AMD');
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(ticks).toHaveLength(1);
+    // Walk started near the real $500, not the $100 basePrice.
+    const price = ticks[0]?.price ?? 0;
+    expect(price).toBeGreaterThan(490);
+    expect(price).toBeLessThan(510);
+  });
+
+  it('falls back to basePrice when the seed is unavailable', async () => {
+    const source = new SimulatedTickSource({
+      intervalMs: 100,
+      seed: 1,
+      seedPrice: async () => null,
+    });
+    const ticks = collect(source);
+
+    source.subscribe('ZZZZ');
+    await vi.advanceTimersByTimeAsync(100);
+
+    expect(ticks).toHaveLength(1);
+    const price = ticks[0]?.price ?? 0;
+    expect(price).toBeGreaterThan(90);
+    expect(price).toBeLessThan(110);
+  });
+
+  it('does not tick a symbol unsubscribed before its seed resolves', async () => {
+    const source = new SimulatedTickSource({
+      intervalMs: 100,
+      seed: 1,
+      seedPrice: async () => 500,
+    });
+    const ticks = collect(source);
+
+    source.subscribe('AMD');
+    source.unsubscribe('AMD'); // cancel before the seed resolves
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(ticks).toHaveLength(0);
+  });
 });

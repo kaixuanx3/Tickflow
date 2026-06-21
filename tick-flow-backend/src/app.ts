@@ -36,7 +36,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   const app = Fastify({ logger: true });
   // Browser clients (Flutter web) need CORS; API is token-auth, no cookies, so allow-all is fine.
   // methods must be explicit: the plugin's default preflight only allows GET,HEAD,POST.
-  app.register(cors, { origin: true, methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'] });
+  app.register(cors, { origin: true, methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'] });
   const authGuard = makeAuthGuard(deps.authService);
 
   app.get('/health', async () => ({ status: 'ok' }));

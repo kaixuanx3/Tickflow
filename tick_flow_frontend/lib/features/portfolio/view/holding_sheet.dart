@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/api/api_client.dart';
 import '../../../data/portfolio/portfolio_models.dart';
+import '../../../l10n/app_localizations.dart';
 import '../viewmodel/portfolio_controller.dart';
 
 Future<void> showHoldingSheet(BuildContext context, {HoldingValuation? existing}) {
@@ -15,6 +16,12 @@ Future<void> showHoldingSheet(BuildContext context, {HoldingValuation? existing}
     ),
   );
 }
+
+String _assetTypeLabel(AppLocalizations l10n, AssetType t) => switch (t) {
+      AssetType.stock => l10n.assetTypeStock,
+      AssetType.etf => l10n.assetTypeEtf,
+      AssetType.crypto => l10n.assetTypeCrypto,
+    };
 
 class _HoldingSheet extends ConsumerStatefulWidget {
   const _HoldingSheet({this.existing});
@@ -68,7 +75,9 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
-      if (mounted) setState(() => _error = 'Something went wrong — please try again.');
+      if (mounted) {
+        setState(() => _error = AppLocalizations.of(context).commonGenericError);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -91,23 +100,24 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
     final symbol = widget.existing!.symbol;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Remove $symbol?'),
-        content: const Text('This deletes the holding from your portfolio.'),
+        title: Text(l10n.portfolioRemoveTitle(symbol)),
+        content: Text(l10n.portfolioRemoveBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
-            child: const Text('Remove'),
+            child: Text(l10n.portfolioRemove),
           ),
         ],
       ),
@@ -121,6 +131,7 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -131,7 +142,9 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                _isEdit ? 'Edit ${widget.existing!.symbol}' : 'Add holding',
+                _isEdit
+                    ? l10n.portfolioEditTitle(widget.existing!.symbol)
+                    : l10n.portfolioAddHolding,
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -140,12 +153,12 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
                   controller: _symbol,
                   enabled: !_busy,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Symbol',
-                    helperText: 'US ticker, e.g. AAPL',
+                  decoration: InputDecoration(
+                    labelText: l10n.portfolioSymbol,
+                    helperText: l10n.portfolioSymbolHint,
                   ),
                   validator: (v) =>
-                      (v ?? '').trim().isEmpty ? 'Enter a symbol' : null,
+                      (v ?? '').trim().isEmpty ? l10n.portfolioEnterSymbol : null,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -157,10 +170,10 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
                       enabled: !_busy,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Quantity'),
+                      decoration: InputDecoration(labelText: l10n.portfolioQuantity),
                       validator: (v) {
                         final n = double.tryParse((v ?? '').trim());
-                        return n == null || n <= 0 ? 'Must be more than 0' : null;
+                        return n == null || n <= 0 ? l10n.portfolioQtyError : null;
                       },
                     ),
                   ),
@@ -171,13 +184,13 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
                       enabled: !_busy,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Buy price',
+                      decoration: InputDecoration(
+                        labelText: l10n.portfolioBuyPrice,
                         prefixText: r'$ ',
                       ),
                       validator: (v) {
                         final n = double.tryParse((v ?? '').trim());
-                        return n == null || n < 0 ? 'Must be 0 or more' : null;
+                        return n == null || n < 0 ? l10n.portfolioPriceError : null;
                       },
                     ),
                   ),
@@ -187,7 +200,7 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
               SegmentedButton<AssetType>(
                 segments: [
                   for (final t in AssetType.values)
-                    ButtonSegment(value: t, label: Text(t.label)),
+                    ButtonSegment(value: t, label: Text(_assetTypeLabel(l10n, t))),
                 ],
                 selected: {_type},
                 showSelectedIcon: false,
@@ -215,7 +228,7 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_isEdit ? 'Save changes' : 'Add holding'),
+                    : Text(_isEdit ? l10n.portfolioSaveChanges : l10n.portfolioAddHolding),
               ),
               if (_isEdit)
                 Padding(
@@ -226,7 +239,7 @@ class _HoldingSheetState extends ConsumerState<_HoldingSheet> {
                       foregroundColor: theme.colorScheme.error,
                     ),
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Delete holding'),
+                    label: Text(l10n.portfolioDeleteHolding),
                   ),
                 ),
             ],

@@ -20,10 +20,23 @@ class MemoryUserRepo implements UserRepo {
   async findByEmail(email: string): Promise<UserRecord | null> {
     return this.users.find((u) => u.email === email) ?? null;
   }
-  async create(email: string, passwordHash: string): Promise<UserRecord> {
-    const user = { id: `u${this.nextId++}`, email, passwordHash };
+  async findById(userId: string): Promise<UserRecord | null> {
+    return this.users.find((u) => u.id === userId) ?? null;
+  }
+  async create(email: string, passwordHash: string | null): Promise<UserRecord> {
+    const user = { id: `u${this.nextId++}`, email, name: null, passwordHash, pushEnabled: true };
     this.users.push(user);
     return user;
+  }
+  async updateProfile(userId: string, data: { name?: string | null }): Promise<UserRecord> {
+    const user = this.users.find((u) => u.id === userId);
+    if (!user) throw new Error('user not found');
+    if (data.name !== undefined) user.name = data.name;
+    return user;
+  }
+  async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    const user = this.users.find((u) => u.id === userId);
+    if (user) user.passwordHash = passwordHash;
   }
   async delete(userId: string): Promise<void> {
     this.users = this.users.filter((u) => u.id !== userId);

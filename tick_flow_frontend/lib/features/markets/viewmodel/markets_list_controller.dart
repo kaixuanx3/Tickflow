@@ -1,3 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PARKED FEATURE — "All stocks" browse (currently disabled).
+//
+// What it does: infinite-scroll browse of the FULL US symbol universe
+// (GET /symbols, 50 per page, load-more on scroll). This was the original
+// Markets list before it was redesigned into the Top gainers / Top losers /
+// Most active movers tabs (see markets_movers.dart) — the movers tabs + the
+// search bar replaced it.
+//
+// Kept commented-out (not deleted) in case a full-universe browse is wanted
+// again later. To restore: uncomment this file AND
+// test/markets_list_controller_test.dart, then wire `marketsListProvider` back
+// into markets_screen.dart (a paginated SliverList that calls loadMore() near
+// the end of the scroll).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/*
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/markets/market_models.dart';
@@ -74,3 +91,4 @@ class MarketsListController extends AsyncNotifier<MarketsListState> {
 
 final marketsListProvider =
     AsyncNotifierProvider<MarketsListController, MarketsListState>(MarketsListController.new);
+*/

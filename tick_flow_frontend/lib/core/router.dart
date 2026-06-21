@@ -7,7 +7,11 @@ import '../features/auth/viewmodel/auth_controller.dart';
 import '../features/favourites/view/favourites_screen.dart';
 import '../features/markets/view/markets_screen.dart';
 import '../features/markets/view/search_screen.dart';
+import '../features/menu/view/account_screen.dart';
+import '../features/menu/view/change_password_screen.dart';
+import '../features/menu/view/help_screen.dart';
 import '../features/menu/view/menu_screen.dart';
+import '../features/menu/view/plans_screen.dart';
 import '../features/notifications/view/notifications_screen.dart';
 import '../features/portfolio/view/analytics_screen.dart';
 import '../features/portfolio/view/portfolio_screen.dart';
@@ -54,6 +58,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/analytics',
         parentNavigatorKey: rootNavigatorKey,
         builder: (_, _) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/account',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const AccountScreen(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: '/help',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const HelpScreen(),
+      ),
+      GoRoute(
+        path: '/plans',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (_, _) => const PlansScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),

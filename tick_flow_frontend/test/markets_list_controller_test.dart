@@ -1,3 +1,10 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PARKED — tests for the "All stocks" browse controller, which is currently
+// commented out (see lib/features/markets/viewmodel/markets_list_controller.dart).
+// Uncomment this file together with that one to restore the browse feature.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/*
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,3 +116,7 @@ void main() {
     expect(state.loadMoreFailed, isFalse);
   });
 }
+*/
+
+// No active tests — the suite above is parked with the controller it covers.
+void main() {}

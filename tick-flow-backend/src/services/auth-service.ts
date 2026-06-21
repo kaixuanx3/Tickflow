@@ -4,14 +4,33 @@ import jwt from 'jsonwebtoken';
 export interface UserRecord {
   id: string;
   email: string;
+  name: string | null;
   passwordHash: string | null;
+  pushEnabled: boolean;
 }
 
 export interface UserRepo {
   findByEmail(email: string): Promise<UserRecord | null>;
+  findById(userId: string): Promise<UserRecord | null>;
   create(email: string, passwordHash: string | null): Promise<UserRecord>;
+  updateProfile(
+    userId: string,
+    data: { name?: string | null; pushEnabled?: boolean },
+  ): Promise<UserRecord>;
+  updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
   /** Idempotent; related rows cascade via the schema's onDelete: Cascade. */
   delete(userId: string): Promise<void>;
+}
+
+/** Account info served by GET /auth/me — never includes the password hash. */
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  /** false for Google-only accounts — the app hides "Change password" for them. */
+  hasPassword: boolean;
+  /** false = alert push muted (in-app feed still records). */
+  pushEnabled: boolean;
 }
 
 /** Implemented by infrastructure (google-auth-library); null = token rejected. */
@@ -33,9 +52,16 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
+export class PasswordNotSetError extends Error {
+  constructor() {
+    super('this account signs in with Google and has no password to change');
+    this.name = 'PasswordNotSetError';
+  }
+}
+
 export interface AuthResult {
   token: string;
-  user: { id: string; email: string };
+  user: UserProfile;
 }
 
 export class AuthService {
@@ -80,6 +106,42 @@ export class AuthService {
     await this.users.delete(userId);
   }
 
+  /** Current account info, or null if the (still-valid) token names a deleted user. */
+  async getProfile(userId: string): Promise<UserProfile | null> {
+    const user = await this.users.findById(userId);
+    return user ? this.toProfile(user) : null;
+  }
+
+  /** Partial update: only fields present in `patch` change. Blank name clears it to null. */
+  async updateProfile(
+    userId: string,
+    patch: { name?: string | undefined; pushEnabled?: boolean | undefined },
+  ): Promise<UserProfile> {
+    const data: { name?: string | null; pushEnabled?: boolean } = {};
+    if (patch.name !== undefined) {
+      const trimmed = patch.name.trim();
+      data.name = trimmed === '' ? null : trimmed;
+    }
+    if (patch.pushEnabled !== undefined) data.pushEnabled = patch.pushEnabled;
+    const user = await this.users.updateProfile(userId, data);
+    return this.toProfile(user);
+  }
+
+  /** Verifies the current password, then sets a new one. Email/password accounts only. */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.users.findById(userId);
+    if (!user) throw new InvalidCredentialsError();
+    if (!user.passwordHash) throw new PasswordNotSetError();
+    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      throw new InvalidCredentialsError();
+    }
+    await this.users.updatePasswordHash(userId, await bcrypt.hash(newPassword, 10));
+  }
+
   /** Same JWT for REST and the WS auth message. */
   verifyToken(token: string): { userId: string } | null {
     try {
@@ -93,6 +155,16 @@ export class AuthService {
 
   private toResult(user: UserRecord): AuthResult {
     const token = jwt.sign({ sub: user.id }, this.jwtSecret, { expiresIn: this.tokenTtl });
-    return { token, user: { id: user.id, email: user.email } };
+    return { token, user: this.toProfile(user) };
+  }
+
+  private toProfile(user: UserRecord): UserProfile {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      hasPassword: user.passwordHash !== null,
+      pushEnabled: user.pushEnabled,
+    };
   }
 }

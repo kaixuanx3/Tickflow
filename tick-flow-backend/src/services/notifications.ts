@@ -34,6 +34,11 @@ export interface PushSender {
   ): Promise<{ invalidTokens: string[] }>;
 }
 
+export interface NotificationPrefsRepo {
+  /** false → the user muted push; the in-app feed entry is still written. */
+  isPushEnabled(userId: string): Promise<boolean>;
+}
+
 export function formatAlertMessage(job: NotificationJob): { title: string; body: string } {
   const direction = job.ruleType === 'price_above' ? 'above' : 'below';
   return {
@@ -64,6 +69,7 @@ export class NotificationDelivery {
     private readonly notifications: NotificationRepo,
     private readonly pushTokens: PushTokenRepo,
     private readonly sender: PushSender,
+    private readonly prefs: NotificationPrefsRepo,
   ) {}
 
   async deliver(job: NotificationJob): Promise<void> {
@@ -77,6 +83,8 @@ export class NotificationDelivery {
       price: job.price,
     });
 
+    // Feed entry is always recorded above; only the push respects the mute.
+    if (!(await this.prefs.isPushEnabled(job.userId))) return;
     const tokens = await this.pushTokens.tokensForUser(job.userId);
     if (tokens.length === 0) return;
     const { invalidTokens } = await this.sender.send(tokens, { title, body });

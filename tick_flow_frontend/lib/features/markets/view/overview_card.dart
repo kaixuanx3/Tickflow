@@ -4,23 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/change_pill.dart';
 import '../../../core/widgets/sparkline.dart';
 import '../../../data/markets/market_models.dart';
 import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
 
-Widget _chartUnavailable(ThemeData theme) => Center(
-      child: Text(
-        'Chart unavailable',
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-      ),
-    );
-
-/// A "market overview" card for the horizontal carousel: index label, live
-/// price, change pill and a month sparkline. Backed by a US ETF proxy. Sized
-/// by its parent (a fixed-height carousel cell), so the chart fills the rest.
+/// Compact "market overview" card for the horizontal carousel: index label,
+/// live price, change % and a small month sparkline. Backed by a US ETF proxy.
+/// Sized by its parent (a fixed-height carousel cell).
 class OverviewCard extends ConsumerStatefulWidget {
   const OverviewCard({super.key, required this.symbol, required this.label});
 
@@ -60,6 +52,8 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
     final candles =
         ref.watch(candlesProvider((symbol: widget.symbol, range: CandleRange.m1)));
+    final changeColor =
+        (quote?.changePercent ?? 0) >= 0 ? market.gain : market.loss;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -67,47 +61,46 @@ class _OverviewCardState extends ConsumerState<OverviewCard> {
       child: InkWell(
         onTap: () => context.push('/symbol/${widget.symbol}'),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  ChangePill(percent: quote?.changePercent),
-                ],
+              Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 quote == null ? '—' : formatMoney(quote.price),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: tabularDigits(theme.textTheme.headlineSmall!)
                     .copyWith(fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 1),
+              Text(
+                quote == null ? '—' : formatPercent(quote.changePercent),
+                style: tabularDigits(theme.textTheme.bodySmall!).copyWith(
+                  color: quote == null
+                      ? theme.colorScheme.onSurfaceVariant
+                      : changeColor,
+                ),
+              ),
+              const SizedBox(height: 6),
               Expanded(
                 child: candles.when(
-                  loading: () => const Center(
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                  error: (_, _) => _chartUnavailable(theme),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                   data: (series) {
                     final closes = series.candles.map((c) => c.c).toList();
-                    if (closes.length < 2) return _chartUnavailable(theme);
-                    final color = closes.last >= closes.first ? market.gain : market.loss;
+                    if (closes.length < 2) return const SizedBox.shrink();
+                    final color =
+                        closes.last >= closes.first ? market.gain : market.loss;
                     return Sparkline(values: closes, color: color);
                   },
                 ),

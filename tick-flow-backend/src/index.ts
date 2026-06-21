@@ -19,7 +19,11 @@ import { PrismaHoldingRepo } from './repositories/holding-repo.js';
 import { PrismaUserRepo } from './repositories/user-repo.js';
 import { PrismaWatchlistRepo } from './repositories/watchlist-repo.js';
 import { PrismaAlertRepo } from './repositories/alert-repo.js';
-import { PrismaNotificationRepo, PrismaPushTokenRepo } from './repositories/notification-repo.js';
+import {
+  PrismaNotificationPrefsRepo,
+  PrismaNotificationRepo,
+  PrismaPushTokenRepo,
+} from './repositories/notification-repo.js';
 import { RedisSubscriptionStore } from './repositories/subscription-store.js';
 import { AlertEngine } from './services/alert-engine.js';
 import { AlertService } from './services/alert-service.js';
@@ -34,8 +38,15 @@ import { WatchlistService } from './services/watchlist-service.js';
 import type { TickSource } from './services/tick-source.js';
 import { TickWsServer } from './ws/tick-ws-server.js';
 
-function createTickSource(env: Env): TickSource {
-  if (env.TICK_SOURCE === 'sim') return new SimulatedTickSource();
+function createTickSource(env: Env, quotes: QuoteService): TickSource {
+  if (env.TICK_SOURCE === 'sim') {
+    // Anchor each symbol's random walk to its real price so the simulated
+    // change% reads realistically instead of ~−80% (a flat ~$100 sim walk
+    // against the stock's real prevClose). Falls back to basePrice on a miss.
+    return new SimulatedTickSource({
+      seedPrice: async (symbol) => (await quotes.getQuote(symbol))?.price ?? null,
+    });
+  }
   return new FinnhubTickSource(env.FINNHUB_API_KEY);
 }
 
@@ -59,7 +70,7 @@ const googleVerifier = env.GOOGLE_CLIENT_ID
   : null;
 const portfolioService = new PortfolioService(new PrismaHoldingRepo(prisma), quoteService);
 
-const tickSource = createTickSource(env);
+const tickSource = createTickSource(env, quoteService);
 
 const subscriptionStore = new RedisSubscriptionStore(redis);
 // A crashed previous run must not leak refcounts. enableOfflineQueue is off,
@@ -113,7 +124,12 @@ const workerRedis = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 workerRedis.on('error', (err) => console.error('[worker-redis]', err.message));
 const notificationWorker = startNotificationWorker(
   workerRedis,
-  new NotificationDelivery(notificationRepo, pushTokenRepo, pushSender),
+  new NotificationDelivery(
+    notificationRepo,
+    pushTokenRepo,
+    pushSender,
+    new PrismaNotificationPrefsRepo(prisma),
+  ),
 );
 
 const app = buildApp({

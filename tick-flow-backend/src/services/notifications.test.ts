@@ -3,11 +3,16 @@ import type { NotificationJob } from './alert-engine.js';
 import {
   NotificationDelivery,
   formatAlertMessage,
+  type NotificationPrefsRepo,
   type NotificationRecord,
   type NotificationRepo,
   type PushSender,
   type PushTokenRepo,
 } from './notifications.js';
+
+const prefs = (enabled = true): NotificationPrefsRepo => ({
+  isPushEnabled: async () => enabled,
+});
 
 const job = (over: Partial<NotificationJob> = {}): NotificationJob => ({
   userId: 'u1',
@@ -66,7 +71,7 @@ describe('NotificationDelivery', () => {
     const notifications = new MemoryNotificationRepo();
     const tokens = tokenRepo(['t1', 't2']);
     const sender: PushSender = { send: vi.fn(async () => ({ invalidTokens: [] })) };
-    const delivery = new NotificationDelivery(notifications, tokens, sender);
+    const delivery = new NotificationDelivery(notifications, tokens, sender, prefs());
 
     await delivery.deliver(job());
 
@@ -84,7 +89,7 @@ describe('NotificationDelivery', () => {
   it('a retried job does not duplicate the feed entry', async () => {
     const notifications = new MemoryNotificationRepo();
     const sender: PushSender = { send: vi.fn(async () => ({ invalidTokens: [] })) };
-    const delivery = new NotificationDelivery(notifications, tokenRepo([]), sender);
+    const delivery = new NotificationDelivery(notifications, tokenRepo([]), sender, prefs());
 
     await delivery.deliver(job());
     await delivery.deliver(job()); // BullMQ retry after a partial failure
@@ -94,17 +99,33 @@ describe('NotificationDelivery', () => {
 
   it('skips the push when the user has no devices', async () => {
     const sender: PushSender = { send: vi.fn(async () => ({ invalidTokens: [] })) };
-    const delivery = new NotificationDelivery(new MemoryNotificationRepo(), tokenRepo([]), sender);
+    const delivery = new NotificationDelivery(
+      new MemoryNotificationRepo(),
+      tokenRepo([]),
+      sender,
+      prefs(),
+    );
 
     await delivery.deliver(job());
 
     expect(sender.send).not.toHaveBeenCalled();
   });
 
+  it('mutes the push when the user disabled notifications but still writes the feed entry', async () => {
+    const notifications = new MemoryNotificationRepo();
+    const sender: PushSender = { send: vi.fn(async () => ({ invalidTokens: [] })) };
+    const delivery = new NotificationDelivery(notifications, tokenRepo(['t1']), sender, prefs(false));
+
+    await delivery.deliver(job());
+
+    expect(notifications.created).toHaveLength(1);
+    expect(sender.send).not.toHaveBeenCalled();
+  });
+
   it('prunes tokens FCM reports as gone', async () => {
     const tokens = tokenRepo(['live', 'dead']);
     const sender: PushSender = { send: async () => ({ invalidTokens: ['dead'] }) };
-    const delivery = new NotificationDelivery(new MemoryNotificationRepo(), tokens, sender);
+    const delivery = new NotificationDelivery(new MemoryNotificationRepo(), tokens, sender, prefs());
 
     await delivery.deliver(job());
 

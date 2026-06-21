@@ -14,6 +14,7 @@ import '../../../data/markets/market_providers.dart';
 import '../../../data/markets/quotes_cache.dart';
 import '../../../data/markets/symbol_subscriptions.dart';
 import '../../../data/watchlist/watchlist_store.dart';
+import '../../../l10n/app_localizations.dart';
 
 class FavouritesScreen extends ConsumerWidget {
   const FavouritesScreen({super.key});
@@ -21,10 +22,11 @@ class FavouritesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final watchlist = ref.watch(watchlistProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favourites')),
+      appBar: AppBar(title: Text(l10n.favTitle)),
       body: watchlist.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorRetry(
@@ -42,10 +44,10 @@ class FavouritesScreen extends ConsumerWidget {
                     Icon(Icons.star_border,
                         size: 48, color: theme.colorScheme.onSurfaceVariant),
                     const SizedBox(height: 12),
-                    Text('Nothing starred yet', style: theme.textTheme.titleMedium),
+                    Text(l10n.favEmptyTitle, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
-                      'Star a symbol in Markets and it shows up here with a live price.',
+                      l10n.favEmptyBody,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium
                           ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -109,7 +111,9 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            e is ApiException ? e.message : 'Could not remove ${widget.symbol}',
+            e is ApiException
+                ? e.message
+                : AppLocalizations.of(context).favRemoveError(widget.symbol),
           ),
         ),
       );
@@ -120,6 +124,9 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final quote = ref.watch(quotesProvider.select((m) => m[widget.symbol]));
+    // Company name (from the profile already fetched for the logo), shown under
+    // the symbol just like the Markets rows.
+    final name = ref.watch(profileProvider(widget.symbol)).value?.name ?? '';
 
     return Dismissible(
       key: ValueKey(widget.symbol),
@@ -150,11 +157,27 @@ class _FavouriteRowState extends ConsumerState<_FavouriteRow> {
                 SymbolLogo(symbol: widget.symbol),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    widget.symbol,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.symbol,
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      if (name.isNotEmpty && name != widget.symbol) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 _RowSparkline(symbol: widget.symbol),
                 const SizedBox(width: 12),
                 Column(

@@ -25,6 +25,37 @@ class AuthRepository {
 
   Future<void> signOut() => _storage.clear();
 
+  /// Changes the password for an email/password account. No session change.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post<void>(
+        '/auth/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
+  /// Partial profile update via PATCH /auth/me; refreshes the cached user.
+  /// Only non-null args are sent (name "" clears it; omitted fields are untouched).
+  Future<AuthUser> updateProfile({String? name, bool? pushEnabled}) async {
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (pushEnabled != null) body['pushEnabled'] = pushEnabled;
+    try {
+      final res = await _dio.patch<Map<String, dynamic>>('/auth/me', data: body);
+      final user = AuthUser.fromJson(res.data!);
+      await _storage.saveUser(user);
+      return user;
+    } on DioException catch (e) {
+      throw toApiException(e);
+    }
+  }
+
   /// Deletes the account server-side (cascades all data), then clears the
   /// local session. On failure the token is kept so the user stays signed in.
   Future<void> deleteAccount() async {

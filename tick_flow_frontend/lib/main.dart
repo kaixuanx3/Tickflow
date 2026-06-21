@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/biometric_lock.dart';
+import 'core/locale_controller.dart';
 import 'core/router.dart';
 import 'core/theme.dart';
 import 'core/theme_mode.dart';
+import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +31,13 @@ class TickflowApp extends ConsumerWidget {
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
       themeMode: ref.watch(themeModeProvider),
+      locale: ref.watch(localeProvider),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),
+      // Covers the app with a biometric lock when enabled (see BiometricGate).
+      builder: (context, child) =>
+          BiometricGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }
