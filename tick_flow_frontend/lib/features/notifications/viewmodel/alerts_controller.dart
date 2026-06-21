@@ -32,6 +32,12 @@ class AlertsController extends AsyncNotifier<List<Alert>> {
     await _reload();
   }
 
+  /// Pause an active/cooldown alert so the engine stops watching it.
+  Future<void> pause(String id) async {
+    await ref.read(alertsRepositoryProvider).pause(id);
+    await _reload();
+  }
+
   Future<void> removeAlert(String id) async {
     await ref.read(alertsRepositoryProvider).remove(id);
     await _reload();

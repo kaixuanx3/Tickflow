@@ -172,6 +172,34 @@ describe('alert routes', () => {
     expect(foreign.statusCode).toBe(404);
   });
 
+  it('pauses an active alert and resumes it', async () => {
+    const auth = await authHeader();
+    const created = await app.inject({
+      method: 'POST',
+      url: '/alerts',
+      headers: auth,
+      payload: { symbol: 'NVDA', ruleType: 'price_above', threshold: 900 },
+    });
+    const id = created.json().alert.id;
+
+    const paused = await app.inject({
+      method: 'PUT',
+      url: `/alerts/${id}`,
+      headers: auth,
+      payload: { status: 'paused' },
+    });
+    expect(paused.statusCode).toBe(200);
+    expect(paused.json().alert.status).toBe('paused');
+
+    const resumed = await app.inject({
+      method: 'PUT',
+      url: `/alerts/${id}`,
+      headers: auth,
+      payload: { status: 'active' },
+    });
+    expect(resumed.json().alert.status).toBe('active');
+  });
+
   it('rejects invalid payloads', async () => {
     const auth = await authHeader();
 

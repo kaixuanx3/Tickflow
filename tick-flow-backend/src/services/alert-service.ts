@@ -1,6 +1,6 @@
 export type AlertRuleType = 'price_above' | 'price_below';
 export type AlertKind = 'one_shot' | 're_arm';
-export type AlertStatus = 'active' | 'cooldown' | 'done';
+export type AlertStatus = 'active' | 'cooldown' | 'done' | 'paused';
 
 export interface Alert {
   id: string;
@@ -22,12 +22,13 @@ export interface AlertInput {
   kind: AlertKind;
 }
 
-// undefined = leave unchanged; status can only be patched back to 'active'
-// (re-arm a done/cooldown alert) — the engine owns all other transitions.
+// undefined = leave unchanged. Clients may set status to 'active' (re-arm a
+// done/cooldown alert, or resume a paused one) or 'paused' (pause an active
+// alert). The engine owns every other transition.
 export interface AlertPatch {
   threshold?: number | undefined;
   kind?: AlertKind | undefined;
-  status?: 'active' | undefined;
+  status?: 'active' | 'paused' | undefined;
 }
 
 export interface AlertRepo {

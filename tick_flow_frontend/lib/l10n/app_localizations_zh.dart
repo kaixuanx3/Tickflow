@@ -324,6 +324,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get alertRearmError => '无法重新启用该提醒';
 
   @override
+  String get alertUpdateError => '无法更新该提醒';
+
+  @override
+  String get alertNow => '现价';
+
+  @override
+  String get alertPauseTooltip => '暂停提醒';
+
+  @override
+  String get alertResumeTooltip => '恢复提醒';
+
+  @override
   String alertTriggeredCount(int count) {
     return '已触发 $count 次';
   }
@@ -354,6 +366,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get alertStatusDone => '已完成';
+
+  @override
+  String get alertStatusPaused => '已暂停';
 
   @override
   String get alertSegPriceAbove => '价格高于';

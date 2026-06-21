@@ -58,7 +58,7 @@ class MenuScreen extends ConsumerWidget {
                 onTap: () => _showThemeSheet(context, ref, mode),
               ),
               _MenuRow(
-                icon: Icons.translate_outlined,
+                icon: Icons.language,
                 title: l10n.menuLanguage,
                 value: _languageLabel(l10n, locale),
                 onTap: () => _showLanguageSheet(context, ref, locale),

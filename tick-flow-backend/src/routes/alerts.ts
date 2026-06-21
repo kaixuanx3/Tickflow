@@ -14,7 +14,7 @@ const patchBody = z
   .object({
     threshold: z.number().positive(),
     kind: z.enum(['one_shot', 're_arm']),
-    status: z.literal('active'), // clients may only re-arm; the engine owns the rest
+    status: z.enum(['active', 'paused']), // re-arm/resume (active) or pause; the engine owns the rest
   })
   .partial()
   .refine((p) => Object.keys(p).length > 0, { message: 'no fields to update' });

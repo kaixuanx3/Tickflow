@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,12 +24,16 @@ class SymbolLogo extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       // White backing keeps transparent/white logos visible on the dark theme.
       decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-      child: Image.network(
-        logo,
+      child: CachedNetworkImage(
+        imageUrl: logo,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => fallback,
-        loadingBuilder: (_, child, progress) =>
-            progress == null ? child : fallback,
+        // Letter avatar while it downloads / if it fails — never a blank box.
+        // Once fetched, it's served from the device disk cache (near-instant on
+        // reload); the package auto-evicts (~200 files / 30 days), so it stays
+        // tiny. On web the browser cache handles persistence instead.
+        placeholder: (_, _) => fallback,
+        errorWidget: (_, _, _) => fallback,
+        fadeInDuration: const Duration(milliseconds: 200),
       ),
     );
   }

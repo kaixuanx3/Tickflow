@@ -28,12 +28,14 @@ enum AlertKind {
       );
 }
 
-/// Engine-owned lifecycle: active → (condition met) → cooldown/done.
-/// Clients may only push it back to active (re-arm).
+/// Engine-owned lifecycle: active → (condition met) → cooldown/done. Clients
+/// may pause/resume an alert (active ↔ paused) and re-arm (→ active); the
+/// engine owns every other transition.
 enum AlertStatus {
   active('Active'),
   cooldown('Cooldown'),
-  done('Done');
+  done('Done'),
+  paused('Paused');
 
   const AlertStatus(this.label);
 

@@ -120,6 +120,10 @@
   "alertsCreateFirst": "Create your first alert",
   "alertRearm": "Re-arm",
   "alertRearmError": "Could not re-arm the alert",
+  "alertUpdateError": "Couldn't update the alert",
+  "alertNow": "now",
+  "alertPauseTooltip": "Pause alert",
+  "alertResumeTooltip": "Resume alert",
   "alertTriggeredCount": "triggered {count}×",
   "@alertTriggeredCount": {
     "placeholders": { "count": { "type": "int" } }
@@ -133,6 +137,7 @@
   "alertStatusActive": "Active",
   "alertStatusCooldown": "Cooldown",
   "alertStatusDone": "Done",
+  "alertStatusPaused": "Paused",
   "alertSegPriceAbove": "Price above",
   "alertSegPriceBelow": "Price below",
   "alertHintAbove": "Triggers when the price goes above the threshold.",

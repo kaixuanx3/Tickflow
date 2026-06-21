@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 
 import '../../../core/formats.dart';
 import '../../../core/widgets/error_retry.dart';
+import '../../../core/widgets/symbol_logo.dart';
 import '../../../data/alerts/alert_models.dart';
 import '../../../data/api/api_client.dart';
+import '../../../data/markets/quotes_cache.dart';
 import '../../../data/notifications/notification_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../viewmodel/alerts_controller.dart';
@@ -18,15 +20,11 @@ String _ruleLabel(AppLocalizations l10n, AlertRuleType r) => switch (r) {
       AlertRuleType.priceBelow => l10n.alertRuleBelow,
     };
 
-String _kindLabel(AppLocalizations l10n, AlertKind k) => switch (k) {
-      AlertKind.oneShot => l10n.alertKindOneShot,
-      AlertKind.reArm => l10n.alertKindReArm,
-    };
-
 String _statusLabel(AppLocalizations l10n, AlertStatus s) => switch (s) {
       AlertStatus.active => l10n.alertStatusActive,
       AlertStatus.cooldown => l10n.alertStatusCooldown,
       AlertStatus.done => l10n.alertStatusDone,
+      AlertStatus.paused => l10n.alertStatusPaused,
     };
 
 /// Localized relative time for the Triggered feed (e.g. "2h ago" / "2 小时前").
@@ -116,7 +114,7 @@ class _AlertsTab extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () => ref.refresh(alertsProvider.future),
           child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80), // FAB clearance
+            padding: const EdgeInsets.only(top: 8, bottom: 80), // gap below tabs + FAB clearance
             itemCount: list.length,
             itemBuilder: (_, i) => _AlertRow(alert: list[i]),
           ),
@@ -126,51 +124,147 @@ class _AlertsTab extends ConsumerWidget {
   }
 }
 
-class _AlertRow extends ConsumerWidget {
+class _AlertRow extends ConsumerStatefulWidget {
   const _AlertRow({required this.alert});
 
   final Alert alert;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    final a = alert;
+  ConsumerState<_AlertRow> createState() => _AlertRowState();
+}
 
-    return ListTile(
-      onTap: () => showAlertSheet(context, existing: a),
-      title: Row(
-        children: [
-          Text(a.symbol, style: theme.textTheme.titleSmall),
-          const SizedBox(width: 8),
-          _StatusChip(status: a.status),
+class _AlertRowState extends ConsumerState<_AlertRow> {
+  @override
+  void initState() {
+    super.initState();
+    // Snapshot quote for the "· now $price" reference (REST batch, debounced).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(quotesProvider.notifier).request(widget.alert.symbol);
+    });
+  }
+
+  /// The toggle reads ON while the engine is watching this alert.
+  bool get _armed =>
+      widget.alert.status == AlertStatus.active ||
+      widget.alert.status == AlertStatus.cooldown;
+
+  Future<void> _toggle(bool on) async {
+    final l10n = AppLocalizations.of(context);
+    final notifier = ref.read(alertsProvider.notifier);
+    try {
+      // off→on resumes a paused alert / re-arms a done|cooldown one (both → active);
+      // on→off pauses an active|cooldown one.
+      on ? await notifier.rearm(widget.alert.id) : await notifier.pause(widget.alert.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e is ApiException ? e.message : l10n.alertUpdateError)),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final l10n = AppLocalizations.of(context);
+    final a = widget.alert;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.alertDeleteTitle(a.symbol)),
+        content: Text(
+          l10n.alertDeleteContent(_ruleLabel(l10n, a.ruleType), formatMoney(a.threshold)),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonDelete)),
         ],
       ),
-      subtitle: Text(
-        '${_ruleLabel(l10n, a.ruleType)} ${formatMoney(a.threshold)} · ${_kindLabel(l10n, a.kind)}'
-        '${a.triggerCount > 0 ? ' · ${l10n.alertTriggeredCount(a.triggerCount)}' : ''}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: a.status == AlertStatus.active
-          ? null
-          : TextButton(
-              onPressed: () async {
-                try {
-                  await ref.read(alertsProvider.notifier).rearm(a.id);
-                } catch (e) {
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        e is ApiException ? e.message : l10n.alertRearmError,
-                      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ref.read(alertsProvider.notifier).removeAlert(a.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e is ApiException ? e.message : l10n.commonGenericError)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final a = widget.alert;
+    final quote = ref.watch(quotesProvider.select((m) => m[a.symbol]));
+
+    final rule = StringBuffer()
+      ..write(_ruleLabel(l10n, a.ruleType))
+      ..write(' ')
+      ..write(formatMoney(a.threshold));
+    if (quote != null) {
+      rule
+        ..write(' · ')
+        ..write(l10n.alertNow)
+        ..write(' ')
+        ..write(formatMoney(quote.price));
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => showAlertSheet(context, existing: a),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: Row(
+            children: [
+              SymbolLogo(symbol: a.symbol, size: 44),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            a.symbol,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusChip(status: a.status),
+                      ],
                     ),
-                  );
-                }
-              },
-              child: Text(l10n.alertRearm),
-            ),
+                    const SizedBox(height: 3),
+                    Text(
+                      rule.toString(),
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              Tooltip(
+                message: _armed ? l10n.alertPauseTooltip : l10n.alertResumeTooltip,
+                child: Switch(value: _armed, onChanged: _toggle),
+              ),
+              IconButton(
+                tooltip: l10n.alertDeleteButton,
+                icon: const Icon(Icons.delete_outline),
+                color: theme.colorScheme.onSurfaceVariant,
+                onPressed: _confirmDelete,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -264,6 +358,7 @@ class _StatusChip extends StatelessWidget {
       AlertStatus.active => (scheme.secondaryContainer, scheme.onSecondaryContainer),
       AlertStatus.cooldown => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
       AlertStatus.done => (scheme.surfaceContainerHighest, scheme.onSurfaceVariant),
+      AlertStatus.paused => (scheme.surfaceContainerHighest, scheme.onSurfaceVariant),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),

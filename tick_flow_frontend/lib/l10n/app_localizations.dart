@@ -710,6 +710,30 @@ abstract class AppLocalizations {
   /// **'Could not re-arm the alert'**
   String get alertRearmError;
 
+  /// No description provided for @alertUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update the alert'**
+  String get alertUpdateError;
+
+  /// No description provided for @alertNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get alertNow;
+
+  /// No description provided for @alertPauseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause alert'**
+  String get alertPauseTooltip;
+
+  /// No description provided for @alertResumeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume alert'**
+  String get alertResumeTooltip;
+
   /// No description provided for @alertTriggeredCount.
   ///
   /// In en, this message translates to:
@@ -769,6 +793,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get alertStatusDone;
+
+  /// No description provided for @alertStatusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get alertStatusPaused;
 
   /// No description provided for @alertSegPriceAbove.
   ///

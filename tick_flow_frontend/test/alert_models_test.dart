@@ -31,7 +31,7 @@ void main() {
       'ruleType': 'percent_move', // not supported by this client version
       'threshold': 5,
       'kind': 'one_shot',
-      'status': 'paused',
+      'status': 'expired', // not a status this client version knows
       'lastTriggeredAt': null,
     });
 
