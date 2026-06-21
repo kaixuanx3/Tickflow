@@ -113,7 +113,7 @@ class _AlertsTab extends ConsumerWidget {
         return RefreshIndicator(
           onRefresh: () => ref.refresh(alertsProvider.future),
           child: ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80), // FAB clearance
+            padding: const EdgeInsets.only(top: 8, bottom: 80), // gap below tabs + FAB clearance
             itemCount: list.length,
             itemBuilder: (_, i) => _AlertRow(alert: list[i]),
           ),
