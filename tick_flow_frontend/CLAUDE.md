@@ -54,7 +54,7 @@ Authed (Bearer):
 - `GET/POST /portfolio/holdings` (`{symbol, qty, buyPrice, assetType?: stock|etf|crypto}`), `PUT/DELETE /portfolio/holdings/:id`
 - `PUT /portfolio/holdings/reorder` (`{order:[id,…]}`) → 204 — saves the user's manual order (server-side `position`). New holdings sort to the bottom; `/summary` & `/holdings` return rows in this order.
 - `GET /portfolio/summary` → holdings each with `{costBasis, price, marketValue, gainLoss, gainLossPercent}` (nulls when unpriced) + `{totalValue, totalCost, totalGainLoss, totalGainLossPercent, allocation:[{symbol,value,percent}], incomplete}`
-- `GET/POST /alerts` (`{symbol, ruleType: price_above|price_below, threshold, kind?: one_shot|re_arm}`), `PUT /alerts/:id` (`{threshold?, kind?, status?: 'active'}` re-arm only), `DELETE /alerts/:id`
+- `GET/POST /alerts` (`{symbol, ruleType: price_above|price_below, threshold, kind?: one_shot|re_arm}`), `PUT /alerts/:id` (`{threshold?, kind?, status?: 'active'|'paused'}` — `active` re-arms/resumes, `paused` pauses; the engine owns `cooldown`/`done`), `DELETE /alerts/:id`
 - `GET /notifications` → `{notifications:[{id,symbol,message,price,createdAt}]}` (triggered alerts, newest first)
 - `POST /devices` `{token}` → 204 — send the FCM token after login (FCM phase only)
 
@@ -83,6 +83,10 @@ Authed (Bearer):
 - **local_auth** — optional biometric app-lock (Menu → Security). Mobile only (needs
   `FlutterFragmentActivity` + `minSdk 23` on Android, `NSFaceIDUsageDescription` on iOS);
   auto-hidden on web.
+- **cached_network_image** — company logos with an on-device disk cache + letter-avatar fallback
+  (shared `core/widgets/symbol_logo.dart`); used by Markets/Favourites/Portfolio/Alerts rows.
+- **flutter_localizations** + Flutter **gen-l10n** — full **English + 中文** localization. ARBs in
+  `lib/l10n` (`app_en.arb`/`app_zh.arb`); the generated `AppLocalizations*.dart` are **committed**.
 - Deferred, NOT in v1: **Drift** offline cache (needs sqlite3 WASM setup on web — add only after
   all tabs work online) · **firebase_messaging** (web push unreliable, Notifications tab is the
   reliable path; Firebase project: tickflow-dev)
@@ -97,8 +101,9 @@ Authed (Bearer):
 
 ```
 lib/
-  core/            # env, theme, router, formatting helpers
+  core/            # env, theme, router, formatting, locale (i18n), biometric lock, widgets/
   data/            # api client, ws client, repositories, DTOs
+  l10n/            # ARBs (app_en.arb / app_zh.arb) + generated AppLocalizations (committed)
   features/
     auth/          # login/register
     markets/       # view/ + viewmodel/ (same split in every feature)
@@ -115,11 +120,13 @@ lib/
 
 Unauthed users land on Login (email/password, register toggle). All tabs require auth.
 
-### 1. Markets
-- Search bar (`/symbols/search`) + paginated browse of US symbols (`/symbols`, 50/page, infinite scroll).
-- Quotes lazily for VISIBLE rows only (batched `/quotes?symbols=`) — never for the whole list.
-- Live ticks only for on-screen symbols; unsubscribe on scroll-away/tab change.
-- Row: symbol, name, price, day change % (green/red), star to toggle favourite. Tap → Symbol Detail.
+### 1. Markets — a fintech dashboard (`moversProvider`)
+- Inline **search bar** → the `/search` screen (backed by `/symbols/search`).
+- **Overview carousel** of index/benchmark cards (price + day change + mini-sparkline).
+- **Top gainers / losers / most active** tabs, ranked from a one-shot universe-quotes snapshot
+  (`moversProvider`) that also primes the quote cache so tab switches render instantly.
+- Row: company logo, symbol, name, price, day change % (green/red), star to favourite. Tap → Symbol Detail.
+- The old paginated `/symbols` browse is parked (commented out), not deleted.
 
 ### 2. Favourites (watchlist)
 - Starred symbols via `/watchlist`. Live price, day change %, sparkline (LineChart of 1M daily closes).
@@ -131,25 +138,32 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 - ALL valuation comes from `/portfolio/summary` — the app NEVER recomputes portfolio math.
 - Donut (PieChart) of allocation, toggle by holding / by asset type. Totals + per-position
   gain/loss. USD only. Unpriced holdings → "—" + a subtle banner when `incomplete: true`.
+- **Analytics** screen (`/analytics`, pushed): estimated value series (from daily closes), top
+  contributors, asset mix — crypto/feed-uncovered ETFs are excluded from the series (a caveat banner).
 
 ### 4. Notifications
-- **My Alerts**: create/edit/delete — symbol, price above/below, threshold, one-shot vs re-arm,
-  status. Create → `POST /alerts`.
+- **My Alerts**: card rows (company logo, status badge active/cooldown/done/paused, rule + live
+  "now" price). A **pause/resume toggle** (`status: active ↔ paused`) and an **inline delete**
+  (confirm dialog). Tap a card to edit; create → `POST /alerts`.
 - **Triggered feed**: history from `/notifications`, newest first, pull-to-refresh
   (the reliable path on web; FCM push comes later, if at all).
 
 ### 5. Menu — sectioned settings (profile card + grouped cards)
 - Profile card: avatar initials + display `name` (falls back to email when unset) + email.
-- Account: **Account details** screen (`/account`) — edit the display `name` via `PATCH /auth/me`.
-- Appearance: System / Light / Dark (persisted in shared_preferences).
-- Security: **Change password** (`/change-password` → `POST /auth/change-password`; the row is
-  hidden when `hasPassword` is false — i.e. Google-only accounts) · **Biometric unlock** toggle
-  (mobile only, hidden on web) — when on, a Face ID / fingerprint lock (`local_auth`, gated in
-  `core/biometric_lock.dart`) covers the app on cold launch and after ~30s backgrounded.
-- Notifications: **Push notifications** toggle (`pushEnabled` via `PATCH /auth/me`). When off,
+- **Account**: **Account details** (`/account`) — edit display `name` via `PATCH /auth/me` ·
+  **Subscriptions** (`/plans`, value "Free") — a display-only Free-vs-Pro "coming soon" preview,
+  no purchase flow.
+- **Preferences**: **Appearance** (System / Light / Dark) · **Language** (English / 中文, default
+  English) — both persisted in shared_preferences.
+- **Security** (section shown only when a row applies): **Change password** (`/change-password` →
+  `POST /auth/change-password`; hidden when `hasPassword` is false — Google-only) · **Biometric
+  unlock** toggle (mobile only, hidden on web) — a `local_auth` lock (`core/biometric_lock.dart`)
+  on cold launch and after ~30s backgrounded.
+- **Notifications**: **Push notifications** toggle (`pushEnabled` via `PATCH /auth/me`). When off,
   FCM push is muted but the in-app Notifications feed still receives entries.
-- About: app version, "Market data via Finnhub/FMP — quotes delayed on the free tier",
-  open-source licenses (`showLicensePage`).
+- **Support**: **Help & Support** (`/help` — FAQs, contact `support@tickflow.my`, "live chat" is a
+  disabled coming-soon) · **About** (dialog: version, "Market data via Finnhub/FMP — quotes delayed
+  on the free tier", `showLicensePage`).
 - Sign out (wipe token → login) · Delete account (`DELETE /auth/me`, behind a confirm dialog).
 - Optional (debug builds only): current API_URL + WS connection status row.
 
@@ -183,12 +197,18 @@ Unauthed users land on Login (email/password, register toggle). All tabs require
 5. ✅ Alerts + Notifications feed.
 6. ✅ Polish (delayed/stale badges, empty/error states, REST 401 → login) + web deploy
    readiness (Firebase Hosting). Optional extras (FCM, Drift) remain, only if time allows.
+7. ✅ Post-v1: full i18n (English + 中文); redesigns (Markets movers dashboard, sectioned Menu,
+   card-style Alerts); pause/resume alerts (`paused` status); disk-cached company logos;
+   Help & Support + Subscriptions (display-only coming-soon).
 
 ## Conventions
 
 - One feature folder per tab; cross-feature imports only via `data/` or `core/`.
 - ViewModels get unit tests (fake repositories). Portfolio/alerts widgets get widget tests if time allows.
 - No business logic in widgets. Conventional commits. Prefer the simpler option — learning project.
+- **i18n**: every user-facing string is localized — add new keys to BOTH `lib/l10n/app_en.arb` and
+  `app_zh.arb`, then `flutter gen-l10n` (generated `AppLocalizations*.dart` are committed). Enums
+  can't read `BuildContext`, so localize their labels via view-helper `switch` functions.
 - One feature per commit AND push (Kai's rule — never bundle features). Features land on `develop`;
   at phase milestones merge `develop`→`main` via PR with a MERGE COMMIT (never squash — squashing
   collapses Kai's contribution history).
