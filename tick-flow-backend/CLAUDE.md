@@ -97,12 +97,15 @@ ACTIVE ──condition met──► TRIGGERED ──► enqueue notification job
   │ (price retreats ≥0.5%    └─ re_arm  → COOLDOWN
   │  past threshold) or 15-min cooldown
   └──────────────────────────────┘
+
+ACTIVE ⇄ PAUSED   — client pauses an active alert / resumes it; paused alerts aren't evaluated
 ```
 
-- Postgres row: `id, user_id, symbol, rule(type, threshold), kind(one_shot|re_arm), status, trigger_count, last_triggered_at`.
+- Postgres row: `id, user_id, symbol, rule(type, threshold), kind(one_shot|re_arm), status(active|cooldown|done|paused), trigger_count, last_triggered_at`.
 - Idempotency: BullMQ job ID = `alert-{id}-trigger-{trigger_count}` (BullMQ forbids `:` in job ids) — duplicate evaluation can't double-send.
 - Status transition + enqueue atomic (transaction/check-and-set).
-- Evaluation runs on every tick (streamed or polled).
+- Evaluation runs on every tick (streamed or polled) — only over the "live" set (`active`/`cooldown`); `paused` and `done` are inert.
+- Pause/resume: `PUT /alerts/:id {status:'paused'}` pauses an `active` alert; `{status:'active'}` resumes a paused one (and re-arms a `done`/`cooldown` alert). Pausing drops it from the live set, so it stops triggering and its symbol is unsubscribed once no live alert remains. Clients may set only `active`/`paused`; the engine owns the rest (`active→done|cooldown`, `cooldown→active`).
 - Delivery respects the user's `pushEnabled` flag: when off, the FCM push is skipped but the in-app feed entry is still written.
 
 ### Resilience
@@ -123,7 +126,7 @@ GET/POST/DELETE /watchlist                            (favourites)
 GET/POST/PUT/DELETE /portfolio/holdings               (symbol, qty, buyPrice, assetType)
 PUT  /portfolio/holdings/reorder                      ({order:[id,…]} — manual sort via Holding.position, new lots to bottom)
 GET  /portfolio/summary                               (valuation, gain/loss, allocation)
-GET/POST/PUT/DELETE /alerts
+GET/POST/PUT/DELETE /alerts                          (PUT: edit threshold/kind, pause/resume via status)
 GET  /notifications                                   (triggered-alert feed)
 WS   /ws                                              (auth → subscribe → ticks)
 ```
